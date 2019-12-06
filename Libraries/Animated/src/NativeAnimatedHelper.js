@@ -160,6 +160,16 @@ const API = {
  * to be updated through the shadow view hierarchy (all non-layout properties).
  */
 const STYLES_WHITELIST = {
+  /* colors */
+  backgroundColor: true,
+  borderRightColor: true,
+  borderBottomColor: true,
+  borderColor: true,
+  borderEndColor: true,
+  borderLeftColor: true,
+  borderStartColor: true,
+  borderTopColor: true,
+
   opacity: true,
   transform: true,
   borderRadius: true,
