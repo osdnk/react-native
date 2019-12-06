@@ -195,6 +195,81 @@ const TRANSFORM_WHITELIST = {
   perspective: true,
 };
 
+let NATIVE_THREAD_PROPS_WHITELIST = {
+  borderBottomWidth: true,
+  borderEndWidth: true,
+  borderLeftWidth: true,
+  borderRightWidth: true,
+  borderStartWidth: true,
+  borderTopWidth: true,
+  borderWidth: true,
+  bottom: true,
+  flex: true,
+  flexGrow: true,
+  flexShrink: true,
+  height: true,
+  left: true,
+  margin: true,
+  marginBottom: true,
+  marginEnd: true,
+  marginHorizontal: true,
+  marginLeft: true,
+  marginRight: true,
+  marginStart: true,
+  marginTop: true,
+  marginVertical: true,
+  maxHeight: true,
+  maxWidth: true,
+  minHeight: true,
+  minWidth: true,
+  padding: true,
+  paddingBottom: true,
+  paddingEnd: true,
+  paddingHorizontal: true,
+  paddingLeft: true,
+  paddingRight: true,
+  paddingStart: true,
+  paddingTop: true,
+  paddingVertical: true,
+  right: true,
+  start: true,
+  top: true,
+  width: true,
+  zIndex: true,
+  borderBottomEndRadius: true,
+  borderBottomLeftRadius: true,
+  borderBottomRightRadius: true,
+  borderBottomStartRadius: true,
+  borderRadius: true,
+  borderTopEndRadius: true,
+  borderTopLeftRadius: true,
+  borderTopRightRadius: true,
+  borderTopStartRadius: true,
+  opacity: true,
+  elevation: true,
+  fontSize: true,
+  lineHeight: true,
+  textShadowRadius: true,
+  letterSpacing: true,
+  /* strings */
+  display: true,
+  backfaceVisibility: true,
+  overflow: true,
+  resizeMode: true,
+  fontStyle: true,
+  fontWeight: true,
+  textAlign: true,
+  textDecorationLine: true,
+  fontFamily: true,
+  textAlignVertical: true,
+  fontVariant: true,
+  textDecorationStyle: true,
+  textTransform: true,
+  writingDirection: true,
+  /* text color */
+  color: true,
+};
+
 const SUPPORTED_INTERPOLATION_PARAMS = {
   inputRange: true,
   outputRange: true,
@@ -214,6 +289,15 @@ function addWhitelistedTransformProp(prop: string): void {
 function addWhitelistedInterpolationParam(param: string): void {
   SUPPORTED_INTERPOLATION_PARAMS[param] = true;
 }
+
+function configureProps() {
+  NativeAnimatedModule.configureProps(
+    Object.keys(NATIVE_THREAD_PROPS_WHITELIST),
+    Object.keys(STYLES_WHITELIST),
+  );
+}
+
+configureProps();
 
 function validateTransform(
   configs: Array<
@@ -244,7 +328,10 @@ function validateTransform(
 
 function validateStyles(styles: {[key: string]: ?number, ...}): void {
   for (const key in styles) {
-    if (!STYLES_WHITELIST.hasOwnProperty(key)) {
+    if (
+      !STYLES_WHITELIST.hasOwnProperty(key) &&
+      !NATIVE_THREAD_PROPS_WHITELIST.hasOwnProperty(key)
+    ) {
       throw new Error(
         `Style property '${key}' is not supported by native animated module`,
       );
