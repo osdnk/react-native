@@ -34,7 +34,7 @@ import java.util.Map;
     mNativeAnimatedNodesManager = nativeAnimatedNodesManager;
   }
 
-  public void collectViewUpdates(JavaOnlyMap propsMap) {
+  public void collectViewUpdates(JavaOnlyMap propsMap, JavaOnlyMap nativeProps) {
     for (Map.Entry<String, Integer> entry : mPropMapping.entrySet()) {
       @Nullable AnimatedNode node = mNativeAnimatedNodesManager.getNodeById(entry.getValue());
       if (node == null) {
@@ -42,6 +42,11 @@ import java.util.Map;
       } else if (node instanceof TransformAnimatedNode) {
         ((TransformAnimatedNode) node).collectViewUpdates(propsMap);
       } else if (node instanceof ValueAnimatedNode) {
+        if (mNativeAnimatedNodesManager.uiProps.contains(entry.getKey())) {
+          propsMap.putDouble(entry.getKey(), ((ValueAnimatedNode) node).getValue());
+        } else {
+          nativeProps.putDouble(entry.getKey(), ((ValueAnimatedNode) node).getValue());
+        }
         propsMap.putDouble(entry.getKey(), ((ValueAnimatedNode) node).getValue());
       } else {
         throw new IllegalArgumentException(
