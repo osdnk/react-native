@@ -16,6 +16,7 @@ import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.ReactConstants;
@@ -29,6 +30,8 @@ import com.facebook.react.uimanager.UIBlock;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.UIManagerModuleListener;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Module that exposes interface for creating and managing animated nodes on the "native" side.
@@ -192,7 +195,10 @@ public class NativeAnimatedModule extends ReactContextBaseJavaModule
 
       if (reactApplicationContext != null) {
         UIManagerModule uiManager = reactApplicationContext.getNativeModule(UIManagerModule.class);
-        mNodesManager = new NativeAnimatedNodesManager(uiManager);
+        mNodesManager = new NativeAnimatedNodesManager(
+          uiManager,
+          getReactApplicationContext()
+        );
       }
     }
 
@@ -425,5 +431,26 @@ public class NativeAnimatedModule extends ReactContextBaseJavaModule
             animatedNodesManager.removeAnimatedEventFromView(viewTag, eventName, animatedValueTag);
           }
         });
+  }
+
+  @ReactMethod
+  public void configureProps(ReadableArray nativePropsArray, ReadableArray uiPropsArray) {
+    int size = nativePropsArray.size();
+    final Set<String> nativeProps = new HashSet<>(size);
+    for (int i = 0; i < size; i++) {
+      nativeProps.add(nativePropsArray.getString(i));
+    }
+
+    size = uiPropsArray.size();
+    final Set<String> uiProps = new HashSet<>(size);
+    for (int i = 0; i < size; i++) {
+      uiProps.add(uiPropsArray.getString(i));
+    }
+    mOperations.add(new UIThreadOperation() {
+      @Override
+      public void execute(NativeAnimatedNodesManager nodesManager) {
+        nodesManager.configureProps(nativeProps, uiProps);
+      }
+    });
   }
 }
