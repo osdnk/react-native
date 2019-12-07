@@ -301,10 +301,12 @@ function addWhitelistedInterpolationParam(param: string): void {
 }
 
 function configureProps() {
-  NativeAnimatedModule.configureProps(
-    Object.keys(NATIVE_THREAD_PROPS_WHITELIST),
-    Object.keys(STYLES_WHITELIST),
-  );
+  if (NativeAnimatedModule) {
+    NativeAnimatedModule.configureProps(
+      Object.keys(NATIVE_THREAD_PROPS_WHITELIST),
+      Object.keys(STYLES_WHITELIST),
+    );
+  }
 }
 
 configureProps();
