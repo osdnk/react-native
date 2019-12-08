@@ -401,19 +401,31 @@ exports.examples = [
                       }),
                     },
                   ],
-                  opacity: Animated.multiply(
-                    anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [1, 0],
-                    }),
-                    anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.25, 1],
-                    }),
-                  ),
+                  // opacity: Animated.multiply(
+                  //   anim.interpolate({
+                  //     inputRange: [0, 1],
+                  //     outputRange: [1, 0],
+                  //   }),
+                  //   anim.interpolate({
+                  //     inputRange: [0, 1],
+                  //     outputRange: [0.25, 1],
+                  //   }),
+                  // ),
                   width: anim.interpolate({
                     inputRange: [0, 0.5, 1],
                     outputRange: [50, 100, 50],
+                  }),
+                  borderRadius: anim.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [0, 100, 0],
+                  }),
+                  backgroundColor: anim.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [
+                      'rgba(255, 0, 0, 0.25)',
+                      'rgba(0, 255, 0, 0.5)',
+                      'rgba(255, 0, 0, 1)',
+                    ],
                   }),
                 },
               ]}
