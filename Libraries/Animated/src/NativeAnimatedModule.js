@@ -64,4 +64,5 @@ export interface Spec extends TurboModule {
   +removeListeners: (count: number) => void;
 }
 
-export default (TurboModuleRegistry.get<Spec>('NativeAnimatedModule'): ?Spec);
+console.warn(global.NativeAnimated);
+export default global.NativeAnimated; // (TurboModuleRegistry.get<Spec>('NativeAnimatedModule'): ?Spec);

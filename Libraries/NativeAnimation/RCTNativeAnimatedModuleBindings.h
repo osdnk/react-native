@@ -11,9 +11,9 @@ using namespace facebook;
 
 @class RCTNativeAnimatedModule;
 
-class JSI_EXPORT RCTNatieAnimatedModuleBindings : public jsi::HostObject {
+class JSI_EXPORT RCTNativeAnimatedModuleBindings : public jsi::HostObject {
 public:
-    RCTNatieAnimatedModuleBindings(RCTNativeAnimatedModule* module);
+    RCTNativeAnimatedModuleBindings(RCTNativeAnimatedModule* module);
     
     static void install(RCTNativeAnimatedModule *module);
     

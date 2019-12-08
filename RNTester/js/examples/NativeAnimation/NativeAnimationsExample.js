@@ -236,14 +236,10 @@ class EventExample extends React.Component<{...}, $FlowFixMeState> {
           style={[
             styles.block,
             {
-              transform: [
-                {
-                  rotate: this.state.anim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0deg', '1deg'],
-                  }),
-                },
-              ],
+              borderRadius: this.state.anim.interpolate({
+                inputRange: [0, 200],
+                outputRange: [0, 50],
+              }),
             },
           ]}
         />

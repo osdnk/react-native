@@ -19,24 +19,24 @@ struct EventHandlerWrapper {
     jsi::Function callback;
 };
 
-RCTNatieAnimatedModuleBindings::RCTNatieAnimatedModuleBindings(RCTNativeAnimatedModule* module)
+RCTNativeAnimatedModuleBindings::RCTNativeAnimatedModuleBindings(RCTNativeAnimatedModule* module)
 : _module(module) {}
 
-void RCTNatieAnimatedModuleBindings::install(RCTNativeAnimatedModule *module) {
+void RCTNativeAnimatedModuleBindings::install(RCTNativeAnimatedModule *module) {
     RCTCxxBridge *cxxBridge = (RCTCxxBridge *)module.bridge;
     if (cxxBridge.runtime == nullptr) {
         return;
     }
     
     jsi::Runtime &runtime = *(jsi::Runtime *)cxxBridge.runtime;
-    auto reaModuleName = "Reanimated";
+    auto rctModuleName = "NativeAnimated";
     
-    auto rctJsiModule = std::make_shared<RCTNatieAnimatedModuleBindings>(std::move(module));
+    auto rctJsiModule = std::make_shared<RCTNativeAnimatedModuleBindings>(std::move(module));
     auto object = jsi::Object::createFromHostObject(runtime, rctJsiModule);
-    runtime.global().setProperty(runtime, reaModuleName, std::move(object));
+    runtime.global().setProperty(runtime, rctModuleName, std::move(object));
 }
 
-jsi::Value RCTNatieAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi::PropNameID &name) {
+jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi::PropNameID &name) {
     auto methodName = name.utf8(runtime);
     if (methodName == "createNode") {
         RCTNativeAnimatedModule* module = _module;

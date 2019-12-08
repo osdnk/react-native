@@ -12,6 +12,7 @@
 #import <RCTTypeSafety/RCTConvertHelpers.h>
 
 #import "RCTAnimationPlugins.h"
+#import "RCTNativeAnimatedModuleBindings.h"
 
 typedef void (^AnimatedOperation)(RCTNativeAnimatedNodesManager *nodesManager);
 
@@ -56,6 +57,8 @@ RCT_EXPORT_MODULE();
   [bridge.eventDispatcher addDispatchObserver:self];
   [bridge.uiManager.observerCoordinator addObserver:self];
   [bridge.surfacePresenter addObserver:self];
+  
+  RCTNativeAnimatedModuleBindings::install(self);
 }
 
 RCT_EXPORT_METHOD(configureProps:(NSArray<NSString*>*)nativeProps uiProps:(NSArray<NSString*>*)uiProps)
