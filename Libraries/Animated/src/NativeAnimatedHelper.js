@@ -21,6 +21,7 @@ import type {
 import type {AnimationConfig, EndCallback} from './animations/Animation';
 import type {InterpolationConfigType} from './nodes/AnimatedInterpolation';
 import invariant from 'invariant';
+import {colorToRgba} from './nodes/AnimatedInterpolation';
 
 let __nativeAnimatedNodeTagCount = 1; /* used for animated nodes */
 let __nativeAnimationIdCount = 1; /* used for started animations */
@@ -301,7 +302,7 @@ function addWhitelistedInterpolationParam(param: string): void {
 }
 
 function configureProps() {
-  if (NativeAnimatedModule) {
+  if (NativeAnimatedModule && NativeAnimatedModule.configureProps) {
     NativeAnimatedModule.configureProps(
       Object.keys(NATIVE_THREAD_PROPS_WHITELIST),
       Object.keys(STYLES_WHITELIST),
@@ -410,6 +411,8 @@ function transformDataType(value: number | string): number | string {
     const degrees = parseFloat(value) || 0;
     const radians = (degrees * Math.PI) / 180.0;
     return radians;
+  } else if (value) {
+    return colorToRgba(value);
   } else {
     return value;
   }

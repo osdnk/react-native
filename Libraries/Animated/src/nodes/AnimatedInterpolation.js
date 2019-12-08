@@ -168,7 +168,7 @@ function interpolate(
   return result;
 }
 
-function colorToRgba(input: string): string {
+export function colorToRgba(input: string): string {
   let int32Color = normalizeColor(input);
   if (int32Color === null) {
     return input;
