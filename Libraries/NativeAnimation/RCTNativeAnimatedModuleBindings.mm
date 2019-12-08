@@ -49,20 +49,20 @@ jsi::Value RCTNatieAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi:
             auto arg1 = &arguments[0];
             auto arg2 = &arguments[1];
             auto config = convertJSIObjectToNSDictionary(runtime, arg2->asObject(runtime));
-        [module createAnimatedNode:[NSNumber numberWithDouble:arg1->asNumber()] config:(NSDictionary<NSString *, id>*)config];
+        [module createAnimatedNode:arg1->asNumber() config:(NSDictionary<NSString *, id>*)config];
             return jsi::Value::undefined();
         });
     }
     if (methodName == "dropNode") {
-      RCTNativeAnimatedModule* reamodule = _module;
-        return jsi::Function::createFromHostFunction(runtime, name, 1, [reamodule](
+      RCTNativeAnimatedModule* module = _module;
+        return jsi::Function::createFromHostFunction(runtime, name, 1, [module](
                                                                                    jsi::Runtime &runtime,
                                                                                    const jsi::Value &thisValue,
                                                                                    const jsi::Value *arguments,
                                                                                    size_t count) -> jsi::Value {
             
             auto arg1 = &arguments[0];
-            [reamodule dropNode:[NSNumber numberWithDouble:arg1->asNumber()]];
+            [module dropAnimatedNode:arg1->asNumber()];
             return jsi::Value::undefined();
         });
     }
@@ -76,7 +76,7 @@ jsi::Value RCTNatieAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi:
             
             auto arg1 = &arguments[0];
             auto arg2 = &arguments[1];
-            [reamodule connectNodes:[NSNumber numberWithDouble:arg1->asNumber()] childTag:[NSNumber numberWithDouble:arg2->asNumber()]];
+            [reamodule connectAnimatedNodes:arg1->asNumber() childTag:arg2->asNumber()];
             
             return jsi::Value::undefined();
         });
@@ -91,7 +91,7 @@ jsi::Value RCTNatieAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi:
             
             auto arg1 = &arguments[0];
             auto arg2 = &arguments[1];
-            [reamodule disconnectNodes:[NSNumber numberWithDouble:arg1->asNumber()] childTag:[NSNumber numberWithDouble:arg2->asNumber()]];
+            [reamodule disconnectAnimatedNodes:arg1->asNumber() childTag:arg2->asNumber()];
             
             return jsi::Value::undefined();
         });
@@ -106,7 +106,7 @@ jsi::Value RCTNatieAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi:
             
             auto arg1 = &arguments[0];
             auto arg2 = &arguments[1];
-            [reamodule connectNodeToView:[NSNumber numberWithDouble:arg1->asNumber()] viewTag:[NSNumber numberWithDouble:arg2->asNumber()]];
+            [reamodule connectAnimatedNodeToView:arg1->asNumber() viewTag:arg2->asNumber()];
             
             return jsi::Value::undefined();
         });
@@ -121,12 +121,12 @@ jsi::Value RCTNatieAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi:
             
             auto arg1 = &arguments[0];
             auto arg2 = &arguments[1];
-            [reamodule disconnectNodeFromView:[NSNumber numberWithDouble:arg1->asNumber()] viewTag:[NSNumber numberWithDouble:arg2->asNumber()]];
+            [reamodule disconnectAnimatedNodeFromView:arg1->asNumber() viewTag:arg2->asNumber()];
             
             return jsi::Value::undefined();
         });
     }
-    if (methodName == "getValue") {
+    /*if (methodName == "getValue") {
         RCTNativeAnimatedModule* reamodule = _module;
         return jsi::Function::createFromHostFunction(runtime, name, 2, [reamodule](
                                                                                    jsi::Runtime &runtime,
@@ -156,7 +156,7 @@ jsi::Value RCTNatieAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi:
             }];
             return jsi::Value::undefined();
         });
-    }
+    }*/
     
     
     return jsi::Value::undefined();

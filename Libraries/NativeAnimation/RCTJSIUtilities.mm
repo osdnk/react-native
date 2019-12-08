@@ -1,5 +1,5 @@
 
-#include "RCTJsiUtilities.h"
+#include "RCTJSIUtilities.h"
 
 NSString *convertJSIStringToNSString(jsi::Runtime &runtime, const jsi::String &value) {
     return [NSString stringWithUTF8String:value.utf8(runtime).c_str()];
