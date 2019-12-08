@@ -11,6 +11,9 @@ import androidx.annotation.Nullable;
 import com.facebook.react.bridge.JavaOnlyMap;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +37,28 @@ import java.util.Map;
     mNativeAnimatedNodesManager = nativeAnimatedNodesManager;
   }
 
+  private static void addProp(WritableMap propMap, String key, Object value) {
+    if (value == null) {
+      propMap.putNull(key);
+    } else if (value instanceof Double) {
+      propMap.putDouble(key, (Double) value);
+    } else if (value instanceof Integer) {
+      propMap.putInt(key, (int) value);
+    } else if (value instanceof Number) {
+      propMap.putDouble(key, ((Number) value).doubleValue());
+    } else if (value instanceof Boolean) {
+      propMap.putBoolean(key, (Boolean) value);
+    } else if (value instanceof String) {
+      propMap.putString(key, (String) value);
+    } else if (value instanceof WritableArray) {
+      propMap.putArray(key, (WritableArray)value);
+    } else if (value instanceof WritableMap) {
+      propMap.putMap(key, (WritableMap)value);
+    } else {
+      throw new IllegalStateException("Unknown type of animated value");
+    }
+  }
+
   public void collectViewUpdates(JavaOnlyMap propsMap, JavaOnlyMap nativeProps) {
     for (Map.Entry<String, Integer> entry : mPropMapping.entrySet()) {
       @Nullable AnimatedNode node = mNativeAnimatedNodesManager.getNodeById(entry.getValue());
@@ -42,12 +67,18 @@ import java.util.Map;
       } else if (node instanceof TransformAnimatedNode) {
         ((TransformAnimatedNode) node).collectViewUpdates(propsMap);
       } else if (node instanceof ValueAnimatedNode) {
+        Object animatedObject =  ((ValueAnimatedNode) node).getAnimatedObject();
         if (mNativeAnimatedNodesManager.uiProps.contains(entry.getKey())) {
-          propsMap.putDouble(entry.getKey(), ((ValueAnimatedNode) node).getValue());
+          if(animatedObject != null)
+            addProp(propsMap, entry.getKey(), animatedObject);
+          else
+            propsMap.putDouble(entry.getKey(), ((ValueAnimatedNode) node).getValue());
         } else {
-          nativeProps.putDouble(entry.getKey(), ((ValueAnimatedNode) node).getValue());
+          if(animatedObject != null)
+            addProp(nativeProps, entry.getKey(), animatedObject);
+          else
+            nativeProps.putDouble(entry.getKey(), ((ValueAnimatedNode) node).getValue());
         }
-        propsMap.putDouble(entry.getKey(), ((ValueAnimatedNode) node).getValue());
       } else {
         throw new IllegalArgumentException(
             "Unsupported type of node used in property node " + node.getClass());

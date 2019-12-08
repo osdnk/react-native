@@ -38,7 +38,6 @@ import java.util.Map;
   private final UIManager mUIManager;
   private final Map<String, Integer> mPropNodeMapping;
   private final JavaOnlyMap mPropMap;
-  private final ReactStylesDiffMap mDiffMap;
 
   private static void addProp(WritableMap propMap, String key, Object value) {
     if (value == null) {
@@ -46,7 +45,7 @@ import java.util.Map;
     } else if (value instanceof Double) {
       propMap.putDouble(key, (Double) value);
     } else if (value instanceof Integer) {
-      propMap.putDouble(key, (Double) value);
+      propMap.putInt(key, (int) value);
     } else if (value instanceof Number) {
       propMap.putDouble(key, ((Number) value).doubleValue());
     } else if (value instanceof Boolean) {
@@ -77,7 +76,6 @@ import java.util.Map;
     mPropMap = new JavaOnlyMap();
     mNativeAnimatedNodesManager = nativeAnimatedNodesManager;
     mUIManager = uiManager;
-    mDiffMap = new ReactStylesDiffMap(mPropMap);
   }
 
   public void connectToView(int viewTag) {
@@ -122,11 +120,11 @@ import java.util.Map;
         ((StyleAnimatedNode) node).collectViewUpdates(mPropMap, nativeProps);
       } else if (node instanceof ValueAnimatedNode) {
         Object animatedObject = ((ValueAnimatedNode) node).getAnimatedObject();
-        if (animatedObject instanceof String) {
+        if (animatedObject != null) {
           if (mNativeAnimatedNodesManager.uiProps.contains(key)) {
-            mPropMap.putString(entry.getKey(), (String) animatedObject);
+            addProp(mPropMap, key, animatedObject);
           } else {
-            nativeProps.putString(key, (String) animatedObject);
+            addProp(nativeProps, key, animatedObject);
           }
         } else {
           if (mNativeAnimatedNodesManager.uiProps.contains(key)) {
