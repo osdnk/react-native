@@ -38,7 +38,7 @@ void RCTNativeAnimatedModuleBindings::install(RCTNativeAnimatedModule *module) {
 
 jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi::PropNameID &name) {
     auto methodName = name.utf8(runtime);
-    if (methodName == "createNode") {
+    if (methodName == "createAnimatedNode") {
         RCTNativeAnimatedModule* module = _module;
       return jsi::Function::createFromHostFunction(runtime, name, 2, [module](
                jsi::Runtime &runtime,
@@ -53,7 +53,7 @@ jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi
             return jsi::Value::undefined();
         });
     }
-    if (methodName == "dropNode") {
+    if (methodName == "dropAnimatedNode") {
       RCTNativeAnimatedModule* module = _module;
         return jsi::Function::createFromHostFunction(runtime, name, 1, [module](
                                                                                    jsi::Runtime &runtime,
@@ -66,7 +66,7 @@ jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi
             return jsi::Value::undefined();
         });
     }
-    if (methodName == "connectNodes") {
+    if (methodName == "connectAnimatedNodes") {
         RCTNativeAnimatedModule* reamodule = _module;
         return jsi::Function::createFromHostFunction(runtime, name, 2, [reamodule](
                jsi::Runtime &runtime,
@@ -81,7 +81,7 @@ jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi
             return jsi::Value::undefined();
         });
     }
-    if (methodName == "disconnectNodes") {
+    if (methodName == "disconnectAnimatedNodes") {
         RCTNativeAnimatedModule* reamodule = _module;
         return jsi::Function::createFromHostFunction(runtime, name, 2, [reamodule](
                                                                                    jsi::Runtime &runtime,
@@ -96,7 +96,7 @@ jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi
             return jsi::Value::undefined();
         });
     }
-    if (methodName == "connectNodeToView") {
+    if (methodName == "connectAnimatedNodeToView") {
         RCTNativeAnimatedModule* reamodule = _module;
         return jsi::Function::createFromHostFunction(runtime, name, 2, [reamodule](
                                                                                    jsi::Runtime &runtime,
@@ -111,7 +111,7 @@ jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi
             return jsi::Value::undefined();
         });
     }
-    if (methodName == "disconnectNodeFromView") {
+    if (methodName == "disconnectAnimatedNodeFromView") {
         RCTNativeAnimatedModule* reamodule = _module;
         return jsi::Function::createFromHostFunction(runtime, name, 2, [reamodule](
                                                                                    jsi::Runtime &runtime,

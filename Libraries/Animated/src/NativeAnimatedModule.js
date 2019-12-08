@@ -10,6 +10,7 @@
 
 'use strict';
 
+const ReactNative = require('react-native');
 import type {TurboModule} from '../../TurboModule/RCTExport';
 import * as TurboModuleRegistry from '../../TurboModule/TurboModuleRegistry';
 
@@ -65,4 +66,7 @@ export interface Spec extends TurboModule {
 }
 
 console.warn(global.NativeAnimated);
-export default global.NativeAnimated; // (TurboModuleRegistry.get<Spec>('NativeAnimatedModule'): ?Spec);
+export default () =>
+  global.NativeAnimated
+    ? global.NativeAnimated
+    : ReactNative.NativeModules.NativeAnimatedModule; // (TurboModuleRegistry.get<Spec>('NativeAnimatedModule'): ?Spec);
