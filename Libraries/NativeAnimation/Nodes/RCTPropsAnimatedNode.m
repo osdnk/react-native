@@ -74,6 +74,7 @@
     }
   }
   
+  // TODO: Fix native props for Fabric!
   if (_managedByFabric) {
     [_bridge.surfacePresenter synchronouslyUpdateViewOnUIThread:_connectedViewTag
                                                           props:_propsDictionary];
