@@ -447,8 +447,9 @@ typedef void (^RCTOnAnimationCallback)(RCTUIManager *uiManager);
 - (void)enqueueUpdateViewOnNativeThread:(nonnull NSNumber *)reactTag
                                viewName:(NSString *) viewName
                             nativeProps:(NSMutableDictionary *)nativeProps {
+  RCTBridge* bridge = _bridge;
   [_operationsInBatch addObject:^(RCTUIManager *uiManager) {
-    [_bridge.uiManager updateView:reactTag viewName:viewName props:nativeProps];
+    [bridge.uiManager updateView:reactTag viewName:viewName props:nativeProps];
   }];
 }
 
