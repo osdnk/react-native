@@ -157,10 +157,13 @@ RCT_EXPORT_METHOD(extractAnimatedNodeOffset:(double)nodeTag)
 RCT_EXPORT_METHOD(connectAnimatedNodeToView:(double)nodeTag
                   viewTag:(double)viewTag)
 {
-  NSString *viewName = [self.bridge.uiManager viewNameForReactTag:[NSNumber numberWithDouble:viewTag]];
-  [self addOperationBlock:^(RCTNativeAnimatedNodesManager *nodesManager) {
-    [nodesManager connectAnimatedNodeToView:[NSNumber numberWithDouble:nodeTag] viewTag:[NSNumber numberWithDouble:viewTag] viewName:viewName];
-  }];
+  RCTBridge* _bridge = self.bridge;
+  RCTExecuteOnUIManagerQueue(^{
+    NSString *viewName = [_bridge.uiManager viewNameForReactTag:[NSNumber numberWithDouble:viewTag]];
+    [self addOperationBlock:^(RCTNativeAnimatedNodesManager *nodesManager) {
+      [nodesManager connectAnimatedNodeToView:[NSNumber numberWithDouble:nodeTag] viewTag:[NSNumber numberWithDouble:viewTag] viewName:viewName];
+    }];
+  });
 }
 
 RCT_EXPORT_METHOD(disconnectAnimatedNodeFromView:(double)nodeTag
@@ -202,17 +205,17 @@ RCT_EXPORT_METHOD(stopListeningToAnimatedNodeValue:(double)tag)
 
 RCT_EXPORT_METHOD(addAnimatedEventToView:(double)viewTag
                   eventName:(nonnull NSString *)eventName
-                  eventMapping:(JS::NativeAnimatedModule::EventMapping &)eventMapping)
+                  eventMapping:(NSDictionary*)eventMapping)
 {
-  NSMutableDictionary *eventMappingDict = [NSMutableDictionary new];
+  /*NSMutableDictionary *eventMappingDict = [NSMutableDictionary new];
   eventMappingDict[@"nativeEventPath"] = RCTConvertVecToArray(eventMapping.nativeEventPath());
 
   if (eventMapping.animatedValueTag()) {
     eventMappingDict[@"animatedValueTag"] = @(*eventMapping.animatedValueTag());
-  }
+  }*/
 
   [self addOperationBlock:^(RCTNativeAnimatedNodesManager *nodesManager) {
-    [nodesManager addAnimatedEventToView:[NSNumber numberWithDouble:viewTag] eventName:eventName eventMapping:eventMappingDict];
+    [nodesManager addAnimatedEventToView:[NSNumber numberWithDouble:viewTag] eventName:eventName eventMapping:eventMapping];
   }];
 }
 

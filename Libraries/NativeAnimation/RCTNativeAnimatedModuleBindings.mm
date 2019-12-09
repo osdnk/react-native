@@ -157,7 +157,82 @@ jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi
             return jsi::Value::undefined();
         });
     }*/
-    
-    
+    if (methodName == "addAnimatedEventToView") {
+      RCTNativeAnimatedModule* reamodule = _module;
+      return jsi::Function::createFromHostFunction(runtime, name, 3, [reamodule](
+                                                                                 jsi::Runtime &runtime,
+                                                                                 const jsi::Value &thisValue,
+                                                                                 const jsi::Value *arguments,
+                                                                                 size_t count) -> jsi::Value {
+          
+          auto arg1 = &arguments[0];
+          auto arg2 = &arguments[1];
+          auto arg3 = &arguments[2];
+          auto eventMapping = convertJSIObjectToNSDictionary(runtime, arg3->asObject(runtime));
+          NSString* arg2Str = convertJSIStringToNSString(runtime, arg2->asString(runtime));
+          [reamodule addAnimatedEventToView:arg1->asNumber() eventName:arg2Str eventMapping:eventMapping];
+          return jsi::Value::undefined();
+      });
+    }
+  
+    if(methodName == "removeAnimatedEventFromView") {
+      RCTNativeAnimatedModule* reamodule = _module;
+         return jsi::Function::createFromHostFunction(runtime, name, 3, [reamodule](
+                                                                                    jsi::Runtime &runtime,
+                                                                                    const jsi::Value &thisValue,
+                                                                                    const jsi::Value *arguments,
+                                                                                    size_t count) -> jsi::Value {
+             
+             auto arg1 = &arguments[0];
+             auto arg2 = &arguments[1];
+             auto arg3 = &arguments[2];
+             NSString* arg2Str = convertJSIStringToNSString(runtime, arg2->asString(runtime));
+             [reamodule removeAnimatedEventFromView:arg1->asNumber() eventName:arg2Str animatedNodeTag:arg3->asNumber()];
+             return jsi::Value::undefined();
+         });
+    }
+  
+  if(methodName == "startAnimatingNode") {
+    RCTNativeAnimatedModule* reamodule = _module;
+       return jsi::Function::createFromHostFunction(runtime, name, 4, [reamodule](
+                                                                                  jsi::Runtime &runtime,
+                                                                                  const jsi::Value &thisValue,
+                                                                                  const jsi::Value *arguments,
+                                                                                  size_t count) -> jsi::Value {
+           
+           auto arg1 = &arguments[0];
+           auto arg2 = &arguments[1];
+           auto arg3 = &arguments[2];
+           auto arg4 = &arguments[3];
+         
+           auto config = convertJSIObjectToNSDictionary(runtime, arg3->asObject(runtime));
+           jsi::Function cb = arg4->getObject(runtime).asFunction(runtime);
+           auto eventhandler = std::make_shared<EventHandlerWrapper>(std::move(cb));
+         
+          [reamodule startAnimatingNode:arg1->asNumber() nodeTag:arg2->asNumber() config:config endCallback:^(NSArray *response) {
+            auto &eventHandlerWrapper = static_cast<const EventHandlerWrapper &>(*eventhandler);
+            id value = response[0];
+            eventHandlerWrapper.callback.call(runtime, convertNSDictionaryToJSIObject(runtime, (NSDictionary*)value));
+          }];
+           return jsi::Value::undefined();
+       });
+  }
+  
+  if(methodName == "stopAnimation") {
+    RCTNativeAnimatedModule* reamodule = _module;
+       return jsi::Function::createFromHostFunction(runtime, name, 4, [reamodule](
+                                                                                  jsi::Runtime &runtime,
+                                                                                  const jsi::Value &thisValue,
+                                                                                  const jsi::Value *arguments,
+                                                                                  size_t count) -> jsi::Value {
+           
+           auto arg1 = &arguments[0];
+           [reamodule stopAnimation:arg1->asNumber()];
+           return jsi::Value::undefined();
+       });
+  }
+  
+    if (methodName == "restoreDefaultValues") { }
+      
     return jsi::Value::undefined();
 }

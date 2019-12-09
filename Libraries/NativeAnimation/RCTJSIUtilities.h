@@ -9,3 +9,4 @@ id convertJSIValueToObjCObject(jsi::Runtime &runtime, const jsi::Value &value);
 NSString *convertJSIStringToNSString(jsi::Runtime &runtime, const jsi::String &value);
 NSArray *convertJSIArrayToNSArray(jsi::Runtime &runtime, const jsi::Array &value);
 id convertJSIValueToObjCObject(jsi::Runtime &runtime, const jsi::Value &value);
+jsi::Object convertNSDictionaryToJSIObject(jsi::Runtime &runtime, NSDictionary *value);
