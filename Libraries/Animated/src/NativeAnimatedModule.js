@@ -65,7 +65,6 @@ export interface Spec extends TurboModule {
   +removeListeners: (count: number) => void;
 }
 
-console.warn(global.NativeAnimated);
 export default () =>
   global.NativeAnimated
     ? global.NativeAnimated
