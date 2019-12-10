@@ -220,7 +220,7 @@ jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi
   
   if(methodName == "stopAnimation") {
     RCTNativeAnimatedModule* reamodule = _module;
-       return jsi::Function::createFromHostFunction(runtime, name, 4, [reamodule](
+       return jsi::Function::createFromHostFunction(runtime, name, 1, [reamodule](
                                                                                   jsi::Runtime &runtime,
                                                                                   const jsi::Value &thisValue,
                                                                                   const jsi::Value *arguments,
@@ -232,7 +232,51 @@ jsi::Value RCTNativeAnimatedModuleBindings::get(jsi::Runtime &runtime, const jsi
        });
   }
   
-    if (methodName == "restoreDefaultValues") { }
-      
+  if(methodName == "setAnimatedNodeValue") {
+    RCTNativeAnimatedModule* reamodule = _module;
+       return jsi::Function::createFromHostFunction(runtime, name, 2, [reamodule](
+                                                                                  jsi::Runtime &runtime,
+                                                                                  const jsi::Value &thisValue,
+                                                                                  const jsi::Value *arguments,
+                                                                                  size_t count) -> jsi::Value {
+           
+           auto arg1 = &arguments[0];
+           auto arg2 = &arguments[1];
+           [reamodule setAnimatedNodeValue:arg1->asNumber() value:arg2->asNumber()];
+           return jsi::Value::undefined();
+       });
+  }
+  if(methodName =="startListeningToAnimatedNodeValue") {
+      RCTNativeAnimatedModule* reamodule = _module;
+      return jsi::Function::createFromHostFunction(runtime, name, 1, [reamodule](
+                                                                                 jsi::Runtime &runtime,
+                                                                                 const jsi::Value &thisValue,
+                                                                                 const jsi::Value *arguments,
+                                                                                 size_t count) -> jsi::Value {
+          
+          auto arg1 = &arguments[0];
+          [reamodule startListeningToAnimatedNodeValue:arg1->asNumber()];
+          return jsi::Value::undefined();
+      });
+  }
+  if(methodName == "addListener") {
+    RCTNativeAnimatedModule* reamodule = _module;
+    return jsi::Function::createFromHostFunction(runtime, name, 1, [reamodule](
+                                                                               jsi::Runtime &runtime,
+                                                                               const jsi::Value &thisValue,
+                                                                               const jsi::Value *arguments,
+                                                                               size_t count) -> jsi::Value {
+        
+        auto arg1 = &arguments[0];
+        NSString* arg1Str = convertJSIStringToNSString(runtime, arg1->asString(runtime));
+        [reamodule addListener:arg1Str];
+        return jsi::Value::undefined();
+    });
+  }
+  
+  if (methodName == "restoreDefaultValues") {
     return jsi::Value::undefined();
+  }
+      
+  return jsi::Value::undefined();
 }
