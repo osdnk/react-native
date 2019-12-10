@@ -69,7 +69,7 @@
   for (NSString *key in _propsDictionary.allKeys) {
     if([self.manager.uiProps containsObject: key]) {
       [uiProps setObject:_propsDictionary[key] forKey:key];
-    } else if([self.manager.nativeProps containsObject:key]) {
+    } else {
         [nativeProps setObject:_propsDictionary[key] forKey:key];
     }
   }
