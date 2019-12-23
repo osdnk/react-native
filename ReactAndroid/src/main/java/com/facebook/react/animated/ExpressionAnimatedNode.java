@@ -129,7 +129,7 @@ import java.util.List;
     int targetId = node.getInt("target");
     ValueAnimatedNode targetNode = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(targetId);
     return () -> {
-      targetNode.mValue = source.eval();
+      mNativeAnimatedNodesManager.setAnimatedNodeValue(targetNode.mTag, source.eval());
       return targetNode.mValue;
     };
   }
