@@ -1094,7 +1094,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   RCTNativeAnimatedNodesManager* manager = _nodesManager;
   eval = ^(NSDictionary* graph) {
     [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"graph": graph}];
-    RCTExpressionAnimatedNode* node = (RCTExpressionAnimatedNode*)manager.animationNodes[@100];
+    RCTExpressionAnimatedNode* node = (RCTExpressionAnimatedNode*)[manager findNodeById:@100];
     [node performUpdate];
     return node.value;
   };
@@ -1159,7 +1159,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   
   // Should support setting values
   [_nodesManager createAnimatedNode:@101 config:@{@"type": @"value", @"value": @0, @"offset": @0}];
-  RCTValueAnimatedNode* node = (RCTValueAnimatedNode*)_nodesManager.animationNodes[@101];
+  RCTValueAnimatedNode* node = (RCTValueAnimatedNode*)[_nodesManager findNodeById:@101];
 
   XCTAssertEqual(eval(@{
     @"type": @"set",
