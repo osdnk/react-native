@@ -33,6 +33,8 @@
 
 // graph
 
+- (nullable RCTAnimatedNode*) findNodeById:(nonnull NSNumber*)tag;
+
 - (void)createAnimatedNode:(nonnull NSNumber *)tag
                     config:(NSDictionary<NSString *, id> *__nonnull)config;
 
