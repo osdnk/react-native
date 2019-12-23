@@ -186,7 +186,7 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 
 - (evalBlock) evalBlockWithAnimatedNode:(NSDictionary*)node {
   NSNumber* tag = node[@"tag"];
-  RCTValueAnimatedNode* animatedNode = (RCTValueAnimatedNode*)self.manager.animationNodes[tag];
+  RCTValueAnimatedNode* animatedNode = (RCTValueAnimatedNode*)[self.manager findNodeById:tag];
   return ^ {
     return animatedNode.value;
   };
@@ -195,7 +195,7 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 - (evalBlock) evalBlockWithSet:(NSDictionary*)node {
   evalBlock source = [self evalBlockWithNode:node[@"source"]];
   NSNumber* targetTag = node[@"target"];
-  RCTValueAnimatedNode* targetNode = (RCTValueAnimatedNode*)self.manager.animationNodes[targetTag];
+  RCTValueAnimatedNode* targetNode = (RCTValueAnimatedNode*)[self.manager findNodeById:targetTag];
   return ^ {
     [targetNode setValue:source()];
     [targetNode setNeedsUpdate];

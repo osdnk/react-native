@@ -139,6 +139,10 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
 
 #pragma mark -- Graph
 
+- (nullable RCTAnimatedNode*) findNodeById:(nonnull NSNumber*)tag {
+  return _animationNodes[tag];
+}
+
 - (void)createAnimatedNode:(nonnull NSNumber *)tag
                     config:(NSDictionary<NSString *, id> *)config
 {
