@@ -195,11 +195,10 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 - (evalBlock) evalBlockWithSet:(NSDictionary*)node {
   evalBlock source = [self evalBlockWithNode:node[@"source"]];
   NSNumber* targetTag = node[@"target"];
-  RCTValueAnimatedNode* targetNode = (RCTValueAnimatedNode*)[self.manager findNodeById:targetTag];
   return ^ {
-    [targetNode setValue:source()];
-    [targetNode setNeedsUpdate];
-    return targetNode.value;
+    CGFloat value = source();
+    [self.manager setAnimatedNodeValue:targetTag value:[NSNumber numberWithFloat:value]];
+    return value;
   };
 }
 
