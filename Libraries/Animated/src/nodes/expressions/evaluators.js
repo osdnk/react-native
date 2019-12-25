@@ -17,6 +17,7 @@ const evaluators: {[key: ExpressionType]: Function} = {
   divide: (node: Object) => multiOperator(node, (p, c) => p / c),
   pow: (node: Object) => multiOperator(node, (p, c) => Math.pow(p, c)),
   modulo: (node: Object) => multiOperator(node, (p, c) => ((p % c) + c) % c),
+  abs: (node: Object) => singleOperator(node, v => Math.abs(v)),
   sqrt: (node: Object) => singleOperator(node, v => Math.sqrt(v)),
   log: (node: Object) => singleOperator(node, v => Math.log(v)),
   sin: (node: Object) => singleOperator(node, v => Math.sin(v)),

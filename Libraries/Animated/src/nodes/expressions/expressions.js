@@ -5,6 +5,7 @@ export type ExpressionType =
   | 'divide'
   | 'pow'
   | 'modulo'
+  | 'abs'
   | 'sqrt'
   | 'log'
   | 'sin'

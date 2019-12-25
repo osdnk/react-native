@@ -71,7 +71,11 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     }];
   }
   /* Single operators*/
-  else if([type isEqualToString:@"sqrt"]) {
+  else if([type isEqualToString:@"abs"]) {
+    return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
+      return fabs(v);
+    }];
+  } else if([type isEqualToString:@"sqrt"]) {
     return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
       return sqrt(v);
     }];

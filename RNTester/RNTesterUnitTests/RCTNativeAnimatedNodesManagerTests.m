@@ -1178,6 +1178,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(eval(@{@"type": @"modulo", @"a": n(20), @"b": n(8), @"others": @[n(3)]}), 1, @"Modulo did not work");
   
   // Should do math functions
+  XCTAssertEqual(eval(@{@"type": @"abs", @"v": n(-16)}), 16, @"abs did not work");
   XCTAssertEqual(eval(@{@"type": @"sqrt", @"v": n(16)}), 4, @"sqrt did not work");
   XCTAssertEqual(eval(@{@"type": @"log", @"v": n(10)}), log(10), @"log did not work");
   XCTAssertEqual(eval(@{@"type": @"sin", @"v": n(10)}), sin(10), @"sin did not work");
