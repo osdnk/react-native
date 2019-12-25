@@ -56,121 +56,283 @@ import java.util.List;
     return value != null && !value.equals(0.);
   }
 
-  private EvalFunction createEvalFunc(ReadableMap node) {
+  private EvalFunction createEvalFunc(final ReadableMap node) {
     String type = node.getString("type");
     switch (type) {
       /* Multi ops */
-      case "add": return createMultiOp(node, (p, c) -> p + c);
-      case "sub": return createMultiOp(node, (p, c) -> p - c);
-      case "multiply": return createMultiOp(node, (p, c) -> p * c);
-      case "divide": return createMultiOp(node, (p, c) -> p / c);
-      case "modulo": return createMultiOp(node, (p, c) -> ((p % c) + c) % c);
-      case "pow": return createMultiOp(node, (p, c) -> Math.pow(p, c));
+      case "add": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double prev, double cur) {
+          return prev + cur;
+        }
+      });
+      case "sub": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double prev, double cur) {
+          return prev - cur;
+        }
+      });
+      case "multiply": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double prev, double cur) {
+          return prev * cur;
+        }
+      });
+      case "divide": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double prev, double cur) {
+          return prev / cur;
+        }
+      });
+      case "modulo": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double p, double c) {
+          return ((p % c) + c) % c;
+        }
+      });
+      case "pow": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double p, double c) {
+          return Math.pow(p, c);
+        }
+      });
       /* Single ops */
-      case "sqrt": return createSingleOp(node, v -> Math.sqrt(v));
-      case "log": return createSingleOp(node, v -> Math.log(v));
-      case "sin": return createSingleOp(node, v -> Math.sin(v));
-      case "cos": return createSingleOp(node, v -> Math.cos(v));
-      case "tan": return createSingleOp(node, v -> Math.tan(v));
-      case "acos": return createSingleOp(node, v -> Math.acos(v));
-      case "asin": return createSingleOp(node, v -> Math.asin(v));
-      case "atan": return createSingleOp(node, v -> Math.atan(v));
-      case "exp": return createSingleOp(node, v -> Math.exp(v));
-      case "round": return createSingleOp(node, v -> Math.round(v));
+      case "sqrt": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.sqrt(v);
+        }
+      });
+      case "log": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.log(v);
+        }
+      });
+      case "sin": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.sin(v);
+        }
+      });
+      case "cos": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.cos(v);
+        }
+      });
+      case "tan": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.tan(v);
+        }
+      });
+      case "acos": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.acos(v);
+        }
+      });
+      case "asin": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.asin(v);
+        }
+      });
+      case "atan": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.atan(v);
+        }
+      });
+      case "exp": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.exp(v);
+        }
+      });
+      case "round": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.round(v);
+        }
+      });
       /* Logical */
-      case "and": return createMultiOp(node, (p, c) -> isTrue(p) && isTrue(c) ? 1.0 : 0.0);
-      case "or": return createMultiOp(node, (p, c) -> isTrue(p) || isTrue(c) ? 1.0 : 0.0);
-      case "not": return createSingleOp(node, v -> !isTrue(v) ? 1 : 0);
+      case "and": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double p, double c) {
+          return isTrue(p) && isTrue(c) ? 1.0 : 0.0;
+        }
+      });
+      case "or": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double p, double c) {
+          return isTrue(p) || isTrue(c) ? 1.0 : 0.0;
+        }
+      });
+      case "not": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return !isTrue(v) ? 1 : 0;
+        }
+      });
       /* Comparsion */
-      case "eq": return createOp(node, (left, right) -> left == right? 1.0 : 0.0);
-      case "neq": return createOp(node, (left, right) -> left != right ? 1.0 : 0.0);
-      case "lessThan": return createOp(node, (left, right) -> left < right ? 1.0 : 0.0);
-      case "greaterThan": return createOp(node, (left, right) -> left > right? 1.0 : 0.0);
-      case "lessOrEq": return createOp(node, (left, right) -> left <= right? 1.0 : 0.0);
-      case "greaterOrEq": return createOp(node, (left, right) -> left >= right? 1.0 : 0.0);
+      case "eq": return createOp(node, new Reduce() {
+        @Override
+        public double reduce(double left, double right) {
+          return left == right? 1.0 : 0.0;
+        }
+      });
+      case "neq": return createOp(node, new Reduce() {
+        @Override
+        public double reduce(double left, double right) {
+          return left != right ? 1.0 : 0.0;
+        }
+      });
+      case "lessThan": return createOp(node,new Reduce() {
+        @Override
+        public double reduce(double left, double right) {
+          return left < right ? 1.0 : 0.0;
+        }
+      });
+      case "greaterThan": return createOp(node, new Reduce() {
+        @Override
+        public double reduce(double left, double right) {
+          return left > right? 1.0 : 0.0;
+        }
+      });
+      case "lessOrEq": return createOp(node, new Reduce() {
+        @Override
+        public double reduce(double left, double right) {
+          return left <= right? 1.0 : 0.0;
+        }
+      });
+      case "greaterOrEq": return createOp(node, new Reduce() {
+        @Override
+        public double reduce(double left, double right) {
+          return left >= right? 1.0 : 0.0;
+        }
+      });
       /* Variables */
       case "value" : {
         int nodeId = node.getInt("tag");
-        ValueAnimatedNode animatedNode = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(nodeId);
-        if(animatedNode != null) {
-          return () -> animatedNode.getValue();
-        } else {
-          return () -> 0;
+        final ValueAnimatedNode animatedNode = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(nodeId);
+        if(animatedNode != null ) {
+          return new EvalFunction() {
+            @Override
+            public double eval() {
+              return animatedNode.getValue();
+            }
+          };
+        }
+        else {
+          return new EvalFunction() {
+            @Override
+            public double eval() { return 0; }
+          };
         }
       }
-      case "number": return () -> node.getDouble("value");
+      case "number": return new EvalFunction() {
+        @Override
+        public double eval() { return node.getDouble("value"); }
+      };
       /* Statements */
       case "cond": return createCond(node);
       case "set": return createSet(node);
       case "block": return createBlock(node);
       default:
-        return () -> 0;
+        return new EvalFunction() {
+          @Override
+          public double eval() { return 0; }
+        };
     }
   }
 
   private EvalFunction createBlock(ReadableMap node) {
     ReadableArray nodes = node.getArray("nodes");
-    List<EvalFunction> evalfunctions= new ArrayList<>(1);
+    final List<EvalFunction> evalfunctions= new ArrayList<>(1);
     for(int i=0; i<nodes.size(); i++) {
       evalfunctions.add(createEvalFunc(nodes.getMap(i)));
     }
 
-    return () -> {
-      double retVal = 0;
-      for(int i=0; i<evalfunctions.size(); i++) {
-        retVal = evalfunctions.get(i).eval();
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        double retVal = 0;
+        for(int i=0; i<evalfunctions.size(); i++) {
+          retVal = evalfunctions.get(i).eval();
+        }
+        return retVal;
       }
-      return retVal;
     };
   }
 
   private EvalFunction createSet(ReadableMap node) {
-    EvalFunction source = createEvalFunc(node.getMap("source"));
+    final EvalFunction source = createEvalFunc(node.getMap("source"));
     int targetId = node.getInt("target");
-    ValueAnimatedNode targetNode = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(targetId);
-    return () -> {
-      mNativeAnimatedNodesManager.setAnimatedNodeValue(targetNode.mTag, source.eval());
-      return targetNode.mValue;
+    final ValueAnimatedNode targetNode = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(targetId);
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        mNativeAnimatedNodesManager.setAnimatedNodeValue(targetNode.mTag, source.eval());
+        return targetNode.mValue;
+      }
     };
   }
 
   private EvalFunction createCond(ReadableMap node) {
-    EvalFunction expr = createEvalFunc(node.getMap("expr"));
-    EvalFunction ifNode = createEvalFunc(node.getMap("ifNode"));
-    EvalFunction elseNode = createEvalFunc(node.getMap("elseNode"));
+    final EvalFunction expr = createEvalFunc(node.getMap("expr"));
+    final EvalFunction ifNode = createEvalFunc(node.getMap("ifNode"));
+    final EvalFunction elseNode = createEvalFunc(node.getMap("elseNode"));
 
-    return () -> {
-      double cond = expr.eval();
-      return isTrue(cond) ? ifNode.eval() : elseNode.eval();
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        double cond = expr.eval();
+        return isTrue(cond) ? ifNode.eval() : elseNode.eval();
+      }
     };
   }
 
-  private EvalFunction createMultiOp(ReadableMap node, ReduceMulti reducer) {
-    EvalFunction a = createEvalFunc(node.getMap("a"));
-    EvalFunction b = createEvalFunc(node.getMap("b"));
+  private EvalFunction createMultiOp(ReadableMap node, final ReduceMulti reducer) {
+    final EvalFunction a = createEvalFunc(node.getMap("a"));
+    final EvalFunction b = createEvalFunc(node.getMap("b"));
     ReadableArray others = node.getArray("others");
-    List<EvalFunction> othersMapped= new ArrayList<>(1);
+    final List<EvalFunction> othersMapped= new ArrayList<>(1);
     for(int i=0; i<others.size(); i++) {
       othersMapped.add(createEvalFunc(others.getMap(i)));
     }
 
-    return () -> {
-      double acc = reducer.reduce(a.eval(), b.eval());
-      for(int i=0; i<othersMapped.size(); i++) {
-        acc = reducer.reduce(acc, othersMapped.get(i).eval());
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        double acc = reducer.reduce(a.eval(), b.eval());
+        for(int i=0; i<othersMapped.size(); i++) {
+          acc = reducer.reduce(acc, othersMapped.get(i).eval());
+        }
+        return acc;
       }
-      return acc;
     };
   }
 
-  private EvalFunction createSingleOp(ReadableMap node, ReduceSingle reducer) {
-    EvalFunction v = createEvalFunc(node.getMap("v"));
-    return () -> reducer.reduce(v.eval());
+  private EvalFunction createSingleOp(ReadableMap node, final ReduceSingle reducer) {
+    final EvalFunction v = createEvalFunc(node.getMap("v"));
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        return reducer.reduce(v.eval());
+      }
+    };
   }
 
-  private EvalFunction createOp(ReadableMap node, Reduce reducer) {
-    EvalFunction left = createEvalFunc(node.getMap("left"));
-    EvalFunction right = createEvalFunc(node.getMap("right"));
-    return () -> reducer.reduce(left.eval(), right.eval());
+  private EvalFunction createOp(ReadableMap node, final Reduce reducer) {
+    final EvalFunction left = createEvalFunc(node.getMap("left"));
+    final EvalFunction right = createEvalFunc(node.getMap("right"));
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        return reducer.reduce(left.eval(), right.eval());
+      }
+    };
   }
 }
