@@ -84,7 +84,7 @@ function condition(
   };
 }
 
-function block(nodes: Array<AnimatedNode | number>) {
+function block(...nodes: Array<AnimatedNode | number>) {
   return {
     type: 'block',
     nodes: nodes.map(resolve),
