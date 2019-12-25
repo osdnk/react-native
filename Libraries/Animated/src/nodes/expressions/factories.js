@@ -87,7 +87,7 @@ function condition(
 function block(...nodes: Array<AnimatedNode | number>) {
   return {
     type: 'block',
-    nodes: nodes.map(resolve),
+    nodes: nodes.map(n => (Array.isArray(n) ? block(...n) : resolve(n))),
   };
 }
 
