@@ -259,6 +259,11 @@ public class NativeAnimatedExpressionNodeTest {
   }
 
   @Test
+  public void testAbsExpression () {
+    assertThat(evalExpression(createSingleOp("abs", -16))).isEqualTo(16);
+  }
+
+  @Test
   public void testSqrtExpression () {
     assertThat(evalExpression(createSingleOp("sqrt", 16))).isEqualTo(4);
   }

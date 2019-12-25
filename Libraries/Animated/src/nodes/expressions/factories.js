@@ -19,6 +19,7 @@ const factories: {[key: ExpressionType]: Function} = {
   divide: multiOperator('divide'),
   pow: multiOperator('pow'),
   modulo: multiOperator('modulo'),
+  abs: single('abs'),
   sqrt: single('sqrt'),
   log: single('log'),
   sin: single('sin'),

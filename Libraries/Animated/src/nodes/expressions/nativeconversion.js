@@ -17,6 +17,7 @@ const converters: {[key: ExpressionType]: Function} = {
   divide: multiOperator,
   pow: multiOperator,
   modulo: multiOperator,
+  abs: singleOperator,
   sqrt: singleOperator,
   log: singleOperator,
   sin: singleOperator,

@@ -97,6 +97,12 @@ import java.util.List;
         }
       });
       /* Single ops */
+      case "abs": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.abs(v);
+        }
+      });
       case "sqrt": return createSingleOp(node, new ReduceSingle() {
         @Override
         public double reduce(double v) {
