@@ -8,6 +8,8 @@
  * @format
  */
 
+'use strict';
+
 const AnimatedNode = require('../AnimatedNode');
 
 import {ExpressionType} from './expressions';
