@@ -48,6 +48,8 @@ const multiply: MultiFactory = multi('multiply');
 const divide: MultiFactory = multi('divide');
 const pow: MultiFactory = multi('pow');
 const modulo: MultiFactory = multi('modulo');
+const max: MultiFactory = multi('max');
+const min: MultiFactory = multi('min');
 const abs: UnaryFactory = unary('abs');
 const sqrt: UnaryFactory = unary('sqrt');
 const log: UnaryFactory = unary('log');
@@ -59,6 +61,8 @@ const asin: UnaryFactory = unary('asin');
 const atan: UnaryFactory = unary('atan');
 const exp: UnaryFactory = unary('exp');
 const round: UnaryFactory = unary('round');
+const ceil: BooleanFactory = unary('ceil');
+const floor: BooleanFactory = unary('floor');
 const and: MultiFactory = multi('and');
 const or: MultiFactory = multi('or');
 const not: UnaryFactory = unary('not');
@@ -170,6 +174,8 @@ export const factories = {
   multiply,
   pow,
   modulo,
+  max,
+  min,
   abs,
   sqrt,
   log,
@@ -181,6 +187,8 @@ export const factories = {
   atan,
   exp,
   round,
+  ceil,
+  floor,
   and,
   or,
   not,

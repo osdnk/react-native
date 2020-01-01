@@ -69,6 +69,14 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return [self evalBlockWithMultiOperator:node reducer:^CGFloat(CGFloat prev, CGFloat cur) {
       return fmodf(fmodf(prev, cur) + cur, cur);
     }];
+  } else if([type isEqualToString:@"max"]) {
+    return [self evalBlockWithMultiOperator:node reducer:^CGFloat(CGFloat prev, CGFloat cur) {
+      return fmax(prev, cur);
+    }];
+  } else if([type isEqualToString:@"min"]) {
+    return [self evalBlockWithMultiOperator:node reducer:^CGFloat(CGFloat prev, CGFloat cur) {
+      return fmin(prev, cur);
+    }];
   }
   /* Single operators*/
   else if([type isEqualToString:@"abs"]) {
@@ -114,6 +122,14 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
   } else if([type isEqualToString:@"round"]) {
     return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
       return round(v);
+    }];
+  }else if([type isEqualToString:@"ceil"]) {
+    return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
+      return ceil(v);
+    }];
+  }else if([type isEqualToString:@"floor"]) {
+    return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
+      return floor(v);
     }];
   }
   /* Logical */

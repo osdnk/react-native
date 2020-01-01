@@ -1218,6 +1218,12 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(eval(@{@"type": @"greaterOrEq", @"left": n(100), @"right": n(100)}), 1, @"greaterOrEq did not work");
   XCTAssertEqual(eval(@{@"type": @"greaterOrEq", @"left": n(100), @"right": n(10)}), 1, @"greaterOrEq did not work");
   XCTAssertEqual(eval(@{@"type": @"greaterOrEq", @"left": n(10), @"right": n(100)}), 0, @"greaterOrEq did not work");
+  
+  XCTAssertEqual(eval(@{@"type": @"max", @"a": n(10), @"b": n(20), @"others": @[n(200)]}), 200, @"max did not work");
+  XCTAssertEqual(eval(@{@"type": @"min", @"a": n(15), @"b": n(200), @"others": @[n(10)]}), 10, @"min did not work");
+  
+  XCTAssertEqual(eval(@{@"type": @"ceil", @"v": n(10.1)}), 11, @"ceil did not work");
+  XCTAssertEqual(eval(@{@"type": @"floor", @"v": n(10.9)}), 10, @"floor did not work");
 }
 
 @end

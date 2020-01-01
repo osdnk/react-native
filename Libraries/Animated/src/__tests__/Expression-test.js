@@ -172,4 +172,20 @@ describe('Animated Expressions', () => {
   it('should return false for lessOrEq', () => {
     expect(evalExpression(E.lessOrEq(100, 1))).toBe(0);
   });
+
+  it('should return max', () => {
+    expect(evalExpression(E.max(20, 10, 4))).toBe(20);
+  });
+
+  it('should return min', () => {
+    expect(evalExpression(E.min(20, 10, 30))).toBe(10);
+  });
+
+  it('should return ceil', () => {
+    expect(evalExpression(E.ceil(10.1))).toBe(11);
+  });
+
+  it('should return floor', () => {
+    expect(evalExpression(E.floor(10.9))).toBe(10);
+  });
 });
