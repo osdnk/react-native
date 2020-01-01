@@ -13,22 +13,45 @@ const AnimatedValue = require('../AnimatedValue');
 
 import type {ExpressionNode, ExpressionParam} from './types';
 import {factories} from './factories';
-const {block, cond, eq, neq, set, call} = factories;
+const {block, cond, sub, eq, add, neq, set, call} = factories;
 
 export function onChange(
   value: AnimatedWithChildren,
-  action: ExpressionNode,
+  expression: ExpressionNode,
 ): ExpressionNode {
   const prevValue = new AnimatedValue(Number.MIN_SAFE_INTEGER);
   value.__addChild(prevValue);
   return block(
     cond(eq(prevValue, Number.MIN_SAFE_INTEGER), set(prevValue, value)),
-    cond(neq(prevValue, value), [action, set(prevValue, value)]),
+    cond(neq(prevValue, value), [set(prevValue, value), expression]),
   );
 }
 
 export function debug(message: string, node: ExpressionParam): ExpressionNode {
-  return call([node], (args: number[]) => {
-    console.info(message, args[0]);
-  });
+  return block(
+    call([node], (args: number[]) => {
+      console.info(message, args[0]);
+    }),
+    node,
+  );
+}
+
+export function diff(value: AnimatedValue): ExpressionNode {
+  const stash = new AnimatedValue(0);
+  const prevValue = new AnimatedValue(Number.MIN_SAFE_INTEGER);
+  value.__addChild(prevValue);
+  return block([
+    set(
+      stash,
+      cond(eq(prevValue, Number.MIN_SAFE_INTEGER), sub(value, prevValue), 0),
+    ),
+    set(prevValue, value),
+    stash,
+  ]);
+}
+
+export function acc(value: AnimatedValue): ExpressionNode {
+  const accumulator = new AnimatedValue(0);
+  value.__addChild(accumulator);
+  return set(accumulator, add(accumulator, value));
 }

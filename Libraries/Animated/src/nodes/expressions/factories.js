@@ -39,7 +39,7 @@ type SetFactory = (
 ) => ExpressionNode;
 
 type BlockFactory = (
-  ...nodes: Array<ExpressionNode | Array<ExpressionNode>>
+  ...nodes: Array<ExpressionParam | Array<ExpressionParam>>
 ) => ExpressionNode;
 
 type CallFactory = (
@@ -115,7 +115,7 @@ function setFactory(
 }
 
 function blockFactory(
-  ...nodes: Array<ExpressionNode | Array<ExpressionNode>>
+  ...nodes: Array<ExpressionParam | Array<ExpressionParam>>
 ): ExpressionNode {
   return {
     type: 'block',
