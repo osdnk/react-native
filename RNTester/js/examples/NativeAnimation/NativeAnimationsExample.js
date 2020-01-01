@@ -410,14 +410,14 @@ exports.examples = [
                       },
                     ],
                     backgroundColor: Animated.expression(
-                      block([
+                      block(
                         cond(
                           greaterThan(anim, 0.5),
                           set(dummy, 50),
                           set(dummy, 0),
                         ),
                         cond(greaterThan(multiply(anim, 10), 2.5), 0, 1),
-                      ]),
+                      ),
                     ).interpolate({
                       inputRange: [0, 1],
                       outputRange: ['#FF0000', '#00FF00'],

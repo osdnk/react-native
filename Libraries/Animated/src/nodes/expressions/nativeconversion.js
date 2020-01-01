@@ -5,67 +5,82 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @emails oncall+react_native
+ * @flow
  */
 
 'use strict';
 
-import {ExpressionType} from './expressions';
+import type {ExpressionNode, NativeExpressionNode} from './types';
 
-const converters: {[key: ExpressionType]: Function} = {
-  add: multiOperator,
-  sub: multiOperator,
-  multiply: multiOperator,
-  divide: multiOperator,
-  pow: multiOperator,
-  modulo: multiOperator,
-  abs: singleOperator,
-  sqrt: singleOperator,
-  log: singleOperator,
-  sin: singleOperator,
-  cos: singleOperator,
-  tan: singleOperator,
-  acos: singleOperator,
-  asin: singleOperator,
-  atan: singleOperator,
-  exp: singleOperator,
-  round: singleOperator,
-  and: multiOperator,
-  or: multiOperator,
-  not: singleOperator,
-  eq: operator,
-  neq: operator,
-  lessThan: operator,
-  greaterThan: operator,
-  lessOrEq: operator,
-  greaterOrEq: operator,
+const converters = {
+  add: multi,
+  sub: multi,
+  multiply: multi,
+  divide: multi,
+  pow: multi,
+  modulo: multi,
+  abs: unary,
+  sqrt: unary,
+  log: unary,
+  sin: unary,
+  cos: unary,
+  tan: unary,
+  acos: unary,
+  asin: unary,
+  atan: unary,
+  exp: unary,
+  round: unary,
+  and: multi,
+  or: multi,
+  not: unary,
+  eq: boolean,
+  neq: boolean,
+  lessThan: boolean,
+  greaterThan: boolean,
+  lessOrEq: boolean,
+  greaterOrEq: boolean,
   value: animatedValue,
   number: convertNumber,
-  cond: (node: Object) => ({
-    type: node.type,
-    expr: convert(node.expr),
-    ifNode: convert(node.ifNode),
-    elseNode: convert(node.elseNode),
-  }),
-  set: (node: Object) => ({
-    type: node.type,
-    target: node.target.getTag(), // This is safe - target MUST be an animated value node
-    source: convert(node.source),
-  }),
-  block: (node: Object) => ({
-    type: node.type,
-    nodes: node.nodes.map(convert),
-  }),
+  cond: convertCondition,
+  set: convertSet,
+  block: convertBlock,
 };
 
-function convert(v: number | Object) {
+function convert(v: ?(ExpressionNode | number)): ExpressionNode {
+  if (v === undefined || v === null) {
+    throw Error('Value not defined.');
+  }
   if (typeof v === 'number') {
     return {type: 'number', value: v};
   }
   return converters[v.type](v);
 }
 
-function multiOperator(node: Object) {
+function convertBlock(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: node.type,
+    nodes: (node.nodes ? node.nodes : []).map(convert),
+  };
+}
+
+function convertSet(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: node.type,
+    target: node.target && node.target.getTag && node.target.getTag(),
+    source: convert(node.source),
+  };
+}
+
+function convertCondition(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: node.type,
+    expr: convert(node.expr),
+    ifNode: convert(node.ifNode),
+    elseNode: convert(node.elseNode),
+  };
+}
+
+function multi(node: ExpressionNode): NativeExpressionNode {
   return {
     type: node.type,
     a: convert(node.a),
@@ -74,14 +89,14 @@ function multiOperator(node: Object) {
   };
 }
 
-function singleOperator(node: Object) {
+function unary(node: ExpressionNode): NativeExpressionNode {
   return {
     type: node.type,
     v: convert(node.v),
   };
 }
 
-function operator(node: Object) {
+function boolean(node: ExpressionNode): NativeExpressionNode {
   return {
     type: node.type,
     left: convert(node.left),
@@ -89,14 +104,14 @@ function operator(node: Object) {
   };
 }
 
-function animatedValue(node: Object) {
+function animatedValue(node: ExpressionNode): NativeExpressionNode {
   return {
     type: node.type,
-    tag: node.getTag(),
+    tag: node.getTag && node.getTag(),
   };
 }
 
-function convertNumber(node: Object) {
+function convertNumber(node: ExpressionNode): NativeExpressionNode {
   return {type: node.type, value: node.value};
 }
 

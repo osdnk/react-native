@@ -31,6 +31,8 @@ const TimingAnimation = require('./animations/TimingAnimation');
 
 const createAnimatedComponent = require('./createAnimatedComponent');
 
+import {factories} from './nodes/expressions';
+
 import type {
   AnimationConfig,
   EndCallback,
@@ -53,8 +55,6 @@ export type CompositeAnimation = {
 const expression = function(graph: Object): AnimatedExpression {
   return new AnimatedExpression(graph);
 };
-
-const E = AnimatedExpression.E;
 
 const add = function(
   a: AnimatedNode | number,
@@ -604,7 +604,7 @@ module.exports = {
    * See http://facebook.github.io/react-native/docs/animated.html#expression
    */
   expression,
-  E,
+  E: factories,
 
   /**
    * Creates a new Animated value composed from two Animated values added
