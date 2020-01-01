@@ -42,6 +42,11 @@ type BlockFactory = (
   ...nodes: Array<ExpressionNode | Array<ExpressionNode>>
 ) => ExpressionNode;
 
+type CallFactory = (
+  args: ExpressionParam | ExpressionParam[],
+  (args: number[]) => void,
+) => ExpressionNode;
+
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
 const multiply: MultiFactory = multi('multiply');
@@ -75,6 +80,7 @@ const greaterOrEq: BooleanFactory = boolean('greaterOrEq');
 const cond: ConditionFactory = condFactory;
 const set: SetFactory = setFactory;
 const block: BlockFactory = blockFactory;
+const call: CallFactory = callFactory;
 
 function resolve(
   v: AnimatedNode | AnimatedValue | ExpressionNode | number,
@@ -136,6 +142,20 @@ function condFactory(
         ? blockFactory(elseNode.map(resolve))
         : resolve(elseNode)
       : resolve(0),
+  };
+}
+
+function callFactory(
+  args: ExpressionParam | ExpressionParam[],
+  callback: (args: number[]) => void,
+): ExpressionNode {
+  return {
+    type: 'call',
+    args:
+      args instanceof Array
+        ? args.map(resolve)
+        : [resolve((args: ExpressionParam))],
+    callback,
   };
 }
 
@@ -201,4 +221,5 @@ export const factories = {
   cond,
   set,
   block,
+  call,
 };

@@ -38,6 +38,8 @@ export type ExpressionNode = {
   getValue?: () => number,
   setValue?: (value: number) => void,
   node?: AnimatedNode | AnimatedValue,
+  args?: ExpressionNode[],
+  callback?: (args: number[]) => void,
 };
 
 export type NativeExpressionNode = {
@@ -56,4 +58,6 @@ export type NativeExpressionNode = {
   ifNode?: ExpressionNode,
   elseNode?: ExpressionNode,
   tag?: number,
+  args?: ExpressionNode[],
+  callback?: (args: number[]) => void,
 };

@@ -7,11 +7,13 @@
 
 package com.facebook.react.animated;
 
-import android.util.Log;
-import android.util.SparseArray;
-
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.JavaOnlyArray;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -270,12 +272,38 @@ import java.util.List;
       case "cond": return createCond(node);
       case "set": return createSet(node);
       case "block": return createBlock(node);
+      case "call": return createCall(node);
       default:
         return new EvalFunction() {
           @Override
           public double eval() { return 0; }
         };
     }
+  }
+
+  private EvalFunction createCall(ReadableMap node) {
+    ReadableArray args = node.getArray("args");
+    final List<EvalFunction> evalfunctions = new ArrayList<>(1);
+    for(int i=0; i<args.size(); i++) {
+      evalfunctions.add(createEvalFunc(args.getMap(i)));
+    }
+
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        WritableNativeArray values = new WritableNativeArray();
+        for(int i=0; i<evalfunctions.size(); i++) {
+          values.pushDouble(evalfunctions.get(i).eval());
+        }
+
+        WritableMap eventData = Arguments.createMap();
+        eventData.putInt("id", mTag);
+        eventData.putArray("values", values);
+        mNativeAnimatedNodesManager.sendEvent("onAnimatedCallback", eventData);
+
+        return 0.0;
+      }
+    };
   }
 
   private EvalFunction createBlock(ReadableMap node) {

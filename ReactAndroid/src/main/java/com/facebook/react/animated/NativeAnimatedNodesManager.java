@@ -21,6 +21,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.ReactConstants;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.IllegalViewOperationException;
 import com.facebook.react.uimanager.ReactShadowNode;
 import com.facebook.react.uimanager.UIManagerModule;
@@ -61,6 +62,7 @@ import java.util.Set;
   private final Map<String, List<EventAnimationDriver>> mEventDrivers = new HashMap<>();
   private final UIManagerModule.CustomEventNamesResolver mCustomEventNamesResolver;
   private final UIManagerModule mUIManagerModule;
+  private final DeviceEventManagerModule.RCTDeviceEventEmitter mEventEmitter;
   private int mAnimatedGraphBFSColor = 0;
   // Used to avoid allocating a new array on every frame in `runUpdates` and `onEventDispatch`.
   private final List<AnimatedNode> mRunUpdateNodeList = new LinkedList<>();
@@ -139,6 +141,7 @@ import java.util.Set;
     mCustomEventNamesResolver = uiManager.getDirectEventNamesResolver();
     mContext = context;
     mUIManager = context.getNativeModule(UIManagerModule.class);
+    mEventEmitter = context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
   }
 
   /*package*/ @Nullable
@@ -473,6 +476,10 @@ import java.util.Set;
 
   public void enqueueUpdateViewOnUIManager(int viewTag, ReadableMap props) {
     mUIManagerOperationQueue.add(new UIManagerUpdateOperation(viewTag, props));
+  }
+
+  public void sendEvent(String name, WritableMap body) {
+    mEventEmitter.emit(name, body);
   }
 
   @Override

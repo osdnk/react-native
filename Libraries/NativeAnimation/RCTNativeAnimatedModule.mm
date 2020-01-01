@@ -319,7 +319,7 @@ RCT_EXPORT_METHOD(addEnqueuedUpdateProp:(NSString*)propName)
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"onAnimatedValueUpdate"];
+  return @[@"onAnimatedValueUpdate", @"onAnimatedCallback"];
 }
 
 - (void)animatedNode:(RCTValueAnimatedNode *)node didUpdateValue:(CGFloat)value

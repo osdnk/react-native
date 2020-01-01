@@ -48,6 +48,7 @@ const converters = {
   cond: convertCondition,
   set: convertSet,
   block: convertBlock,
+  call: convertCall,
 };
 
 function convert(v: ?(ExpressionNode | number)): ExpressionNode {
@@ -58,6 +59,14 @@ function convert(v: ?(ExpressionNode | number)): ExpressionNode {
     return {type: 'number', value: v};
   }
   return converters[v.type](v);
+}
+
+function convertCall(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: node.type,
+    args: (node.args ? node.args : []).map(convert),
+    callback: node.callback || ((args: number[]) => {}),
+  };
 }
 
 function convertBlock(node: ExpressionNode): NativeExpressionNode {
