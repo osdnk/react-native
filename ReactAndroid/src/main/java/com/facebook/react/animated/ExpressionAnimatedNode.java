@@ -273,12 +273,34 @@ import java.util.List;
       case "set": return createSet(node);
       case "block": return createBlock(node);
       case "call": return createCall(node);
+      case "callProc": return createCallProc(node);
       default:
         return new EvalFunction() {
           @Override
           public double eval() { return 0; }
         };
     }
+  }
+
+  private EvalFunction createCallProc(ReadableMap node) {
+    ReadableArray args = node.getArray("args");
+    ReadableArray params = node.getArray("params");
+    final List<EvalFunction> evalfunctions = new ArrayList<>();
+    for(int i=0; i<args.size(); i++) {
+      evalfunctions.add(createEvalFunc(args.getMap(i)));
+    }
+
+    EvalFunction evaluator = createEvalFunc(node.getMap("expr"));
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        for(int i=0; i<args.size(); i++) {
+          mNativeAnimatedNodesManager.setAnimatedNodeValue(
+            params.getMap(i).getInt("tag"), evalfunctions.get(i).eval());
+        }
+        return evaluator.eval();
+      }
+    };
   }
 
   private EvalFunction createCall(ReadableMap node) {

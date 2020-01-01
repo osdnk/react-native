@@ -11,7 +11,7 @@
 const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
 
-import type {ExpressionNode} from './types';
+import type {ExpressionNode, ExpressionParam} from './types';
 
 type ReducerFunction = () => number;
 
@@ -58,6 +58,7 @@ const cond = condReducer;
 const set = setReducer;
 const block = blockReducer;
 const call = callReducer;
+const callProc = procReducer;
 
 const evaluators = {
   add,
@@ -96,6 +97,7 @@ const evaluators = {
   call,
   value,
   number,
+  callProc,
 };
 
 function createEvaluator(
@@ -117,6 +119,28 @@ function createEvaluator(
     throw new Error('Error: Node type ' + node.type + ' not found.');
   }
   return evaluators[node.type](element);
+}
+
+function procReducer(node: ExpressionNode): ReducerFunction {
+  if (!node.args) {
+    throw Error('Args is not set in proc');
+  }
+  const args = node.args.map(createEvaluator);
+  if (!node.params) {
+    throw Error('Arguments is not set in proc');
+  }
+  const params = node.params;
+  if (!node.evaluator) {
+    throw Error('Function body is not set in proc');
+  }
+  const expr = createEvaluator(node.evaluator(...params));
+  return () => {
+    for (let i = 0; i < args.length; i++) {
+      // $FlowFixMe
+      params[i].setValue(args[i]());
+    }
+    return expr();
+  };
 }
 
 function callReducer(node: ExpressionNode): ReducerFunction {

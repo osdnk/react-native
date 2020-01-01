@@ -188,4 +188,26 @@ describe('Animated Expressions', () => {
   it('should return floor', () => {
     expect(evalExpression(E.floor(10.9))).toBe(10);
   });
+
+  it('should evaluate proc expressions', () => {
+    const proc = E.proc((a, b) => E.add(a, b));
+    expect(evalExpression(proc(10, 20))).toBe(30);
+  });
+
+  it('should evaluate proc expressions with animated values as input', () => {
+    const proc = E.proc((a, b) => E.add(a, b));
+    const p1 = new Animated.Value(10);
+    const p2 = new Animated.Value(20);
+    expect(evalExpression(proc(p1, p2))).toBe(30);
+  });
+
+  it('should mark proc params as native', () => {
+    const proc = E.proc((a, b) => E.add(a, b));
+    const p1 = new Animated.Value(10);
+    const p2 = new Animated.Value(20);
+    const expr = Animated.expression(proc(p1, p2));
+    expr.__attach();
+    expr.__makeNative();
+    expect(p1.__isNative).toBe(true);
+  });
 });

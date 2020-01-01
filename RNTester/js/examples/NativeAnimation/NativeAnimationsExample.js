@@ -21,16 +21,9 @@ const {
   Slider,
 } = require('react-native');
 
-const {
-  block,
-  set,
-  cond,
-  greaterThan,
-  call,
-  debug,
-  onChange,
-  multiply,
-} = Animated.E;
+const {block, set, cond, greaterThan, debug, proc, onChange} = Animated.E;
+
+const calculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
 
 const AnimatedSlider = Animated.createAnimatedComponent(Slider);
 
@@ -426,7 +419,7 @@ exports.examples = [
                           set(dummy, 50),
                           set(dummy, 10),
                         ),
-                        cond(greaterThan(multiply(anim, 10), 2.5), 0, 1),
+                        calculator(anim),
                       ),
                     ).interpolate({
                       inputRange: [0, 1],

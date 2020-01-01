@@ -49,6 +49,7 @@ const converters = {
   set: convertSet,
   block: convertBlock,
   call: convertCall,
+  callProc: convertProc,
 };
 
 function convert(v: ?(ExpressionNode | number)): ExpressionNode {
@@ -59,6 +60,17 @@ function convert(v: ?(ExpressionNode | number)): ExpressionNode {
     return {type: 'number', value: v};
   }
   return converters[v.type](v);
+}
+
+function convertProc(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: node.type,
+    args: (node.args ? node.args : []).map(convert),
+    params: (node.params ? node.params : []).map(convert),
+    expr: convert(
+      node.evaluator ? node.evaluator(...(node.params ? node.params : [])) : 0,
+    ),
+  };
 }
 
 function convertCall(node: ExpressionNode): NativeExpressionNode {
@@ -121,10 +133,11 @@ function boolean(node: ExpressionNode): NativeExpressionNode {
 }
 
 function animatedValue(node: ExpressionNode): NativeExpressionNode {
-  return {
+  const retVal = {
     type: node.type,
     tag: node.getTag && node.getTag(),
   };
+  return retVal;
 }
 
 function convertNumber(node: ExpressionNode): NativeExpressionNode {
