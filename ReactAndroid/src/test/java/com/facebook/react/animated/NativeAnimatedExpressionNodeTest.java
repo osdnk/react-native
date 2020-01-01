@@ -438,4 +438,28 @@ public class NativeAnimatedExpressionNodeTest {
       "right", createNumber(10)))).isEqualTo(0);
   }
 
+  @Test public void testMaxReturnsMax () {
+    assertThat(evalExpression(createExpr("type", "max",
+      "a", createNumber(100),
+      "b", createNumber(10),
+      "others", JavaOnlyArray.of(createNumber(1))))).isEqualTo(100);
+  }
+
+  @Test public void testMinReturnsMin () {
+    assertThat(evalExpression(createExpr("type", "min",
+      "a", createNumber(100),
+      "b", createNumber(10),
+      "others", JavaOnlyArray.of(createNumber(50))))).isEqualTo(10);
+  }
+
+  @Test public void testCeilReturnsCeil () {
+    assertThat(evalExpression(createExpr("type", "ceil",
+      "v", createNumber(10.1)))).isEqualTo(11);
+  }
+
+  @Test public void testFloorReturnsFloor () {
+    assertThat(evalExpression(createExpr("type", "floor",
+      "v", createNumber(10.9)))).isEqualTo(10);
+  }
+
 }

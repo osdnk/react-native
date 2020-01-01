@@ -22,6 +22,8 @@ const divide = (node: ExpressionNode) => multi(node, (p, c) => p / c);
 const pow = (node: ExpressionNode) => multi(node, (p, c) => Math.pow(p, c));
 const modulo = (node: ExpressionNode) =>
   multi(node, (p, c) => ((p % c) + c) % c);
+const max = (node: ExpressionNode) => multi(node, (p, c) => (c > p ? c : p));
+const min = (node: ExpressionNode) => multi(node, (p, c) => (c < p ? c : p));
 const abs = (node: ExpressionNode) => unary(node, v => Math.abs(v));
 const sqrt = (node: ExpressionNode) => unary(node, v => Math.sqrt(v));
 const log = (node: ExpressionNode) => unary(node, v => Math.log(v));
@@ -33,6 +35,8 @@ const asin = (node: ExpressionNode) => unary(node, v => Math.asin(v));
 const atan = (node: ExpressionNode) => unary(node, v => Math.atan(v));
 const exp = (node: ExpressionNode) => unary(node, v => Math.exp(v));
 const round = (node: ExpressionNode) => unary(node, v => Math.round(v));
+const ceil = (node: ExpressionNode) => unary(node, v => Math.ceil(v));
+const floor = (node: ExpressionNode) => unary(node, v => Math.floor(v));
 const and = (node: ExpressionNode) => multi(node, (p, c) => (p && c ? 1 : 0));
 const or = (node: ExpressionNode) => multi(node, (p, c) => (p || c ? 1 : 0));
 const not = (node: ExpressionNode) => unary(node, v => (!v ? 1 : 0));
@@ -61,6 +65,8 @@ const evaluators = {
   multiply,
   pow,
   modulo,
+  max,
+  min,
   abs,
   sqrt,
   log,
@@ -72,6 +78,8 @@ const evaluators = {
   atan,
   exp,
   round,
+  ceil,
+  floor,
   and,
   or,
   not,

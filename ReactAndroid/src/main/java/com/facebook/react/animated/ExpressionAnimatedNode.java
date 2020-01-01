@@ -96,6 +96,18 @@ import java.util.List;
           return Math.pow(p, c);
         }
       });
+      case "max": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double p, double c) {
+          return Math.max(p, c);
+        }
+      });
+      case "min": return createMultiOp(node, new ReduceMulti() {
+        @Override
+        public double reduce(double p, double c) {
+          return Math.min(p, c);
+        }
+      });
       /* Single ops */
       case "abs": return createSingleOp(node, new ReduceSingle() {
         @Override
@@ -161,6 +173,18 @@ import java.util.List;
         @Override
         public double reduce(double v) {
           return Math.round(v);
+        }
+      });
+      case "ceil": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.ceil(v);
+        }
+      });
+      case "floor": return createSingleOp(node, new ReduceSingle() {
+        @Override
+        public double reduce(double v) {
+          return Math.floor(v);
         }
       });
       /* Logical */
