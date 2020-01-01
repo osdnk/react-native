@@ -1224,6 +1224,8 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   
   XCTAssertEqual(eval(@{@"type": @"ceil", @"v": n(10.1)}), 11, @"ceil did not work");
   XCTAssertEqual(eval(@{@"type": @"floor", @"v": n(10.9)}), 10, @"floor did not work");
+  
+  // Procs
 }
 
 @end

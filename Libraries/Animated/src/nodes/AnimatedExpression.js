@@ -10,6 +10,7 @@
 
 'use strict';
 
+const AnimatedNode = require('./AnimatedNode');
 const AnimatedInterpolation = require('./AnimatedInterpolation');
 const AnimatedWithChildren = require('./AnimatedWithChildren');
 const NativeAnimatedHelper = require('../NativeAnimatedHelper');
@@ -24,6 +25,7 @@ let _uniqueId = 1;
 class AnimatedExpression extends AnimatedWithChildren {
   _expression: ExpressionNode;
   _args: Array<any>;
+  _params: Array<any>;
   _evaluator: () => number;
   _callListeners: {[key: string]: CallCallbackListener, ...};
   _nativeCallCallbackListener: ?any;
@@ -32,20 +34,28 @@ class AnimatedExpression extends AnimatedWithChildren {
     super();
     this._expression = expression;
     this._args = [];
+    this._params = [];
     this._callListeners = {};
   }
 
   __attach() {
-    collectArguments(this._expression, this._args);
-    this._args.forEach(a =>
-      typeof a !== 'function' ? a.node.__addChild(this) : this.__addListener(a),
-    );
+    collectArguments(this._expression, this._args, this._params);
+    // Collect arguments and add this node as a child to each argument
+    this._args.forEach(a => {
+      if (typeof a === 'function') {
+        this.__addListener(a);
+      } else {
+        a.node.__addChild(this);
+      }
+    });
+    this._params.forEach(p => p.node.__attach());
   }
 
   __detach() {
     this._args.forEach(
       a => typeof a !== 'function' && a.node.__removeChild(this),
     );
+    this._params.forEach(p => p.node.__detach());
     this.__stopListeningToCallCallbacks();
     super.__detach();
   }
@@ -66,6 +76,7 @@ class AnimatedExpression extends AnimatedWithChildren {
 
   __makeNative() {
     super.__makeNative();
+    this._params.forEach(p => p.node.__makeNative());
     this.__startListeningToCallCallbacks();
   }
 
@@ -90,17 +101,19 @@ class AnimatedExpression extends AnimatedWithChildren {
 
   __startListeningToCallCallbacks() {
     if (!this._nativeCallCallbackListener) {
-      this._nativeCallCallbackListener = NativeAnimatedHelper.nativeEventEmitter.addListener(
-        'onAnimatedCallback',
-        data => {
-          if (data.id !== this.__getNativeTag()) {
-            return;
-          }
-          for (const key in this._callListeners) {
-            this._callListeners[key](data.values);
-          }
-        },
-      );
+      try {
+        this._nativeCallCallbackListener = NativeAnimatedHelper.nativeEventEmitter.addListener(
+          'onAnimatedCallback',
+          data => {
+            if (data.id !== this.__getNativeTag()) {
+              return;
+            }
+            for (const key in this._callListeners) {
+              this._callListeners[key](data.values);
+            }
+          },
+        );
+      } catch {}
     }
   }
 
@@ -113,26 +126,33 @@ class AnimatedExpression extends AnimatedWithChildren {
 function collectArguments(
   node: ?(ExpressionNode | Function),
   args: Array<any>,
+  params: Array<any>,
 ) {
   if (node) {
     if (typeof node === 'function') {
       args.push(node);
     } else if (node.type === 'value') {
       args.push(node);
+    } else if (node.type === 'callProc') {
+      node.params && node.params.forEach(p => params.push(p));
+      node.args && node.args.forEach(p => params.push(p));
+      collectArguments(node.expr, args, params);
+      return;
     }
-    collectArguments(node.a, args);
-    collectArguments(node.b, args);
-    collectArguments(node.left, args);
-    collectArguments(node.right, args);
-    collectArguments(node.expr, args);
-    collectArguments(node.ifNode, args);
-    collectArguments(node.elseNode, args);
-    collectArguments(node.target, args);
-    collectArguments(node.source, args);
-    node.others && node.others.forEach(n => collectArguments(n, args));
-    node.nodes && node.nodes.forEach(n => collectArguments(n, args));
-    node.args && node.args.forEach(n => collectArguments(n, args));
-    collectArguments(node.callback, args);
+
+    collectArguments(node.a, args, params);
+    collectArguments(node.b, args, params);
+    collectArguments(node.left, args, params);
+    collectArguments(node.right, args, params);
+    collectArguments(node.expr, args, params);
+    collectArguments(node.ifNode, args, params);
+    collectArguments(node.elseNode, args, params);
+    collectArguments(node.target, args, params);
+    collectArguments(node.source, args, params);
+    node.others && node.others.forEach(n => collectArguments(n, args, params));
+    node.nodes && node.nodes.forEach(n => collectArguments(n, args, params));
+    node.args && node.args.forEach(n => collectArguments(n, args, params));
+    collectArguments(node.callback, args, params);
   }
 }
 

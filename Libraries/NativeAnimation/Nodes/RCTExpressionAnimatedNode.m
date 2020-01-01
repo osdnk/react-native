@@ -182,6 +182,8 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return [self evalBlockWithBlock:node];
   } else if([type isEqualToString:@"call"]) {
     return [self evalBlockWithCall:node];
+  } else if([type isEqualToString:@"callProc"]) {
+    return [self evalBlockWithCallProc:node];
   }
   /* Conversion */
   else if([type isEqualToString:@"value"]) {
@@ -190,6 +192,23 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return ^ { return (CGFloat)[node[@"value"] floatValue]; };
   }
   return ^{ return (CGFloat)0.0f; };
+}
+
+- (evalBlock) evalBlockWithCallProc:(NSDictionary*)node {
+  NSArray* args = node[@"args"];
+  NSArray* params = node[@"params"];
+  NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
+  for(int i=0; i<[args count]; i++) {
+    [evals addObject:[self evalBlockWithNode:args[i]]];
+  }
+  evalBlock evaluator = [self evalBlockWithNode:node[@"expr"]];
+  
+  return ^ {
+    for(int i=0; i<[args count]; i++) {
+      [self.manager setAnimatedNodeValue:params[i][@"tag"] value:[NSNumber numberWithFloat:evals[i]()]];
+    }
+    return evaluator();
+  };
 }
 
 - (evalBlock) evalBlockWithCall:(NSDictionary*)node {

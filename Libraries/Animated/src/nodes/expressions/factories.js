@@ -10,7 +10,6 @@
 
 'use strict';
 
-const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
 
 import type {ExpressionNode, ExpressionParam} from './types';
@@ -47,6 +46,10 @@ type CallFactory = (
   (args: number[]) => void,
 ) => ExpressionNode;
 
+type ProcFactory = (
+  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
+) => (...args: ExpressionParam[]) => ExpressionNode;
+
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
 const multiply: MultiFactory = multi('multiply');
@@ -81,6 +84,7 @@ const cond: ConditionFactory = condFactory;
 const set: SetFactory = setFactory;
 const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
+const proc: ProcFactory = procFactory;
 
 function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
@@ -101,6 +105,37 @@ function resolve(v: ExpressionParam): ExpressionNode {
     // Number
     return {type: 'number', value: ((v: any): number)};
   }
+}
+
+const a = {
+  type: 'callProc',
+  args: [{type: 'value', node: 0}],
+  nodes: [{type: 'value', node: 0}],
+  expr: {
+    type: 'cond',
+    expr: {
+      type: 'greaterThan',
+      left: {type: 'value', node: 0},
+      right: {type: 'number', value: 0.5},
+    },
+    ifNode: {type: 'number', value: 0},
+    elseNode: {type: 'number', value: 1},
+  },
+};
+
+function procFactory(
+  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
+): (...args: ExpressionParam[]) => ExpressionNode {
+  const params = new Array(evaluator.length);
+  for (let i = 0; i < params.length; i++) {
+    params[i] = new AnimatedValue(0);
+  }
+  return (...nodes: ExpressionParam[]) => ({
+    type: 'callProc',
+    args: nodes.map(resolve),
+    params: params.map(resolve),
+    evaluator,
+  });
 }
 
 function setFactory(
@@ -220,4 +255,5 @@ export const factories = {
   set,
   block,
   call,
+  proc,
 };
