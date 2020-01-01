@@ -19,6 +19,7 @@ const AnimatedValue = require('./nodes/AnimatedValue');
 const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 
 import {factories} from './nodes/expressions';
+const useExpression = require('./useExpression');
 
 const createAnimatedComponent = require('./createAnimatedComponent');
 
@@ -156,5 +157,6 @@ module.exports = {
   forkEvent: AnimatedImplementation.forkEvent,
   unforkEvent: AnimatedImplementation.unforkEvent,
   Event: AnimatedEvent,
+  useExpression,
   __PropsOnlyForTests: AnimatedProps,
 };

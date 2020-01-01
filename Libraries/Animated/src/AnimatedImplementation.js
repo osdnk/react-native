@@ -28,6 +28,7 @@ const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 const DecayAnimation = require('./animations/DecayAnimation');
 const SpringAnimation = require('./animations/SpringAnimation');
 const TimingAnimation = require('./animations/TimingAnimation');
+const useExpression = require('./useExpression');
 
 const createAnimatedComponent = require('./createAnimatedComponent');
 
@@ -728,6 +729,8 @@ module.exports = {
    * Expose Event class, so it can be used as a type for type checkers.
    */
   Event: AnimatedEvent,
+
+  useExpression,
 
   __PropsOnlyForTests: AnimatedProps,
 };
