@@ -22,7 +22,7 @@
 - (void)setOffset:(CGFloat)offset;
 - (void)flattenOffset;
 - (void)extractOffset;
-- (void)setValue;
+- (void)setValue:(CGFloat)value;
 
 @property (nonatomic, assign) CGFloat value;
 @property (nonatomic, strong) id animatedObject;

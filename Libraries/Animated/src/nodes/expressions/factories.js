@@ -82,9 +82,7 @@ const set: SetFactory = setFactory;
 const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
 
-function resolve(
-  v: AnimatedNode | AnimatedValue | ExpressionNode | number,
-): ExpressionNode {
+function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
     // Expression ExpressionNode
     if (v.hasOwnProperty('type')) {

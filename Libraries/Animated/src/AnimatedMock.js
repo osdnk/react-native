@@ -19,6 +19,7 @@ const AnimatedValue = require('./nodes/AnimatedValue');
 const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 
 import {factories} from './nodes/expressions';
+import * as derived from './nodes/expressions/derived';
 const useExpression = require('./useExpression');
 
 const createAnimatedComponent = require('./createAnimatedComponent');
@@ -139,7 +140,7 @@ module.exports = {
   timing,
   spring,
   expression: AnimatedImplementation.expression,
-  E: factories,
+  E: {...factories, ...derived},
   add: AnimatedImplementation.add,
   subtract: AnimatedImplementation.subtract,
   divide: AnimatedImplementation.divide,
