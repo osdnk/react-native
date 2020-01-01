@@ -77,6 +77,9 @@ function convertBlock(node: ExpressionNode): NativeExpressionNode {
 }
 
 function convertSet(node: ExpressionNode): NativeExpressionNode {
+  if (!node.target || !node.target.getTag) {
+    throw Error('Missing target animated value in set expression.');
+  }
   return {
     type: node.type,
     target: node.target && node.target.getTag && node.target.getTag(),

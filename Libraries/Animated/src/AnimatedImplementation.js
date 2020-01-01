@@ -33,6 +33,7 @@ const useExpression = require('./useExpression');
 const createAnimatedComponent = require('./createAnimatedComponent');
 
 import {factories} from './nodes/expressions';
+import * as derived from './nodes/expressions/derived';
 
 import type {
   AnimationConfig,
@@ -605,7 +606,7 @@ module.exports = {
    * See http://facebook.github.io/react-native/docs/animated.html#expression
    */
   expression,
-  E: factories,
+  E: {...factories, ...derived},
 
   /**
    * Creates a new Animated value composed from two Animated values added

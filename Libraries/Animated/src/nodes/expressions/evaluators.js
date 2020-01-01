@@ -148,6 +148,9 @@ function setReducer(node: ExpressionNode): ReducerFunction {
     throw Error('Source missing in node');
   }
   const source = createEvaluator(node.source);
+  if (!node.target || !node.target.setValue) {
+    throw Error('Target not a valid animated value.');
+  }
   return () => {
     const retVal = source();
     node.target && node.target.setValue && node.target.setValue(retVal);

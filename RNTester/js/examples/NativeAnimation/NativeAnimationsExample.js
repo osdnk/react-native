@@ -21,7 +21,16 @@ const {
   Slider,
 } = require('react-native');
 
-const {block, set, cond, greaterThan, call, multiply} = Animated.E;
+const {
+  block,
+  set,
+  cond,
+  greaterThan,
+  call,
+  debug,
+  onChange,
+  multiply,
+} = Animated.E;
 
 const AnimatedSlider = Animated.createAnimatedComponent(Slider);
 
@@ -411,16 +420,11 @@ exports.examples = [
                     ],
                     backgroundColor: Animated.expression(
                       block(
+                        onChange(dummy, debug('dummy changed to', dummy)),
                         cond(
                           greaterThan(anim, 0.5),
-                          [
-                            set(dummy, 50),
-                            call(dummy, args => console.info('over', ...args)),
-                          ],
-                          [
-                            set(dummy, 0),
-                            call(dummy, args => console.info('under', ...args)),
-                          ],
+                          set(dummy, 50),
+                          set(dummy, 10),
                         ),
                         cond(greaterThan(multiply(anim, 10), 2.5), 0, 1),
                       ),
