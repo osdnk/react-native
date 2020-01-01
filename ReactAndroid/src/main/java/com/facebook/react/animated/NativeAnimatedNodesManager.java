@@ -195,6 +195,9 @@ import java.util.Set;
       throw new JSApplicationIllegalArgumentException(
           "Animated node with tag " + tag + " does not exists or is not a 'value' node");
     }
+    if(((ValueAnimatedNode) node).mValue == value) {
+      return;
+    }
     stopAnimationsForNode(node);
     ((ValueAnimatedNode) node).mValue = value;
     mUpdatedNodes.put(tag, node);

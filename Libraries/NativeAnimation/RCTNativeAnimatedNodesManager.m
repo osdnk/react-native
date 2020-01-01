@@ -266,9 +266,14 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
     RCTLogError(@"Not a value node.");
     return;
   }
+  RCTValueAnimatedNode *valueNode = (RCTValueAnimatedNode *)node;
+  
+  if(valueNode.value == value.floatValue) {
+    return;
+  }
+  
   [self stopAnimationsForNode:node];
 
-  RCTValueAnimatedNode *valueNode = (RCTValueAnimatedNode *)node;
   valueNode.value = value.floatValue;
   [valueNode setNeedsUpdate];
 }
