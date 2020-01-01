@@ -314,7 +314,7 @@ RCT_EXPORT_METHOD(removeAnimatedEventFromView:(double)viewTag
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"onAnimatedValueUpdate"];
+  return @[@"onAnimatedValueUpdate", @"onAnimatedCallback"];
 }
 
 - (void)animatedNode:(RCTValueAnimatedNode *)node didUpdateValue:(CGFloat)value

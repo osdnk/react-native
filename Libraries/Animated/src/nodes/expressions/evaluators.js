@@ -54,9 +54,10 @@ const greaterOrEq = (node: ExpressionNode) =>
   boolean(node, (left, right) => (left >= right ? 1 : 0));
 const value = (node: ExpressionNode) => () => node.getValue && node.getValue();
 const number = (node: ExpressionNode) => () => node.value;
-const cond = condition;
-const set = setValue;
+const cond = condReducer;
+const set = setReducer;
 const block = blockReducer;
+const call = callReducer;
 
 const evaluators = {
   add,
@@ -92,6 +93,7 @@ const evaluators = {
   cond,
   set,
   block,
+  call,
   value,
   number,
 };
@@ -117,6 +119,19 @@ function createEvaluator(
   return evaluators[node.type](element);
 }
 
+function callReducer(node: ExpressionNode): ReducerFunction {
+  const evalFuncs = (node.args ? node.args : []).map(createEvaluator);
+  const callback = node.callback ? node.callback : (args: number[]) => {};
+  return () => {
+    let values = [];
+    for (let i = 0; i < evalFuncs.length; i++) {
+      values.push(evalFuncs[i]());
+    }
+    callback(values);
+    return 0;
+  };
+}
+
 function blockReducer(node: ExpressionNode): ReducerFunction {
   const evalFuncs = (node.nodes ? node.nodes : []).map(createEvaluator);
   return () => {
@@ -128,7 +143,7 @@ function blockReducer(node: ExpressionNode): ReducerFunction {
   };
 }
 
-function setValue(node: ExpressionNode): ReducerFunction {
+function setReducer(node: ExpressionNode): ReducerFunction {
   if (!node.source) {
     throw Error('Source missing in node');
   }
@@ -140,7 +155,7 @@ function setValue(node: ExpressionNode): ReducerFunction {
   };
 }
 
-function condition(node: ExpressionNode): ReducerFunction {
+function condReducer(node: ExpressionNode): ReducerFunction {
   if (!node.expr) {
     throw Error('Expression clause missing in node');
   }

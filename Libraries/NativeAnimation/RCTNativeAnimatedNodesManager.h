@@ -88,6 +88,8 @@
 
 - (void)handleAnimatedEvent:(nonnull id<RCTEvent>)event;
 
+- (void)sendEventWithName:(NSString *)eventName body:(id)body;
+
 // listeners
 
 - (void)startListeningToAnimatedNodeValue:(nonnull NSNumber *)tag

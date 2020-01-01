@@ -7,6 +7,7 @@
  */
 
 #import <React/RCTExpressionAnimatedNode.h>
+#import <React/RCTEventEmitter.h>
 #import <React/RCTNativeAnimatedNodesManager.h>
 #import <React/RCTValueAnimatedNode.h>
 
@@ -179,6 +180,8 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return [self evalBlockWithSet:node];
   } else if([type isEqualToString:@"block"]) {
     return [self evalBlockWithBlock:node];
+  } else if([type isEqualToString:@"call"]) {
+    return [self evalBlockWithCall:node];
   }
   /* Conversion */
   else if([type isEqualToString:@"value"]) {
@@ -187,6 +190,24 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return ^ { return (CGFloat)[node[@"value"] floatValue]; };
   }
   return ^{ return (CGFloat)0.0f; };
+}
+
+- (evalBlock) evalBlockWithCall:(NSDictionary*)node {
+  NSArray* args = node[@"args"];
+  NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
+  for(int i=0; i<[args count]; i++) {
+    [evals addObject:[self evalBlockWithNode:args[i]]];
+  }
+  
+  return ^ {
+    NSMutableArray* values = [[NSMutableArray alloc] initWithCapacity:[args count]];
+    for(int i=0; i<evals.count; i++) {
+      [values addObject:[NSNumber numberWithFloat:evals[i]()]];
+    }
+    [self.manager sendEventWithName:@"onAnimatedCallback" body:@{@"id": self.nodeTag, @"values": values }];
+    
+    return (CGFloat)0.0f;
+  };
 }
 
 - (evalBlock) evalBlockWithBlock:(NSDictionary*)node {

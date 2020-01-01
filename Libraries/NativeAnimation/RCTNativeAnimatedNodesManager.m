@@ -456,6 +456,13 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
   }
 }
 
+- (void)sendEventWithName:(NSString *)eventName body:(id)body {
+  [_bridge enqueueJSCall:@"RCTDeviceEventEmitter"
+      method:@"emit"
+        args:body ? @[eventName, body] : @[eventName]
+  completion:NULL];
+}
+
 #pragma mark -- Listeners
 
 - (void)startListeningToAnimatedNodeValue:(nonnull NSNumber *)tag
