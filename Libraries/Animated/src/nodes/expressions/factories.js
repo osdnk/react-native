@@ -11,46 +11,74 @@
 'use strict';
 
 const AnimatedNode = require('../AnimatedNode');
+const AnimatedValue = require('../AnimatedValue');
 
-import {ExpressionType} from './expressions';
+import type {ExpressionNode, ExpressionParam} from './types';
 
-const factories: {[key: ExpressionType]: Function} = {
-  add: multiOperator('add'),
-  sub: multiOperator('sub'),
-  multiply: multiOperator('multiply'),
-  divide: multiOperator('divide'),
-  pow: multiOperator('pow'),
-  modulo: multiOperator('modulo'),
-  abs: single('abs'),
-  sqrt: single('sqrt'),
-  log: single('log'),
-  sin: single('sin'),
-  cos: single('cos'),
-  tan: single('tan'),
-  acos: single('acos'),
-  asin: single('asin'),
-  atan: single('atan'),
-  exp: single('exp'),
-  round: single('round'),
-  and: multiOperator('and'),
-  or: multiOperator('or'),
-  not: single('not'),
-  eq: operator('eq'),
-  neq: operator('neq'),
-  lessThan: operator('lessThan'),
-  greaterThan: operator('greaterThan'),
-  lessOrEq: operator('lessOrEq'),
-  greaterOrEq: operator('greaterOrEq'),
-  cond: condition,
-  set: setValue,
-  block: block,
-};
+type MultiFactory = (
+  a: ExpressionParam,
+  b: ExpressionParam,
+  ...others: Array<ExpressionParam>
+) => ExpressionNode;
 
-function resolve(v: AnimatedNode | number) {
+type UnaryFactory = (v: ExpressionParam) => ExpressionNode;
+type BooleanFactory = (
+  left: ExpressionParam,
+  right: ExpressionParam,
+) => ExpressionNode;
+
+type ConditionFactory = (
+  expr: ExpressionParam,
+  ifNode: ExpressionParam | ExpressionParam[],
+  elseNode: ?(ExpressionParam | ExpressionParam[]),
+) => ExpressionNode;
+
+type SetFactory = (
+  target: AnimatedValue,
+  source: ExpressionParam,
+) => ExpressionNode;
+
+type BlockFactory = (
+  ...nodes: Array<ExpressionNode | Array<ExpressionNode>>
+) => ExpressionNode;
+
+const add: MultiFactory = multi('add');
+const sub: MultiFactory = multi('sub');
+const multiply: MultiFactory = multi('multiply');
+const divide: MultiFactory = multi('divide');
+const pow: MultiFactory = multi('pow');
+const modulo: MultiFactory = multi('modulo');
+const abs: UnaryFactory = unary('abs');
+const sqrt: UnaryFactory = unary('sqrt');
+const log: UnaryFactory = unary('log');
+const sin: UnaryFactory = unary('sin');
+const cos: UnaryFactory = unary('cos');
+const tan: UnaryFactory = unary('tan');
+const acos: UnaryFactory = unary('acos');
+const asin: UnaryFactory = unary('asin');
+const atan: UnaryFactory = unary('atan');
+const exp: UnaryFactory = unary('exp');
+const round: UnaryFactory = unary('round');
+const and: MultiFactory = multi('and');
+const or: MultiFactory = multi('or');
+const not: UnaryFactory = unary('not');
+const eq: BooleanFactory = boolean('eq');
+const neq: BooleanFactory = boolean('neq');
+const lessThan: BooleanFactory = boolean('lessThan');
+const greaterThan: BooleanFactory = boolean('greaterThan');
+const lessOrEq: BooleanFactory = boolean('lessOrEq');
+const greaterOrEq: BooleanFactory = boolean('greaterOrEq');
+const cond: ConditionFactory = condFactory;
+const set: SetFactory = setFactory;
+const block: BlockFactory = blockFactory;
+
+function resolve(
+  v: AnimatedNode | AnimatedValue | ExpressionNode | number,
+): ExpressionNode {
   if (v instanceof Object) {
-    // Expression object
+    // Expression ExpressionNode
     if (v.hasOwnProperty('type')) {
-      return v;
+      return ((v: any): ExpressionNode);
     }
     // Animated value / node
     return {
@@ -58,47 +86,60 @@ function resolve(v: AnimatedNode | number) {
       node: v,
       getTag: v.__getNativeTag.bind(v),
       getValue: v.__getValue.bind(v),
-      setValue: (value: number) => (v._value = value),
+      // $FlowFixMe
+      setValue: (value: number) => (((v: any): AnimatedValue)._value = value),
     };
   } else {
     // Number
-    return {type: 'number', value: v};
+    return {type: 'number', value: ((v: any): number)};
   }
 }
 
-function setValue(target: AnimatedValue, source: Object) {
+function setFactory(
+  target: AnimatedValue,
+  source: ExpressionParam,
+): ExpressionNode {
   return {
     type: 'set',
-    target: resolve(target),
+    target: ((resolve(target): any): ExpressionNode),
     source: resolve(source),
   };
 }
 
-function condition(
-  expr: AnimatedNode | number,
-  ifNode: AnimatedNode | number,
-  elseNode: ?AnimatedNode | number,
-) {
+function blockFactory(
+  ...nodes: Array<ExpressionNode | Array<ExpressionNode>>
+): ExpressionNode {
+  return {
+    type: 'block',
+    nodes: nodes.map(n => (Array.isArray(n) ? blockFactory(...n) : resolve(n))),
+  };
+}
+
+function condFactory(
+  expr: ExpressionParam,
+  ifNode: ExpressionParam | ExpressionParam[],
+  elseNode: ?(ExpressionParam | ExpressionParam[]),
+): ExpressionNode {
   return {
     type: 'cond',
     expr: resolve(expr),
-    ifNode: resolve(ifNode),
-    elseNode: resolve(elseNode ? elseNode : 0),
+    ifNode:
+      ifNode instanceof Array
+        ? blockFactory(ifNode.map(resolve))
+        : resolve(ifNode),
+    elseNode: elseNode
+      ? elseNode instanceof Array
+        ? blockFactory(elseNode.map(resolve))
+        : resolve(elseNode)
+      : resolve(0),
   };
 }
 
-function block(...nodes: Array<AnimatedNode | number>) {
-  return {
-    type: 'block',
-    nodes: nodes.map(n => (Array.isArray(n) ? block(...n) : resolve(n))),
-  };
-}
-
-function multiOperator(type: string) {
+function multi(type: string): MultiFactory {
   return (
-    a: AnimatedNode | number,
-    b: AnimatedNode | number,
-    ...others: Array<AnimatedNode | number>
+    a: ExpressionParam,
+    b: ExpressionParam,
+    ...others: Array<ExpressionParam>
   ) => ({
     type,
     a: resolve(a),
@@ -107,19 +148,49 @@ function multiOperator(type: string) {
   });
 }
 
-function operator(type: string) {
-  return (left: AnimatedNode | number, right: AnimatedNode | number) => ({
+function boolean(type: string): BooleanFactory {
+  return (left: ExpressionParam, right: ExpressionParam) => ({
     type,
     left: resolve(left),
     right: resolve(right),
   });
 }
 
-function single(type: string) {
-  return (v: AnimatedNode | number) => ({
+function unary(type: string): UnaryFactory {
+  return (v: ExpressionParam) => ({
     type,
     v: resolve(v),
   });
 }
 
-export {factories};
+export const factories = {
+  add,
+  sub,
+  divide,
+  multiply,
+  pow,
+  modulo,
+  abs,
+  sqrt,
+  log,
+  sin,
+  cos,
+  tan,
+  acos,
+  asin,
+  atan,
+  exp,
+  round,
+  and,
+  or,
+  not,
+  eq,
+  neq,
+  lessThan,
+  greaterThan,
+  lessOrEq,
+  greaterOrEq,
+  cond,
+  set,
+  block,
+};

@@ -11,26 +11,25 @@
 'use strict';
 
 const AnimatedInterpolation = require('./AnimatedInterpolation');
-const AnimatedNode = require('./AnimatedNode');
 const AnimatedWithChildren = require('./AnimatedWithChildren');
 
 import type {InterpolationConfigType} from './AnimatedInterpolation';
-
-import {factories, createEvaluator, converters} from './expressions';
+import type {ExpressionNode} from './expressions';
+import {createEvaluator, converters} from './expressions';
 
 class AnimatedExpression extends AnimatedWithChildren {
-  _graph: Object;
-  _args: [];
+  _expression: ExpressionNode;
+  _args: Array<any>;
   _evaluator: () => number;
 
-  constructor(graph: Object) {
+  constructor(expression: ExpressionNode) {
     super();
-    this._graph = graph;
+    this._expression = expression;
     this._args = [];
   }
 
   __attach() {
-    collectArguments(this._graph, this._args);
+    collectArguments(this._expression, this._args);
     this._args.forEach(a => a.node.__addChild(this));
   }
 
@@ -41,7 +40,7 @@ class AnimatedExpression extends AnimatedWithChildren {
 
   __getValue(): number {
     if (!this._evaluator) {
-      this._evaluator = createEvaluator(this._graph);
+      this._evaluator = createEvaluator(this._expression);
     }
     return this._evaluator();
   }
@@ -49,7 +48,7 @@ class AnimatedExpression extends AnimatedWithChildren {
   __getNativeConfig(): any {
     return {
       type: 'expression',
-      graph: converters[this._graph.type](this._graph),
+      graph: converters[this._expression.type](this._expression),
     };
   }
 
@@ -59,7 +58,7 @@ class AnimatedExpression extends AnimatedWithChildren {
 }
 
 /* Arguments */
-function collectArguments(node: ?Object, args: AnimatedNode[]) {
+function collectArguments(node: ?Object, args: Array<any>) {
   if (node) {
     if (node.type === 'value') {
       args.push(node);
@@ -77,10 +76,5 @@ function collectArguments(node: ?Object, args: AnimatedNode[]) {
     node.nodes && node.nodes.forEach(n => collectArguments(n, args));
   }
 }
-
-// Add expression factories to the .E namespace in Animated
-AnimatedExpression.E = {
-  ...factories,
-};
 
 module.exports = AnimatedExpression;

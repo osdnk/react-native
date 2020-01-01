@@ -5,10 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @format
- * @emails oncall+react_native
+ * @flow
  */
 
 export * from './nativeconversion';
 export * from './factories';
 export * from './evaluators';
-export * from './expressions';
+export * from './types';

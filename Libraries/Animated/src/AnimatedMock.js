@@ -18,6 +18,8 @@ const AnimatedProps = require('./nodes/AnimatedProps');
 const AnimatedValue = require('./nodes/AnimatedValue');
 const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 
+import {factories} from './nodes/expressions';
+
 const createAnimatedComponent = require('./createAnimatedComponent');
 
 import type {EndCallback} from './animations/Animation';
@@ -136,7 +138,7 @@ module.exports = {
   timing,
   spring,
   expression: AnimatedImplementation.expression,
-  E: {},
+  E: factories,
   add: AnimatedImplementation.add,
   subtract: AnimatedImplementation.subtract,
   divide: AnimatedImplementation.divide,
