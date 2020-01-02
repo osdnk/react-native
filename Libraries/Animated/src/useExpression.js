@@ -15,17 +15,22 @@ import AnimatedExpression from './nodes/AnimatedExpression';
 
 import type {ExpressionNode} from './nodes/expressions';
 
-export const useExpression = (
-  expression: ExpressionNode,
-  useAnimatedDriver: boolean = false,
-): void => {
-  return useEffect(() => {
-    const node = new AnimatedExpression(expression);
+export function useExpression(
+  expression: () => ExpressionNode,
+  deps: any[] = [],
+  useNativeDriver: boolean = false,
+) {
+  useEffect(() => {
+    const node = new AnimatedExpression(expression());
     node.__attach();
-    if (useAnimatedDriver) {
+
+    if (useNativeDriver) {
       node.__makeNative();
     }
 
-    return () => node.__detach();
-  }, [expression, useAnimatedDriver]);
-};
+    return () => {
+      node.__detach();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useNativeDriver].concat(deps));
+}
