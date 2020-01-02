@@ -108,7 +108,7 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
       @"rotate",
       @"rotateX",
       @"rotateY",
-      @"rotateZ",
+      @"rotateZ",      
       @"perspective"];
   }
   return self;

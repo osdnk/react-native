@@ -210,4 +210,9 @@ describe('Animated Expressions', () => {
     expr.__makeNative();
     expect(p1.__isNative).toBe(true);
   });
+
+  it('should format a string', () => {
+    const value = new Animated.Value(1.2398345989856);
+    expect(evalExpression(E.format('%.2f number', value))).toBe('1.24 number');
+  });
 });

@@ -17,7 +17,8 @@ export type ExpressionParam =
   | AnimatedValue
   | AnimatedNode
   | ExpressionNode
-  | number;
+  | number
+  | string;
 
 export type ExpressionNode = {
   type: string,
@@ -42,6 +43,9 @@ export type ExpressionNode = {
   callback?: (args: number[]) => void,
   evaluator?: (...args: ExpressionParam[]) => ExpressionNode,
   params?: ExpressionNode[],
+  stringVal?: string,
+  booleanVal?: boolean,
+  format?: string,
 };
 
 export type NativeExpressionNode = {
@@ -63,4 +67,7 @@ export type NativeExpressionNode = {
   args?: ExpressionNode[],
   params?: ExpressionNode[],
   callback?: (args: number[]) => void,
+  stringVal?: string,
+  booleanVal?: boolean,
+  format?: string,
 };

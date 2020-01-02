@@ -45,21 +45,37 @@ const converters = {
   greaterOrEq: boolean,
   value: animatedValue,
   number: convertNumber,
+  string: convertString,
+  bool: convertBoolean,
   cond: convertCondition,
   set: convertSet,
   block: convertBlock,
   call: convertCall,
   callProc: convertProc,
+  format: convertFormat,
 };
 
-function convert(v: ?(ExpressionNode | number)): ExpressionNode {
+function convert(v: ?(ExpressionNode | number | string)): ExpressionNode {
   if (v === undefined || v === null) {
     throw Error('Value not defined.');
   }
   if (typeof v === 'number') {
     return {type: 'number', value: v};
+  } else if (typeof v === 'string') {
+    return {type: 'string', stringVal: v};
+  } else if (typeof v === 'boolean') {
+    return {type: 'boolean', booleanVal: v};
   }
+
   return converters[v.type](v);
+}
+
+function convertFormat(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: node.type,
+    format: node.format,
+    args: (node.args ? node.args : []).map(convert),
+  };
 }
 
 function convertProc(node: ExpressionNode): NativeExpressionNode {
@@ -142,6 +158,14 @@ function animatedValue(node: ExpressionNode): NativeExpressionNode {
 
 function convertNumber(node: ExpressionNode): NativeExpressionNode {
   return {type: node.type, value: node.value};
+}
+
+function convertString(node: ExpressionNode): NativeExpressionNode {
+  return {type: node.type, stringVal: node.stringVal};
+}
+
+function convertBoolean(node: ExpressionNode): NativeExpressionNode {
+  return {type: node.type, booleanVal: node.booleanVal};
 }
 
 export {converters};

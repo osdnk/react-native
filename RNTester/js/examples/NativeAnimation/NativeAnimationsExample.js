@@ -21,7 +21,7 @@ const {
   Slider,
 } = require('react-native');
 
-const {block, set, cond, greaterThan, debug, proc, onChange} = Animated.E;
+const {block, set, cond, greaterThan, proc} = Animated.E;
 
 const calculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
 
@@ -378,6 +378,7 @@ exports.framework = 'React';
 exports.title = 'Native Animated Example';
 exports.description = 'Test out Native Animations';
 
+const AnimatedButton = Animated.createAnimatedComponent(Button);
 exports.examples = [
   {
     title: 'Multistage With Multiply and rotation',
@@ -413,7 +414,7 @@ exports.examples = [
                     ],
                     backgroundColor: Animated.expression(
                       block(
-                        onChange(dummy, debug('dummy changed to', dummy)),
+                        //onChange(dummy, debug('dummy changed to', dummy)),
                         cond(
                           greaterThan(anim, 0.5),
                           set(dummy, 50),

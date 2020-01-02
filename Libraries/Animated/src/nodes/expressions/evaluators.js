@@ -8,12 +8,15 @@
  * @format
  */
 
+const sprintf = require('sprintf-js').sprintf;
 const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
 
-import type {ExpressionNode, ExpressionParam} from './types';
+import type {ExpressionNode} from './types';
 
 type ReducerFunction = () => number;
+type StringReducerFunction = () => string;
+type BooleanReducerFunction = () => boolean;
 
 const add = (node: ExpressionNode) => multi(node, (p, c) => p + c);
 const sub = (node: ExpressionNode) => multi(node, (p, c) => p - c);
@@ -54,11 +57,14 @@ const greaterOrEq = (node: ExpressionNode) =>
   boolean(node, (left, right) => (left >= right ? 1 : 0));
 const value = (node: ExpressionNode) => () => node.getValue && node.getValue();
 const number = (node: ExpressionNode) => () => node.value;
+const string = (node: ExpressionNode) => () => node.stringVal;
+const bool = (node: ExpressionNode) => () => node.booleanVal;
 const cond = condReducer;
 const set = setReducer;
 const block = blockReducer;
 const call = callReducer;
 const callProc = procReducer;
+const format = formatReducer;
 
 const evaluators = {
   add,
@@ -97,7 +103,10 @@ const evaluators = {
   call,
   value,
   number,
+  string,
+  bool,
   callProc,
+  format,
 };
 
 function createEvaluator(
@@ -105,6 +114,10 @@ function createEvaluator(
 ): ReducerFunction {
   if (typeof element === 'number') {
     return () => element;
+  } else if (typeof element === 'string') {
+    return () => element.toString();
+  } else if (typeof element === 'boolean') {
+    return () => (element ? 1 : 0);
   } else if (element.hasOwnProperty('__attach')) {
     return () =>
       ((element: any): AnimatedNode).__getValue &&
@@ -119,6 +132,20 @@ function createEvaluator(
     throw new Error('Error: Node type ' + node.type + ' not found.');
   }
   return evaluators[node.type](element);
+}
+
+function formatReducer(node: ExpressionNode): StringReducerFunction {
+  if (!node.args) {
+    throw Error('Args is not set in format');
+  }
+  const args = node.args.map(createEvaluator);
+  if (!node.format) {
+    throw Error('Format string is not set in format');
+  }
+  const f = node.format;
+  return () => {
+    return sprintf(f, ...args);
+  };
 }
 
 function procReducer(node: ExpressionNode): ReducerFunction {

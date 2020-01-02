@@ -50,6 +50,11 @@ type ProcFactory = (
   evaluator: (...args: ExpressionParam[]) => ExpressionNode,
 ) => (...args: ExpressionParam[]) => ExpressionNode;
 
+type FormatFactory = (
+  format: string,
+  ...args: Array<ExpressionParam>
+) => ExpressionNode;
+
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
 const multiply: MultiFactory = multi('multiply');
@@ -85,6 +90,7 @@ const set: SetFactory = setFactory;
 const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
 const proc: ProcFactory = procFactory;
+const format: FormatFactory = formatFactory;
 
 function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
@@ -101,27 +107,26 @@ function resolve(v: ExpressionParam): ExpressionNode {
       // $FlowFixMe
       setValue: (value: number) => (((v: any): AnimatedValue)._value = value),
     };
+  } else if (typeof v === 'string') {
+    return {type: 'string', stringVal: ((v: any): string)};
+  } else if (typeof v === 'boolean') {
+    return {type: 'boolean', booleanVal: ((v: any): boolean)};
   } else {
     // Number
     return {type: 'number', value: ((v: any): number)};
   }
 }
 
-const a = {
-  type: 'callProc',
-  args: [{type: 'value', node: 0}],
-  nodes: [{type: 'value', node: 0}],
-  expr: {
-    type: 'cond',
-    expr: {
-      type: 'greaterThan',
-      left: {type: 'value', node: 0},
-      right: {type: 'number', value: 0.5},
-    },
-    ifNode: {type: 'number', value: 0},
-    elseNode: {type: 'number', value: 1},
-  },
-};
+function formatFactory(
+  f: string,
+  ...args: Array<ExpressionParam>
+): ExpressionNode {
+  return {
+    type: 'format',
+    format: f,
+    args: args.map(resolve),
+  };
+}
 
 function procFactory(
   evaluator: (...args: ExpressionParam[]) => ExpressionNode,
@@ -256,4 +261,5 @@ export const factories = {
   block,
   call,
   proc,
+  format,
 };
