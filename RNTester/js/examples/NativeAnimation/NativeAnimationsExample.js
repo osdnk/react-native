@@ -26,6 +26,7 @@ const {
   set,
   cond,
   timing,
+  spring,
   stopAnimation,
   greaterThan,
   debug,
@@ -44,8 +45,8 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
     js: new Animated.Value(0),
     nativedummy: new Animated.Value(0),
     jsdummy: new Animated.Value(0),
-    nativeBorderRadius: new Animated.Value(0),
-    jsBorderRadius: new Animated.Value(0),
+    nativeBorderRadius: new Animated.Value(50),
+    jsBorderRadius: new Animated.Value(50),
   };
 
   current = 0;
@@ -407,7 +408,7 @@ exports.examples = [
                 style={[
                   styles.block,
                   {
-                    borderRadius: borderRadius,
+                    width: borderRadius,
                     transform: [
                       {
                         translateX: anim.interpolate({
@@ -434,19 +435,17 @@ exports.examples = [
                           greaterThan(anim, 0.5),
                           cond(eq(dummy, 0), [
                             set(dummy, 1),
-                            timing(
+                            spring(
                               borderRadius,
-                              50,
-                              250,
+                              100,
                               debug('done 50!', borderRadius),
                             ),
                           ]),
                           cond(eq(dummy, 1), [
                             set(dummy, 0),
-                            timing(
+                            spring(
                               borderRadius,
-                              0,
-                              250,
+                              50,
                               debug('done 0!', borderRadius),
                             ),
                           ]),

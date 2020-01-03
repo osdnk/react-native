@@ -51,6 +51,8 @@ const converters = {
   call: convertCall,
   callProc: convertProc,
   timing: convertTiming,
+  spring: convertSpring,
+  stopAnimation: convertStopAnimation,
 };
 
 function convert(v: ?(ExpressionNode | number)): ExpressionNode {
@@ -64,6 +66,18 @@ function convert(v: ?(ExpressionNode | number)): ExpressionNode {
 }
 
 function convertTiming(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: 'empty',
+  };
+}
+
+function convertSpring(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: 'empty',
+  };
+}
+
+function convertStopAnimation(node: ExpressionNode): NativeExpressionNode {
   return {
     type: 'empty',
   };

@@ -12,6 +12,7 @@ const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
 import Animation from '../../animations/Animation';
 import TimingAnimation from '../../animations/TimingAnimation';
+import SpringAnimation from '../../animations/SpringAnimation';
 
 import type {ExpressionNode} from './types';
 
@@ -65,6 +66,7 @@ const block = blockReducer;
 const call = callReducer;
 const callProc = procReducer;
 const timing = timingReducer;
+const spring = springReducer;
 const stopAnimation = stopAnimationReducer;
 
 const evaluators = {
@@ -106,6 +108,7 @@ const evaluators = {
   number,
   callProc,
   timing,
+  spring,
   stopAnimation,
 };
 
@@ -143,6 +146,38 @@ function stopAnimationReducer(node: ExpressionNode): ReducerFunction {
   };
 }
 
+function springReducer(node: ExpressionNode): ReducerFunction {
+  if (!node.target) {
+    throw Error('Target is not set in timing');
+  }
+  const target = node.target;
+  if (!node.toValue) {
+    throw Error('toValue is not set in timing');
+  }
+  const toValue = createEvaluator(node.toValue);
+  return () => {
+    if (target.node) {
+      const animation = new SpringAnimation({
+        toValue: toValue(),
+        mass: 1,
+        stiffness: 180,
+        damping: 12,
+        useNativeDriver: false,
+      });
+      const animationId = _animationId++;
+      _runningAnimations[animationId] = animation;
+      ((target.node: any): AnimatedValue).animate(animation, () => {
+        delete _runningAnimations[animationId];
+        if (node.source) {
+          createEvaluator(node.source)();
+        }
+      });
+      return animationId;
+    }
+    return 0;
+  };
+}
+
 function timingReducer(node: ExpressionNode): ReducerFunction {
   if (!node.target) {
     throw Error('Target is not set in timing');
@@ -165,19 +200,12 @@ function timingReducer(node: ExpressionNode): ReducerFunction {
       });
       const animationId = _animationId++;
       _runningAnimations[animationId] = animation;
-      ((target.node: any): AnimatedValue).animate(
-        new TimingAnimation({
-          toValue: toValue(),
-          duration: duration(),
-          useNativeDriver: false,
-        }),
-        () => {
-          delete _runningAnimations[animationId];
-          if (node.source) {
-            createEvaluator(node.source)();
-          }
-        },
-      );
+      ((target.node: any): AnimatedValue).animate(animation, () => {
+        delete _runningAnimations[animationId];
+        if (node.source) {
+          createEvaluator(node.source)();
+        }
+      });
       return animationId;
     }
     return 0;

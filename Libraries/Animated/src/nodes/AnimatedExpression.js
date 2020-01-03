@@ -148,6 +148,8 @@ function collectArguments(
     collectArguments(node.elseNode, args, params);
     collectArguments(node.target, args, params);
     collectArguments(node.source, args, params);
+    collectArguments(node.toValue, args, params);
+    collectArguments(node.duration, args, params);
     node.others && node.others.forEach(n => collectArguments(n, args, params));
     node.nodes && node.nodes.forEach(n => collectArguments(n, args, params));
     node.args && node.args.forEach(n => collectArguments(n, args, params));

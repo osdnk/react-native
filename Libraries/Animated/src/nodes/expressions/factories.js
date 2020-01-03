@@ -57,6 +57,12 @@ type TimingFactory = (
   callback?: ExpressionNode,
 ) => ExpressionNode;
 
+type SpringFactory = (
+  value: AnimatedValue,
+  toValue: ExpressionParam,
+  callback?: ExpressionNode,
+) => ExpressionNode;
+
 type StopAnimationFactory = (animationId: number) => ExpressionNode;
 
 const add: MultiFactory = multi('add');
@@ -95,6 +101,7 @@ const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
 const proc: ProcFactory = procFactory;
 const timing: TimingFactory = timingFactory;
+const spring: SpringFactory = springFactory;
 const stopAnimation: StopAnimationFactory = stopAnimationFactory;
 
 function resolve(v: ExpressionParam): ExpressionNode {
@@ -116,6 +123,19 @@ function resolve(v: ExpressionParam): ExpressionNode {
     // Number
     return {type: 'number', value: ((v: any): number)};
   }
+}
+
+function springFactory(
+  value: AnimatedValue,
+  toValue: ExpressionParam,
+  callback?: ExpressionNode,
+): ExpressionNode {
+  return {
+    type: 'spring',
+    target: resolve(value),
+    toValue: resolve(toValue),
+    source: callback,
+  };
 }
 
 function timingFactory(
@@ -274,5 +294,6 @@ export const factories = {
   call,
   proc,
   timing,
+  spring,
   stopAnimation,
 };
