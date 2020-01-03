@@ -42,6 +42,8 @@ export type ExpressionNode = {
   callback?: (args: number[]) => void,
   evaluator?: (...args: ExpressionParam[]) => ExpressionNode,
   params?: ExpressionNode[],
+  toValue?: ExpressionNode,
+  duration?: ExpressionNode,
 };
 
 export type NativeExpressionNode = {

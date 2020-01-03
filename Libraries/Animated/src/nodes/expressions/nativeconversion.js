@@ -50,6 +50,7 @@ const converters = {
   block: convertBlock,
   call: convertCall,
   callProc: convertProc,
+  timing: convertTiming,
 };
 
 function convert(v: ?(ExpressionNode | number)): ExpressionNode {
@@ -60,6 +61,12 @@ function convert(v: ?(ExpressionNode | number)): ExpressionNode {
     return {type: 'number', value: v};
   }
   return converters[v.type](v);
+}
+
+function convertTiming(node: ExpressionNode): NativeExpressionNode {
+  return {
+    type: 'empty',
+  };
 }
 
 function convertProc(node: ExpressionNode): NativeExpressionNode {

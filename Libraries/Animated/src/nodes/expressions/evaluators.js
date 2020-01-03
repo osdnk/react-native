@@ -10,10 +10,15 @@
 
 const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
+import Animation from '../../animations/Animation';
+import TimingAnimation from '../../animations/TimingAnimation';
 
-import type {ExpressionNode, ExpressionParam} from './types';
+import type {ExpressionNode} from './types';
 
 type ReducerFunction = () => number;
+
+let _animationId = 0;
+const _runningAnimations: {[number]: Animation, ...} = {};
 
 const add = (node: ExpressionNode) => multi(node, (p, c) => p + c);
 const sub = (node: ExpressionNode) => multi(node, (p, c) => p - c);
@@ -59,6 +64,8 @@ const set = setReducer;
 const block = blockReducer;
 const call = callReducer;
 const callProc = procReducer;
+const timing = timingReducer;
+const stopAnimation = stopAnimationReducer;
 
 const evaluators = {
   add,
@@ -98,6 +105,8 @@ const evaluators = {
   value,
   number,
   callProc,
+  timing,
+  stopAnimation,
 };
 
 function createEvaluator(
@@ -119,6 +128,60 @@ function createEvaluator(
     throw new Error('Error: Node type ' + node.type + ' not found.');
   }
   return evaluators[node.type](element);
+}
+
+function stopAnimationReducer(node: ExpressionNode): ReducerFunction {
+  const evaluator = createEvaluator(node);
+  return () => {
+    const animationId = evaluator();
+    if (_runningAnimations[animationId]) {
+      _runningAnimations[animationId].stop();
+      delete _runningAnimations[animationId];
+      return 1;
+    }
+    return 0;
+  };
+}
+
+function timingReducer(node: ExpressionNode): ReducerFunction {
+  if (!node.target) {
+    throw Error('Target is not set in timing');
+  }
+  const target = node.target;
+  if (!node.toValue) {
+    throw Error('toValue is not set in timing');
+  }
+  const toValue = createEvaluator(node.toValue);
+  if (!node.duration) {
+    throw Error('Duration is not set in timing');
+  }
+  const duration = createEvaluator(node.duration);
+  return () => {
+    if (target.node) {
+      const animation = new TimingAnimation({
+        toValue: toValue(),
+        duration: duration(),
+        useNativeDriver: false,
+      });
+      const animationId = _animationId++;
+      _runningAnimations[animationId] = animation;
+      ((target.node: any): AnimatedValue).animate(
+        new TimingAnimation({
+          toValue: toValue(),
+          duration: duration(),
+          useNativeDriver: false,
+        }),
+        () => {
+          delete _runningAnimations[animationId];
+          if (node.source) {
+            createEvaluator(node.source)();
+          }
+        },
+      );
+      return animationId;
+    }
+    return 0;
+  };
 }
 
 function procReducer(node: ExpressionNode): ReducerFunction {

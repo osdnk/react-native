@@ -50,6 +50,15 @@ type ProcFactory = (
   evaluator: (...args: ExpressionParam[]) => ExpressionNode,
 ) => (...args: ExpressionParam[]) => ExpressionNode;
 
+type TimingFactory = (
+  value: AnimatedValue,
+  toValue: ExpressionParam,
+  duration: ExpressionParam,
+  callback?: ExpressionNode,
+) => ExpressionNode;
+
+type StopAnimationFactory = (animationId: number) => ExpressionNode;
+
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
 const multiply: MultiFactory = multi('multiply');
@@ -85,6 +94,8 @@ const set: SetFactory = setFactory;
 const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
 const proc: ProcFactory = procFactory;
+const timing: TimingFactory = timingFactory;
+const stopAnimation: StopAnimationFactory = stopAnimationFactory;
 
 function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
@@ -107,21 +118,27 @@ function resolve(v: ExpressionParam): ExpressionNode {
   }
 }
 
-const a = {
-  type: 'callProc',
-  args: [{type: 'value', node: 0}],
-  nodes: [{type: 'value', node: 0}],
-  expr: {
-    type: 'cond',
-    expr: {
-      type: 'greaterThan',
-      left: {type: 'value', node: 0},
-      right: {type: 'number', value: 0.5},
-    },
-    ifNode: {type: 'number', value: 0},
-    elseNode: {type: 'number', value: 1},
-  },
-};
+function timingFactory(
+  value: AnimatedValue,
+  toValue: ExpressionParam,
+  duration: ExpressionParam,
+  callback?: ExpressionNode,
+): ExpressionNode {
+  return {
+    type: 'timing',
+    target: resolve(value),
+    toValue: resolve(toValue),
+    duration: resolve(duration),
+    source: callback,
+  };
+}
+
+function stopAnimationFactory(animationId: number): ExpressionNode {
+  return {
+    type: 'stopAnimation',
+    value: animationId,
+  };
+}
 
 function procFactory(
   evaluator: (...args: ExpressionParam[]) => ExpressionNode,
@@ -256,4 +273,6 @@ export const factories = {
   block,
   call,
   proc,
+  timing,
+  stopAnimation,
 };

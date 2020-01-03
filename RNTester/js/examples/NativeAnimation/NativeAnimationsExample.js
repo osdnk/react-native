@@ -21,7 +21,18 @@ const {
   Slider,
 } = require('react-native');
 
-const {block, set, cond, greaterThan, debug, proc, onChange} = Animated.E;
+const {
+  block,
+  set,
+  cond,
+  timing,
+  stopAnimation,
+  greaterThan,
+  debug,
+  proc,
+  eq,
+  onChange,
+} = Animated.E;
 
 const calculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
 
@@ -33,6 +44,8 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
     js: new Animated.Value(0),
     nativedummy: new Animated.Value(0),
     jsdummy: new Animated.Value(0),
+    nativeBorderRadius: new Animated.Value(0),
+    jsBorderRadius: new Animated.Value(0),
   };
 
   current = 0;
@@ -62,17 +75,21 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
     return (
       <TouchableWithoutFeedback onPress={this.onPress}>
         <View>
-          <View>
+          {/* <View>
             <Text>Native:</Text>
           </View>
           <View style={styles.row}>
             {this.props.children(this.state.native, this.state.nativedummy)}
-          </View>
+          </View> */}
           <View>
             <Text>JavaScript:</Text>
           </View>
           <View style={styles.row}>
-            {this.props.children(this.state.js, this.state.jsdummy)}
+            {this.props.children(
+              this.state.js,
+              this.state.jsdummy,
+              this.state.jsBorderRadius,
+            )}
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -384,13 +401,13 @@ exports.examples = [
     render: function(): React.Node {
       return (
         <Tester type="timing" config={{duration: 1000}}>
-          {(anim, dummy) => {
+          {(anim, dummy, borderRadius) => {
             return (
               <Animated.View
                 style={[
                   styles.block,
                   {
-                    borderRadius: dummy,
+                    borderRadius: borderRadius,
                     transform: [
                       {
                         translateX: anim.interpolate({
@@ -413,11 +430,26 @@ exports.examples = [
                     ],
                     backgroundColor: Animated.expression(
                       block(
-                        onChange(dummy, debug('dummy changed to', dummy)),
                         cond(
                           greaterThan(anim, 0.5),
-                          set(dummy, 50),
-                          set(dummy, 10),
+                          cond(eq(dummy, 0), [
+                            set(dummy, 1),
+                            timing(
+                              borderRadius,
+                              50,
+                              250,
+                              debug('done 50!', borderRadius),
+                            ),
+                          ]),
+                          cond(eq(dummy, 1), [
+                            set(dummy, 0),
+                            timing(
+                              borderRadius,
+                              0,
+                              250,
+                              debug('done 0!', borderRadius),
+                            ),
+                          ]),
                         ),
                         calculator(anim),
                       ),
