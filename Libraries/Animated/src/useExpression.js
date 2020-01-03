@@ -15,7 +15,7 @@ import AnimatedExpression from './nodes/AnimatedExpression';
 
 import type {ExpressionNode} from './nodes/expressions';
 
-export function useExpression(
+function useExpression(
   expression: () => ExpressionNode,
   deps: any[] = [],
   useNativeDriver: boolean = false,
@@ -34,3 +34,5 @@ export function useExpression(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useNativeDriver].concat(deps));
 }
+
+module.exports = useExpression;
