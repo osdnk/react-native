@@ -137,7 +137,6 @@ function collectArguments(
       node.params && node.params.forEach(p => params.push(p));
       node.args && node.args.forEach(p => params.push(p));
       collectArguments(node.expr, args, params);
-      return;
     }
 
     collectArguments(node.a, args, params);
