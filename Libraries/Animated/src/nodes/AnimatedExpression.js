@@ -32,7 +32,7 @@ class AnimatedExpression extends AnimatedWithChildren {
 
   _args: Array<any>;
   _params: Array<any>;
-  _evaluator: () => number;
+  _evaluator: (() => number) | null;
   _callListeners: {[key: string]: CallCallbackListener, ...};
   _nativeCallCallbackListener: ?any;
 
@@ -58,9 +58,12 @@ class AnimatedExpression extends AnimatedWithChildren {
   }
 
   __detach() {
-    this._args.forEach(
-      a => typeof a !== 'function' && a.node.node.__removeChild(this),
-    );
+    this._args.forEach(a => {
+      if (typeof a.node !== 'function') {
+        a.node.node.__removeChild(this);
+      }
+    });
+    this._evaluator = null;
     this._params.forEach(p => p.node.node.__detach());
     this.__stopListeningToCallCallbacks();
     super.__detach();
@@ -76,7 +79,7 @@ class AnimatedExpression extends AnimatedWithChildren {
   __getNativeConfig(): any {
     return {
       type: 'expression',
-      graph: converters[this._expression.type](this._expression),
+      expression: converters[this._expression.type](this._expression),
     };
   }
 
@@ -101,6 +104,7 @@ class AnimatedExpression extends AnimatedWithChildren {
     NativeAnimatedHelper.nativeEventEmitter.removeSubscription(
       this._nativeCallCallbackListener,
     );
+    this._callListeners = {};
     this._nativeCallCallbackListener = undefined;
   }
 

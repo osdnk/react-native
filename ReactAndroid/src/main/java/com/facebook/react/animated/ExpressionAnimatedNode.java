@@ -8,10 +8,8 @@
 package com.facebook.react.animated;
 
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.JavaOnlyArray;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 
@@ -37,19 +35,19 @@ import java.util.List;
   }
 
   private final NativeAnimatedNodesManager mNativeAnimatedNodesManager;
-  private final ReadableMap mGraph;
+  private final ReadableMap mExpression;
   private EvalFunction mEvalFunc;
 
   public ExpressionAnimatedNode(
     ReadableMap config, NativeAnimatedNodesManager nativeAnimatedNodesManager) {
     mNativeAnimatedNodesManager = nativeAnimatedNodesManager;
-    mGraph = config.getMap("graph");
+    mExpression = config.getMap("expression");
   }
 
   @Override
   public void update() {
     if(mEvalFunc == null) {
-      mEvalFunc = createEvalFunc(mGraph);
+      mEvalFunc = createEvalFunc(mExpression);
     }
     mValue = mEvalFunc.eval();
   }

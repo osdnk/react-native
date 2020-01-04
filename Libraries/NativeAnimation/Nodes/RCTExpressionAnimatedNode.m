@@ -19,15 +19,14 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 @implementation RCTExpressionAnimatedNode
 {
   evalBlock _evalBlock;
-  NSDictionary* _graph;
+  NSDictionary* _expression;
 }
 
 - (instancetype)initWithTag:(NSNumber *)tag
                      config:(NSDictionary<NSString *, id> *)config
 {
   if (self = [super initWithTag:tag config:config]) {
-    _graph = config[@"graph"];
-    // NSLog(@"%@", _graph);
+    _expression = config[@"expression"];
   }
 
   return self;
@@ -37,7 +36,7 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 {
   [super performUpdate];
   if(!_evalBlock) {
-    _evalBlock = [self evalBlockWithNode:_graph];
+    _evalBlock = [self evalBlockWithNode:_expression];
   }
   
   self.value = _evalBlock();

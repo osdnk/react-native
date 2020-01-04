@@ -36,7 +36,7 @@ const {
   boolean,
 } = Animated.E;
 
-const calculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
+// const calculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
 
 const AnimatedSlider = Animated.createAnimatedComponent(Slider);
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
@@ -467,7 +467,7 @@ exports.examples = [
                               debug('dummy changed to 10', dummy),
                             ]),
                           ),
-                          calculator(anim),
+                          cond(greaterThan(anim, 0.5), 0, 1),
                         ),
                       ).interpolate({
                         inputRange: [0, 1],
