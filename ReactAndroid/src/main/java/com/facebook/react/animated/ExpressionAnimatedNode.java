@@ -339,6 +339,7 @@ import java.util.List;
 
   private EvalFunction createCall(ReadableMap node) {
     ReadableArray args = node.getArray("args");
+    final int nodeId = node.getInt("nodeId");
     final List<EvalFunction> evalfunctions = new ArrayList<>(1);
     for(int i=0; i<args.size(); i++) {
       evalfunctions.add(createEvalFunc(args.getMap(i)));
@@ -354,6 +355,7 @@ import java.util.List;
 
         WritableMap eventData = Arguments.createMap();
         eventData.putInt("id", mTag);
+        eventData.putInt("nodeId", nodeId);
         eventData.putArray("values", values);
         mNativeAnimatedNodesManager.sendEvent("onAnimatedCallback", eventData);
 
