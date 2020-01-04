@@ -247,6 +247,7 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 
 - (evalBlock) evalBlockWithCall:(NSDictionary*)node {
   NSArray* args = node[@"args"];
+  NSNumber* nodeId = node[@"nodeId"];
   NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
   for(int i=0; i<[args count]; i++) {
     [evals addObject:[self evalBlockWithNode:args[i]]];
@@ -257,7 +258,7 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     for(int i=0; i<evals.count; i++) {
       [values addObject:[NSNumber numberWithFloat:evals[i]()]];
     }
-    [self.manager sendEventWithName:@"onAnimatedCallback" body:@{@"id": self.nodeTag, @"values": values }];
+    [self.manager sendEventWithName:@"onAnimatedCallback" body:@{@"id": self.nodeTag, @"nodeId": nodeId, @"values": values }];
     
     return (CGFloat)0.0f;
   };

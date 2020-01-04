@@ -31,6 +31,8 @@ const {
   debug,
   proc,
   onChange,
+  eq,
+  neq,
   boolean,
 } = Animated.E;
 
@@ -454,11 +456,16 @@ exports.examples = [
                       ],
                       backgroundColor: Animated.expression(
                         block(
-                          onChange(dummy, debug('dummy changed to', dummy)),
                           cond(
                             greaterThan(anim, 0.5),
-                            set(dummy, 50),
-                            set(dummy, 10),
+                            cond(neq(dummy, 50), [
+                              set(dummy, 50),
+                              debug('dummy changed to 50', dummy),
+                            ]),
+                            cond(eq(dummy, 50), [
+                              set(dummy, 10),
+                              debug('dummy changed to 10', dummy),
+                            ]),
                           ),
                           calculator(anim),
                         ),
