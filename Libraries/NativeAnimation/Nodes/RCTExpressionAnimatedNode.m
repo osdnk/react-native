@@ -190,10 +190,44 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return [self evalBlockWithAnimatedNode:node];
   } else if ([type isEqualToString:@"number"]) {
     return ^ { return (CGFloat)[node[@"value"] floatValue]; };
+  } else if([type isEqualToString:@"format"]) {
+    return [self evalBlockWithFormat:node];
+  } else if([type isEqualToString:@"castBoolean"]) {
+    return [self evalBlockWithCastBoolean:node];
   }
   return ^{ return (CGFloat)0.0f; };
 }
 
+- (evalBlock) evalBlockWithFormat:(NSDictionary*)node {
+  NSArray* args = node[@"args"];
+  NSString* format = node[@"format"];
+  NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
+  for(int i=0; i<[args count]; i++) {
+    [evals addObject:[self evalBlockWithNode:args[i]]];
+  }
+  
+  return ^{
+    double* argList = calloc(1UL, sizeof(double) * evals.count);
+    for (int i = 0; i < evals.count; i++) {
+       argList[i] = evals[i]();
+    }
+    NSString* result = [[NSString alloc] initWithFormat:format, *argList];
+    free (argList);
+    
+    self.animatedObject = result;
+    return (CGFloat)0.0f;
+  };
+}
+
+- (evalBlock) evalBlockWithCastBoolean:(NSDictionary*)node {
+  evalBlock evaluator = [self evalBlockWithNode:node[@"v"]];
+  return ^{
+    self.animatedObject = [NSNumber numberWithBool: evaluator() == 0 ? false : true];
+    return (CGFloat)0.0f;
+  };
+}
+
+  
 - (evalBlock) evalBlockWithCallProc:(NSDictionary*)node {
   NSArray* args = node[@"args"];
   NSArray* params = node[@"params"];

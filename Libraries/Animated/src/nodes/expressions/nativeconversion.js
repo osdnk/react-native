@@ -22,6 +22,8 @@ import type {
   CondStatementNode,
   CallStatementNode,
   ProcStatementNode,
+  FormatExpressionNode,
+  CastBooleanExpressionNode,
   NativeExpressionNode,
   NativeMultiExpressionNode,
   NativeUnaryExpressionNode,
@@ -33,6 +35,8 @@ import type {
   NativeCondStatementNode,
   NativeCallStatementNode,
   NativeProcStatementNode,
+  NativeFormatExpressionNode,
+  NativeCastBooleanExpressionNode,
 } from './types';
 
 const converters = {
@@ -73,6 +77,8 @@ const converters = {
   block: convertBlock,
   call: convertCall,
   callProc: convertProc,
+  format: convertFormat,
+  castBoolean: convertCastBoolean,
 };
 
 function convert(v: ?ExpressionNode): NativeExpressionNode {
@@ -80,6 +86,25 @@ function convert(v: ?ExpressionNode): NativeExpressionNode {
     throw Error('Value not defined.');
   }
   return converters[v.type](v);
+}
+
+function convertFormat(node: FormatExpressionNode): NativeFormatExpressionNode {
+  return {
+    type: node.type,
+    nodeId: node.nodeId,
+    format: node.format,
+    args: (node.args ? node.args : []).map(convert),
+  };
+}
+
+function convertCastBoolean(
+  node: CastBooleanExpressionNode,
+): NativeCastBooleanExpressionNode {
+  return {
+    type: node.type,
+    nodeId: node.nodeId,
+    v: convert(node.v),
+  };
 }
 
 function convertProc(node: ProcStatementNode): NativeProcStatementNode {

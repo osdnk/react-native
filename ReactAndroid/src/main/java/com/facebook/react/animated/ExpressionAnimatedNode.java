@@ -274,6 +274,8 @@ import java.util.List;
       case "block": return createBlock(node);
       case "call": return createCall(node);
       case "callProc": return createCallProc(node);
+      case "format": return createFormat(node);
+      case "castBoolean": return createCastBoolean(node);
       default:
         return new EvalFunction() {
           @Override
@@ -282,19 +284,51 @@ import java.util.List;
     }
   }
 
+  private EvalFunction createFormat(ReadableMap node) {
+    final String format = node.getString("format");
+    ReadableArray args = node.getArray("args");
+    final List<EvalFunction> evalfunctions= new ArrayList<>(1);
+    for(int i=0; i<args.size(); i++) {
+      evalfunctions.add(createEvalFunc(args.getMap(i)));
+    }
+
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        Object[] params = new Object[evalfunctions.size()];
+        for(int i=0; i<evalfunctions.size(); i++) {
+          params[i] = evalfunctions.get(i).eval();
+        }
+        mAnimatedObject = String.format(format, (Object[])params);
+        return 0.0;
+      }
+    };
+  }
+
+  private EvalFunction createCastBoolean(ReadableMap node) {
+    final EvalFunction evaluator = createEvalFunc(node.getMap("v"));
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        mAnimatedObject = evaluator.eval() == 0 ? false : true;
+        return 0.0;
+      }
+    };
+  }
+
   private EvalFunction createCallProc(ReadableMap node) {
     ReadableArray args = node.getArray("args");
-    ReadableArray params = node.getArray("params");
+    final ReadableArray params = node.getArray("params");
     final List<EvalFunction> evalfunctions = new ArrayList<>();
     for(int i=0; i<args.size(); i++) {
       evalfunctions.add(createEvalFunc(args.getMap(i)));
     }
 
-    EvalFunction evaluator = createEvalFunc(node.getMap("expr"));
+    final EvalFunction evaluator = createEvalFunc(node.getMap("expr"));
     return new EvalFunction() {
       @Override
       public double eval() {
-        for(int i=0; i<args.size(); i++) {
+        for(int i=0; i<evalfunctions.size(); i++) {
           mNativeAnimatedNodesManager.setAnimatedNodeValue(
             params.getMap(i).getInt("tag"), evalfunctions.get(i).eval());
         }

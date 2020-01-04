@@ -25,6 +25,8 @@ import type {
   CondStatementNode,
   CallStatementNode,
   ProcStatementNode,
+  FormatExpressionNode,
+  CastBooleanExpressionNode,
   ExpressionParam,
 } from './types';
 
@@ -62,8 +64,15 @@ type CallFactory = (
 ) => CallStatementNode;
 
 type ProcFactory = (
-  evaluator: (...args: ExpressionParam[]) => ProcStatementNode,
+  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
 ) => (...args: ExpressionParam[]) => ProcStatementNode;
+
+type FormatFactory = (
+  formatStr: string,
+  ...args: ExpressionParam[]
+) => FormatExpressionNode;
+
+type CastBooleanFactory = (v: ExpressionParam) => CastBooleanExpressionNode;
 
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
@@ -100,6 +109,8 @@ const set: SetFactory = setFactory;
 const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
 const proc: ProcFactory = procFactory;
+const format: FormatFactory = formatFactory;
+const castBoolean: CastBooleanFactory = castBooleanFactory;
 
 function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
@@ -127,8 +138,28 @@ function resolve(v: ExpressionParam): ExpressionNode {
   }
 }
 
+function formatFactory(
+  formatStr: string,
+  ...args: ExpressionParam[]
+): FormatExpressionNode {
+  return {
+    type: 'format',
+    nodeId: _nodeId++,
+    format: formatStr,
+    args: args.map(resolve),
+  };
+}
+
+function castBooleanFactory(v: ExpressionParam): CastBooleanExpressionNode {
+  return {
+    type: 'castBoolean',
+    nodeId: _nodeId++,
+    v: resolve(v),
+  };
+}
+
 function procFactory(
-  evaluator: (...args: ExpressionParam[]) => ProcStatementNode,
+  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
 ): (...args: ExpressionParam[]) => ProcStatementNode {
   const params = new Array(evaluator.length);
   for (let i = 0; i < params.length; i++) {
@@ -268,4 +299,6 @@ export const factories = {
   block,
   call,
   proc,
+  format,
+  boolean: castBoolean,
 };

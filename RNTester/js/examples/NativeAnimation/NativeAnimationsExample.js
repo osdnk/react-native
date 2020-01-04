@@ -19,13 +19,25 @@ const {
   StyleSheet,
   TouchableWithoutFeedback,
   Slider,
+  TextInput,
 } = require('react-native');
 
-const {block, set, cond, greaterThan, debug, proc, onChange} = Animated.E;
+const {
+  block,
+  set,
+  cond,
+  format,
+  greaterThan,
+  debug,
+  proc,
+  onChange,
+  boolean,
+} = Animated.E;
 
 const calculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
 
 const AnimatedSlider = Animated.createAnimatedComponent(Slider);
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
   state = {
@@ -386,48 +398,78 @@ exports.examples = [
         <Tester type="timing" config={{duration: 1000}}>
           {(anim, dummy) => {
             return (
-              <Animated.View
-                style={[
-                  styles.block,
-                  {
-                    borderRadius: dummy,
-                    transform: [
-                      {
-                        translateX: anim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0, 200],
-                        }),
-                      },
-                      {
-                        translateY: anim.interpolate({
-                          inputRange: [0, 0.5, 1],
-                          outputRange: [0, 50, 0],
-                        }),
-                      },
-                      {
-                        rotate: anim.interpolate({
-                          inputRange: [0, 0.5, 1],
-                          outputRange: ['0deg', '90deg', '0deg'],
-                        }),
-                      },
-                    ],
-                    backgroundColor: Animated.expression(
-                      block(
-                        onChange(dummy, debug('dummy changed to', dummy)),
-                        cond(
-                          greaterThan(anim, 0.5),
-                          set(dummy, 50),
-                          set(dummy, 10),
+              <>
+                <Animated.ScrollView
+                  scrollEnabled={Animated.expression(boolean(anim))}
+                  horizontal
+                  style={{
+                    height: 20,
+                    width: 100,
+                    borderWidth: 0.5,
+                    borderColor: 'black',
+                  }}>
+                  <View
+                    style={{height: 20, width: 100}}
+                    onStartShouldSetResponder={() => true}>
+                    <View
+                      style={{
+                        height: 20,
+                        width: 20,
+                        backgroundColor: 'red',
+                        marginRight: 10,
+                      }}
+                    />
+                  </View>
+                </Animated.ScrollView>
+
+                <AnimatedTextInput
+                  underlineColorAndroid="transparent"
+                  editable={false}
+                  {...{text: Animated.expression(format('Value: %.2f', anim))}}
+                />
+                <Animated.View
+                  style={[
+                    styles.block,
+                    {
+                      borderRadius: dummy,
+                      transform: [
+                        {
+                          translateX: anim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 200],
+                          }),
+                        },
+                        {
+                          translateY: anim.interpolate({
+                            inputRange: [0, 0.5, 1],
+                            outputRange: [0, 50, 0],
+                          }),
+                        },
+                        {
+                          rotate: anim.interpolate({
+                            inputRange: [0, 0.5, 1],
+                            outputRange: ['0deg', '90deg', '0deg'],
+                          }),
+                        },
+                      ],
+                      backgroundColor: Animated.expression(
+                        block(
+                          onChange(dummy, debug('dummy changed to', dummy)),
+                          cond(
+                            greaterThan(anim, 0.5),
+                            set(dummy, 50),
+                            set(dummy, 10),
+                          ),
+                          calculator(anim),
                         ),
-                        calculator(anim),
-                      ),
-                    ).interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['#FF0000', '#00FF00'],
-                    }),
-                  },
-                ]}
-              />
+                      ).interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['#FF0000', '#00FF00'],
+                      }),
+                    },
+                  ]}
+                />
+              </>
             );
           }}
         </Tester>

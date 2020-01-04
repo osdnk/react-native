@@ -1099,6 +1099,22 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
     return node.value;
   };
   
+  NSString* ( ^evalString ) (NSDictionary*);
+  evalString = ^(NSDictionary* graph) {
+    [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"graph": graph}];
+    RCTExpressionAnimatedNode* node = (RCTExpressionAnimatedNode*)[manager findNodeById:@100];
+    [node performUpdate];
+    return (NSString*)node.animatedObject;
+  };
+  
+  BOOL ( ^evalBool ) (NSDictionary*);
+  evalBool = ^(NSDictionary* graph) {
+    [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"graph": graph}];
+    RCTExpressionAnimatedNode* node = (RCTExpressionAnimatedNode*)[manager findNodeById:@100];
+    [node performUpdate];
+    return [(NSNumber*)node.animatedObject boolValue];
+  };
+  
   NSDictionary* ( ^n ) (CGFloat);
   n = ^ (CGFloat value) {
     return @{@"type":@"number", @"value": [NSNumber numberWithFloat:value]};
@@ -1225,7 +1241,11 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(eval(@{@"type": @"ceil", @"v": n(10.1)}), 11, @"ceil did not work");
   XCTAssertEqual(eval(@{@"type": @"floor", @"v": n(10.9)}), 10, @"floor did not work");
   
-  // Procs
+  // Conversion
+  XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f", @"args": @[n(10.123456678)]}) isEqualToString:@"10.12"], @"format did not work");
+  
+  XCTAssertTrue(evalBool(@{@"type": @"castBoolean", @"v": n(23)}), @"boolean did not work");
+  XCTAssertFalse(evalBool(@{@"type": @"castBoolean", @"v": n(0)}), @"boolean did not work");
 }
 
 @end

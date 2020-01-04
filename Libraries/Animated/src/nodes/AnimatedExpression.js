@@ -10,20 +10,27 @@
 
 'use strict';
 
-const AnimatedNode = require('./AnimatedNode');
 const AnimatedInterpolation = require('./AnimatedInterpolation');
 const AnimatedWithChildren = require('./AnimatedWithChildren');
 const NativeAnimatedHelper = require('../NativeAnimatedHelper');
 
 import type {InterpolationConfigType} from './AnimatedInterpolation';
-import type {ExpressionNode} from './expressions';
+import type {
+  ExpressionNode,
+  FormatExpressionNode,
+  CastBooleanExpressionNode,
+} from './expressions';
 import {createEvaluator, converters} from './expressions';
 
 type CallCallbackListener = (args: number[]) => void;
 let _uniqueId = 1;
 
 class AnimatedExpression extends AnimatedWithChildren {
-  _expression: ExpressionNode;
+  _expression:
+    | ExpressionNode
+    | FormatExpressionNode
+    | CastBooleanExpressionNode;
+
   _args: Array<any>;
   _params: Array<any>;
   _evaluator: () => number;
@@ -147,6 +154,7 @@ function collectArguments(
     collectArguments(node.elseNode ? node.elseNode : null, args, params);
     collectArguments(node.target ? node.target : null, args, params);
     collectArguments(node.source ? node.source : null, args, params);
+    collectArguments(node.v ? node.v : null, args, params);
     node.others && node.others.forEach(n => collectArguments(n, args, params));
     node.nodes && node.nodes.forEach(n => collectArguments(n, args, params));
     node.args && node.args.forEach(n => collectArguments(n, args, params));

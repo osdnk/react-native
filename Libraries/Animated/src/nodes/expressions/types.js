@@ -86,6 +86,17 @@ export type ProcStatementNode = {
   evaluator: (...args: ExpressionParam[]) => ExpressionNode,
 };
 
+export type FormatExpressionNode = {
+  ...BaseExpressionNode,
+  format: string,
+  args: ExpressionNode[],
+};
+
+export type CastBooleanExpressionNode = {
+  ...BaseExpressionNode,
+  v: ExpressionNode,
+};
+
 export type ExpressionNode =
   | MultiExpressionNode
   | BooleanExpressionNode
@@ -157,6 +168,17 @@ export type NativeProcStatementNode = {
   expr: NativeExpressionNode,
 };
 
+export type NativeFormatExpressionNode = {
+  ...BaseExpressionNode,
+  format: string,
+  args: NativeExpressionNode[],
+};
+
+export type NativeCastBooleanExpressionNode = {
+  ...BaseExpressionNode,
+  v: NativeExpressionNode,
+};
+
 export type NativeExpressionNode =
   | NativeMultiExpressionNode
   | NativeBooleanExpressionNode
@@ -167,4 +189,6 @@ export type NativeExpressionNode =
   | NativeBlockStatementNode
   | NativeCondStatementNode
   | NativeCallStatementNode
-  | NativeProcStatementNode;
+  | NativeProcStatementNode
+  | NativeFormatExpressionNode
+  | NativeCastBooleanExpressionNode;

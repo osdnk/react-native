@@ -8,11 +8,12 @@
  * @format
  */
 
+const sprintf = require('sprintf-js').sprintf;
 const AnimatedNode = require('../AnimatedNode');
-const AnimatedValue = require('../AnimatedValue');
 
 import type {
   ExpressionNode,
+  ExpressionParam,
   MultiExpressionNode,
   UnaryExpressionNode,
   BooleanExpressionNode,
@@ -23,6 +24,8 @@ import type {
   CondStatementNode,
   CallStatementNode,
   ProcStatementNode,
+  FormatExpressionNode,
+  CastBooleanExpressionNode,
 } from './types';
 
 type ReducerFunction = () => number;
@@ -119,8 +122,22 @@ const evaluators = {
 };
 
 function createEvaluator(
-  element: AnimatedNode | AnimatedValue | number | ExpressionNode,
-): ReducerFunction {
+  element: ExpressionParam | FormatExpressionNode | CastBooleanExpressionNode,
+): () => any {
+  if (typeof element === 'object' && element.type) {
+    if (element.type === 'format') {
+      return formatReducer(((element: any): FormatExpressionNode));
+    } else if (element.type === 'castBoolean') {
+      const reducer = castBooleanReducer(
+        ((element: any): CastBooleanExpressionNode),
+      );
+      return () => (reducer() === 0 ? false : true);
+    }
+  }
+  return createEvaluatorInternal(((element: any): ExpressionParam));
+}
+
+function createEvaluatorInternal(element: ExpressionParam): ReducerFunction {
   if (typeof element === 'number') {
     return () => element;
   } else if (element.hasOwnProperty('__attach')) {
@@ -139,11 +156,32 @@ function createEvaluator(
   return evaluators[node.type](element);
 }
 
+function formatReducer(node: FormatExpressionNode): ReducerFunction {
+  if (!node.format) {
+    throw Error('Format string is missing in format');
+  }
+  if (!node.args) {
+    throw Error('Arguments is missing in format');
+  }
+  const args = node.args.map(createEvaluatorInternal);
+  return () => {
+    return sprintf(node.format, ...args);
+  };
+}
+
+function castBooleanReducer(node: CastBooleanExpressionNode): ReducerFunction {
+  if (!node.v) {
+    throw Error('Value is missing in boolean');
+  }
+  const evaluator = createEvaluatorInternal(node.v);
+  return () => evaluator();
+}
+
 function procReducer(node: ProcStatementNode): ReducerFunction {
   if (!node.args) {
     throw Error('Args is not set in proc');
   }
-  const args = node.args.map(createEvaluator);
+  const args = node.args.map(createEvaluatorInternal);
   if (!node.params) {
     throw Error('Arguments is not set in proc');
   }
@@ -151,7 +189,7 @@ function procReducer(node: ProcStatementNode): ReducerFunction {
   if (!node.evaluator) {
     throw Error('Function body is not set in proc');
   }
-  const expr = createEvaluator(node.evaluator(...params));
+  const expr = createEvaluatorInternal(node.evaluator(...params));
 
   return () => {
     for (let i = 0; i < args.length; i++) {
@@ -163,7 +201,7 @@ function procReducer(node: ProcStatementNode): ReducerFunction {
 }
 
 function callReducer(node: CallStatementNode): ReducerFunction {
-  const evalFuncs = (node.args ? node.args : []).map(createEvaluator);
+  const evalFuncs = (node.args ? node.args : []).map(createEvaluatorInternal);
   const callback = node.callback ? node.callback : (args: number[]) => {};
   return () => {
     let values = [];
@@ -176,7 +214,7 @@ function callReducer(node: CallStatementNode): ReducerFunction {
 }
 
 function blockReducer(node: BlockStatementNode): ReducerFunction {
-  const evalFuncs = (node.nodes ? node.nodes : []).map(createEvaluator);
+  const evalFuncs = (node.nodes ? node.nodes : []).map(createEvaluatorInternal);
   return () => {
     let retVal = 0;
     for (let i = 0; i < evalFuncs.length; i++) {
@@ -190,7 +228,7 @@ function setReducer(node: SetStatementNode): ReducerFunction {
   if (!node.source) {
     throw Error('Source missing in node');
   }
-  const source = createEvaluator(node.source);
+  const source = createEvaluatorInternal(node.source);
   if (!node.target || !node.target.setValue) {
     throw Error('Target not a valid animated value.');
   }
@@ -205,14 +243,16 @@ function condReducer(node: CondStatementNode): ReducerFunction {
   if (!node.expr) {
     throw Error('Expression clause missing in node');
   }
-  const expr = createEvaluator(node.expr);
+  const expr = createEvaluatorInternal(node.expr);
 
   if (!node.ifNode) {
     throw Error('If clause missing in node');
   }
-  const ifEval = createEvaluator(node.ifNode);
+  const ifEval = createEvaluatorInternal(node.ifNode);
 
-  const falseEval = node.elseNode ? createEvaluator(node.elseNode) : () => 0;
+  const falseEval = node.elseNode
+    ? createEvaluatorInternal(node.elseNode)
+    : () => 0;
 
   return () => {
     const c = expr();
@@ -228,9 +268,9 @@ function multi(
   node: MultiExpressionNode,
   reducer: (prev: number, cur: number) => number,
 ): ReducerFunction {
-  const a = createEvaluator(node.a);
-  const b = createEvaluator(node.b);
-  const others = (node.others || []).map(createEvaluator);
+  const a = createEvaluatorInternal(node.a);
+  const b = createEvaluatorInternal(node.b);
+  const others = (node.others || []).map(createEvaluatorInternal);
   return () => {
     let acc = reducer(a(), b());
     for (let i = 0; i < others.length; i++) {
@@ -247,7 +287,7 @@ function unary(
   if (!node.v) {
     throw Error('Value clause missing in node');
   }
-  const v = createEvaluator(node.v);
+  const v = createEvaluatorInternal(node.v);
   return () => {
     return reducer(v());
   };
@@ -260,12 +300,12 @@ function boolean(
   if (!node.left) {
     throw Error('Left missing in node');
   }
-  const left = createEvaluator(node.left);
+  const left = createEvaluatorInternal(node.left);
 
   if (!node.right) {
     throw Error('Right missing in node');
   }
-  const right = createEvaluator(node.right);
+  const right = createEvaluatorInternal(node.right);
   return () => {
     return reducer(left(), right());
   };

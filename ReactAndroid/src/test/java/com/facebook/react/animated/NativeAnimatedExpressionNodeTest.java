@@ -135,6 +135,22 @@ public class NativeAnimatedExpressionNodeTest {
     return node.mValue;
   }
 
+  private String evalStringExpression (ReadableMap expression) {
+    mNativeAnimatedNodesManager
+      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "graph", expression));
+    ExpressionAnimatedNode node = (ExpressionAnimatedNode)mNativeAnimatedNodesManager.getNodeById(1);
+    node.update();
+    return (String)node.mAnimatedObject;
+  }
+
+  private Boolean evalBooleanExpression (ReadableMap expression) {
+    mNativeAnimatedNodesManager
+      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "graph", expression));
+    ExpressionAnimatedNode node = (ExpressionAnimatedNode)mNativeAnimatedNodesManager.getNodeById(1);
+    node.update();
+    return (Boolean)node.mAnimatedObject;
+  }
+
   private ReadableMap createNumber (double num) {
     return JavaOnlyMap.of("type", "number", "value", num);
   }
@@ -462,4 +478,19 @@ public class NativeAnimatedExpressionNodeTest {
       "v", createNumber(10.9)))).isEqualTo(10);
   }
 
+  @Test public void testFormat () {
+    assertThat(evalStringExpression(createExpr("type", "format",
+      "format", "val: %.0f",
+      "args", JavaOnlyArray.of(createNumber(10.12345678))))).isEqualTo("val: 10");
+  }
+
+  @Test public void testBooleanReturnsTrue () {
+    assertThat(evalBooleanExpression(createExpr("type", "castBoolean",
+      "v", createNumber(10)))).isTrue();
+  }
+
+  @Test public void testBooleanReturnsFalse() {
+    assertThat(evalBooleanExpression(createExpr("type", "castBoolean",
+      "v", createNumber(0)))).isFalse();
+  }
 }
