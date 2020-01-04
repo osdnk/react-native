@@ -11,44 +11,59 @@
 'use strict';
 
 const AnimatedValue = require('../AnimatedValue');
+let _nodeId = 0;
 
-import type {ExpressionNode, ExpressionParam} from './types';
+import type {
+  ExpressionNode,
+  MultiExpressionNode,
+  UnaryExpressionNode,
+  BooleanExpressionNode,
+  NumberExpressionNode,
+  AnimatedValueExpressionNode,
+  SetStatementNode,
+  BlockStatementNode,
+  CondStatementNode,
+  CallStatementNode,
+  ProcStatementNode,
+  ExpressionParam,
+} from './types';
 
 type MultiFactory = (
   a: ExpressionParam,
   b: ExpressionParam,
   ...others: Array<ExpressionParam>
-) => ExpressionNode;
+) => MultiExpressionNode;
 
-type UnaryFactory = (v: ExpressionParam) => ExpressionNode;
+type UnaryFactory = (v: ExpressionParam) => UnaryExpressionNode;
+
 type BooleanFactory = (
   left: ExpressionParam,
   right: ExpressionParam,
-) => ExpressionNode;
+) => BooleanExpressionNode;
 
 type ConditionFactory = (
   expr: ExpressionParam,
   ifNode: ExpressionParam | ExpressionParam[],
   elseNode: ?(ExpressionParam | ExpressionParam[]),
-) => ExpressionNode;
+) => CondStatementNode;
 
 type SetFactory = (
   target: AnimatedValue,
   source: ExpressionParam,
-) => ExpressionNode;
+) => SetStatementNode;
 
 type BlockFactory = (
   ...nodes: Array<ExpressionParam | Array<ExpressionParam>>
-) => ExpressionNode;
+) => BlockStatementNode;
 
 type CallFactory = (
   args: ExpressionParam | ExpressionParam[],
   (args: number[]) => void,
-) => ExpressionNode;
+) => CallStatementNode;
 
 type ProcFactory = (
-  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
-) => (...args: ExpressionParam[]) => ExpressionNode;
+  evaluator: (...args: ExpressionParam[]) => ProcStatementNode,
+) => (...args: ExpressionParam[]) => ProcStatementNode;
 
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
@@ -69,8 +84,8 @@ const asin: UnaryFactory = unary('asin');
 const atan: UnaryFactory = unary('atan');
 const exp: UnaryFactory = unary('exp');
 const round: UnaryFactory = unary('round');
-const ceil: BooleanFactory = unary('ceil');
-const floor: BooleanFactory = unary('floor');
+const ceil: UnaryFactory = unary('ceil');
+const floor: UnaryFactory = unary('floor');
 const and: MultiFactory = multi('and');
 const or: MultiFactory = multi('or');
 const not: UnaryFactory = unary('not');
@@ -93,45 +108,35 @@ function resolve(v: ExpressionParam): ExpressionNode {
       return ((v: any): ExpressionNode);
     }
     // Animated value / node
-    return {
+    return ({
       type: 'value',
+      nodeId: _nodeId++,
       node: v,
       getTag: v.__getNativeTag.bind(v),
       getValue: v.__getValue.bind(v),
       // $FlowFixMe
       setValue: (value: number) => (((v: any): AnimatedValue)._value = value),
-    };
+    }: AnimatedValueExpressionNode);
   } else {
     // Number
-    return {type: 'number', value: ((v: any): number)};
+    return ({
+      type: 'number',
+      nodeId: _nodeId++,
+      value: ((v: any): number),
+    }: NumberExpressionNode);
   }
 }
 
-const a = {
-  type: 'callProc',
-  args: [{type: 'value', node: 0}],
-  nodes: [{type: 'value', node: 0}],
-  expr: {
-    type: 'cond',
-    expr: {
-      type: 'greaterThan',
-      left: {type: 'value', node: 0},
-      right: {type: 'number', value: 0.5},
-    },
-    ifNode: {type: 'number', value: 0},
-    elseNode: {type: 'number', value: 1},
-  },
-};
-
 function procFactory(
-  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
-): (...args: ExpressionParam[]) => ExpressionNode {
+  evaluator: (...args: ExpressionParam[]) => ProcStatementNode,
+): (...args: ExpressionParam[]) => ProcStatementNode {
   const params = new Array(evaluator.length);
   for (let i = 0; i < params.length; i++) {
     params[i] = new AnimatedValue(0);
   }
   return (...nodes: ExpressionParam[]) => ({
     type: 'callProc',
+    nodeId: _nodeId++,
     args: nodes.map(resolve),
     params: params.map(resolve),
     evaluator,
@@ -141,19 +146,21 @@ function procFactory(
 function setFactory(
   target: AnimatedValue,
   source: ExpressionParam,
-): ExpressionNode {
+): SetStatementNode {
   return {
     type: 'set',
-    target: ((resolve(target): any): ExpressionNode),
+    nodeId: _nodeId++,
+    target: ((resolve(target): any): AnimatedValueExpressionNode),
     source: resolve(source),
   };
 }
 
 function blockFactory(
   ...nodes: Array<ExpressionParam | Array<ExpressionParam>>
-): ExpressionNode {
+): BlockStatementNode {
   return {
     type: 'block',
+    nodeId: _nodeId++,
     nodes: nodes.map(n => (Array.isArray(n) ? blockFactory(...n) : resolve(n))),
   };
 }
@@ -162,9 +169,10 @@ function condFactory(
   expr: ExpressionParam,
   ifNode: ExpressionParam | ExpressionParam[],
   elseNode: ?(ExpressionParam | ExpressionParam[]),
-): ExpressionNode {
+): CondStatementNode {
   return {
     type: 'cond',
+    nodeId: _nodeId++,
     expr: resolve(expr),
     ifNode:
       ifNode instanceof Array
@@ -181,9 +189,10 @@ function condFactory(
 function callFactory(
   args: ExpressionParam | ExpressionParam[],
   callback: (args: number[]) => void,
-): ExpressionNode {
+): CallStatementNode {
   return {
     type: 'call',
+    nodeId: _nodeId++,
     args:
       args instanceof Array
         ? args.map(resolve)
@@ -194,13 +203,14 @@ function callFactory(
 
 function multi(type: string): MultiFactory {
   return (
-    a: ExpressionParam,
-    b: ExpressionParam,
+    a1: ExpressionParam,
+    b1: ExpressionParam,
     ...others: Array<ExpressionParam>
   ) => ({
     type,
-    a: resolve(a),
-    b: resolve(b),
+    nodeId: _nodeId++,
+    a: resolve(a1),
+    b: resolve(b1),
     others: others.map(resolve),
   });
 }
@@ -208,6 +218,7 @@ function multi(type: string): MultiFactory {
 function boolean(type: string): BooleanFactory {
   return (left: ExpressionParam, right: ExpressionParam) => ({
     type,
+    nodeId: _nodeId++,
     left: resolve(left),
     right: resolve(right),
   });
@@ -216,6 +227,7 @@ function boolean(type: string): BooleanFactory {
 function unary(type: string): UnaryFactory {
   return (v: ExpressionParam) => ({
     type,
+    nodeId: _nodeId++,
     v: resolve(v),
   });
 }

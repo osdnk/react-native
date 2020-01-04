@@ -136,22 +136,21 @@ function collectArguments(
     } else if (node.type === 'callProc') {
       node.params && node.params.forEach(p => params.push(p));
       node.args && node.args.forEach(p => params.push(p));
-      collectArguments(node.expr, args, params);
     }
 
-    collectArguments(node.a, args, params);
-    collectArguments(node.b, args, params);
-    collectArguments(node.left, args, params);
-    collectArguments(node.right, args, params);
-    collectArguments(node.expr, args, params);
-    collectArguments(node.ifNode, args, params);
-    collectArguments(node.elseNode, args, params);
-    collectArguments(node.target, args, params);
-    collectArguments(node.source, args, params);
+    collectArguments(node.a ? node.a : null, args, params);
+    collectArguments(node.b ? node.b : null, args, params);
+    collectArguments(node.left ? node.left : null, args, params);
+    collectArguments(node.right ? node.right : null, args, params);
+    collectArguments(node.expr ? node.expr : null, args, params);
+    collectArguments(node.ifNode ? node.ifNode : null, args, params);
+    collectArguments(node.elseNode ? node.elseNode : null, args, params);
+    collectArguments(node.target ? node.target : null, args, params);
+    collectArguments(node.source ? node.source : null, args, params);
     node.others && node.others.forEach(n => collectArguments(n, args, params));
     node.nodes && node.nodes.forEach(n => collectArguments(n, args, params));
     node.args && node.args.forEach(n => collectArguments(n, args, params));
-    collectArguments(node.callback, args, params);
+    collectArguments(node.callback ? node.callback : null, args, params);
   }
 }
 

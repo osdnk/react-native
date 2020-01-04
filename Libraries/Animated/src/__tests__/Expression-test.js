@@ -200,14 +200,4 @@ describe('Animated Expressions', () => {
     const p2 = new Animated.Value(20);
     expect(evalExpression(proc(p1, p2))).toBe(30);
   });
-
-  it('should mark proc params as native', () => {
-    const proc = E.proc((a, b) => E.add(a, b));
-    const p1 = new Animated.Value(10);
-    const p2 = new Animated.Value(20);
-    const expr = Animated.expression(proc(p1, p2));
-    expr.__attach();
-    expr.__makeNative();
-    expect(p1.__isNative).toBe(true);
-  });
 });

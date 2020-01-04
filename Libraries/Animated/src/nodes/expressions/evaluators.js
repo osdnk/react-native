@@ -11,49 +11,67 @@
 const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
 
-import type {ExpressionNode, ExpressionParam} from './types';
+import type {
+  ExpressionNode,
+  MultiExpressionNode,
+  UnaryExpressionNode,
+  BooleanExpressionNode,
+  NumberExpressionNode,
+  AnimatedValueExpressionNode,
+  SetStatementNode,
+  BlockStatementNode,
+  CondStatementNode,
+  CallStatementNode,
+  ProcStatementNode,
+} from './types';
 
 type ReducerFunction = () => number;
 
-const add = (node: ExpressionNode) => multi(node, (p, c) => p + c);
-const sub = (node: ExpressionNode) => multi(node, (p, c) => p - c);
-const multiply = (node: ExpressionNode) => multi(node, (p, c) => p * c);
-const divide = (node: ExpressionNode) => multi(node, (p, c) => p / c);
-const pow = (node: ExpressionNode) => multi(node, (p, c) => Math.pow(p, c));
-const modulo = (node: ExpressionNode) =>
+const add = (node: MultiExpressionNode) => multi(node, (p, c) => p + c);
+const sub = (node: MultiExpressionNode) => multi(node, (p, c) => p - c);
+const multiply = (node: MultiExpressionNode) => multi(node, (p, c) => p * c);
+const divide = (node: MultiExpressionNode) => multi(node, (p, c) => p / c);
+const pow = (node: MultiExpressionNode) =>
+  multi(node, (p, c) => Math.pow(p, c));
+const modulo = (node: MultiExpressionNode) =>
   multi(node, (p, c) => ((p % c) + c) % c);
-const max = (node: ExpressionNode) => multi(node, (p, c) => (c > p ? c : p));
-const min = (node: ExpressionNode) => multi(node, (p, c) => (c < p ? c : p));
-const abs = (node: ExpressionNode) => unary(node, v => Math.abs(v));
-const sqrt = (node: ExpressionNode) => unary(node, v => Math.sqrt(v));
-const log = (node: ExpressionNode) => unary(node, v => Math.log(v));
-const sin = (node: ExpressionNode) => unary(node, v => Math.sin(v));
-const cos = (node: ExpressionNode) => unary(node, v => Math.cos(v));
-const tan = (node: ExpressionNode) => unary(node, v => Math.tan(v));
-const acos = (node: ExpressionNode) => unary(node, v => Math.acos(v));
-const asin = (node: ExpressionNode) => unary(node, v => Math.asin(v));
-const atan = (node: ExpressionNode) => unary(node, v => Math.atan(v));
-const exp = (node: ExpressionNode) => unary(node, v => Math.exp(v));
-const round = (node: ExpressionNode) => unary(node, v => Math.round(v));
-const ceil = (node: ExpressionNode) => unary(node, v => Math.ceil(v));
-const floor = (node: ExpressionNode) => unary(node, v => Math.floor(v));
-const and = (node: ExpressionNode) => multi(node, (p, c) => (p && c ? 1 : 0));
-const or = (node: ExpressionNode) => multi(node, (p, c) => (p || c ? 1 : 0));
-const not = (node: ExpressionNode) => unary(node, v => (!v ? 1 : 0));
-const eq = (node: ExpressionNode) =>
+const max = (node: MultiExpressionNode) =>
+  multi(node, (p, c) => (c > p ? c : p));
+const min = (node: MultiExpressionNode) =>
+  multi(node, (p, c) => (c < p ? c : p));
+const abs = (node: UnaryExpressionNode) => unary(node, v => Math.abs(v));
+const sqrt = (node: UnaryExpressionNode) => unary(node, v => Math.sqrt(v));
+const log = (node: UnaryExpressionNode) => unary(node, v => Math.log(v));
+const sin = (node: UnaryExpressionNode) => unary(node, v => Math.sin(v));
+const cos = (node: UnaryExpressionNode) => unary(node, v => Math.cos(v));
+const tan = (node: UnaryExpressionNode) => unary(node, v => Math.tan(v));
+const acos = (node: UnaryExpressionNode) => unary(node, v => Math.acos(v));
+const asin = (node: UnaryExpressionNode) => unary(node, v => Math.asin(v));
+const atan = (node: UnaryExpressionNode) => unary(node, v => Math.atan(v));
+const exp = (node: UnaryExpressionNode) => unary(node, v => Math.exp(v));
+const round = (node: UnaryExpressionNode) => unary(node, v => Math.round(v));
+const ceil = (node: UnaryExpressionNode) => unary(node, v => Math.ceil(v));
+const floor = (node: UnaryExpressionNode) => unary(node, v => Math.floor(v));
+const and = (node: MultiExpressionNode) =>
+  multi(node, (p, c) => (p && c ? 1 : 0));
+const or = (node: MultiExpressionNode) =>
+  multi(node, (p, c) => (p || c ? 1 : 0));
+const not = (node: UnaryExpressionNode) => unary(node, v => (!v ? 1 : 0));
+const eq = (node: BooleanExpressionNode) =>
   boolean(node, (left, right) => (left === right ? 1 : 0));
-const neq = (node: ExpressionNode) =>
+const neq = (node: BooleanExpressionNode) =>
   boolean(node, (left, right) => (left !== right ? 1 : 0));
-const lessThan = (node: ExpressionNode) =>
+const lessThan = (node: BooleanExpressionNode) =>
   boolean(node, (left, right) => (left < right ? 1 : 0));
-const greaterThan = (node: ExpressionNode) =>
+const greaterThan = (node: BooleanExpressionNode) =>
   boolean(node, (left, right) => (left > right ? 1 : 0));
-const lessOrEq = (node: ExpressionNode) =>
+const lessOrEq = (node: BooleanExpressionNode) =>
   boolean(node, (left, right) => (left <= right ? 1 : 0));
-const greaterOrEq = (node: ExpressionNode) =>
+const greaterOrEq = (node: BooleanExpressionNode) =>
   boolean(node, (left, right) => (left >= right ? 1 : 0));
-const value = (node: ExpressionNode) => () => node.getValue && node.getValue();
-const number = (node: ExpressionNode) => () => node.value;
+const value = (node: AnimatedValueExpressionNode) => () =>
+  node.getValue && node.getValue();
+const number = (node: NumberExpressionNode) => () => node.value;
 const cond = condReducer;
 const set = setReducer;
 const block = blockReducer;
@@ -121,7 +139,7 @@ function createEvaluator(
   return evaluators[node.type](element);
 }
 
-function procReducer(node: ExpressionNode): ReducerFunction {
+function procReducer(node: ProcStatementNode): ReducerFunction {
   if (!node.args) {
     throw Error('Args is not set in proc');
   }
@@ -134,6 +152,7 @@ function procReducer(node: ExpressionNode): ReducerFunction {
     throw Error('Function body is not set in proc');
   }
   const expr = createEvaluator(node.evaluator(...params));
+
   return () => {
     for (let i = 0; i < args.length; i++) {
       // $FlowFixMe
@@ -143,7 +162,7 @@ function procReducer(node: ExpressionNode): ReducerFunction {
   };
 }
 
-function callReducer(node: ExpressionNode): ReducerFunction {
+function callReducer(node: CallStatementNode): ReducerFunction {
   const evalFuncs = (node.args ? node.args : []).map(createEvaluator);
   const callback = node.callback ? node.callback : (args: number[]) => {};
   return () => {
@@ -156,7 +175,7 @@ function callReducer(node: ExpressionNode): ReducerFunction {
   };
 }
 
-function blockReducer(node: ExpressionNode): ReducerFunction {
+function blockReducer(node: BlockStatementNode): ReducerFunction {
   const evalFuncs = (node.nodes ? node.nodes : []).map(createEvaluator);
   return () => {
     let retVal = 0;
@@ -167,7 +186,7 @@ function blockReducer(node: ExpressionNode): ReducerFunction {
   };
 }
 
-function setReducer(node: ExpressionNode): ReducerFunction {
+function setReducer(node: SetStatementNode): ReducerFunction {
   if (!node.source) {
     throw Error('Source missing in node');
   }
@@ -182,7 +201,7 @@ function setReducer(node: ExpressionNode): ReducerFunction {
   };
 }
 
-function condReducer(node: ExpressionNode): ReducerFunction {
+function condReducer(node: CondStatementNode): ReducerFunction {
   if (!node.expr) {
     throw Error('Expression clause missing in node');
   }
@@ -206,17 +225,10 @@ function condReducer(node: ExpressionNode): ReducerFunction {
 }
 
 function multi(
-  node: ExpressionNode,
+  node: MultiExpressionNode,
   reducer: (prev: number, cur: number) => number,
 ): ReducerFunction {
-  if (!node.a) {
-    throw Error('A missing in node');
-  }
   const a = createEvaluator(node.a);
-
-  if (!node.b) {
-    throw Error('B missing in node');
-  }
   const b = createEvaluator(node.b);
   const others = (node.others || []).map(createEvaluator);
   return () => {
@@ -229,7 +241,7 @@ function multi(
 }
 
 function unary(
-  node: ExpressionNode,
+  node: UnaryExpressionNode,
   reducer: (v: number) => number,
 ): ReducerFunction {
   if (!node.v) {
@@ -242,7 +254,7 @@ function unary(
 }
 
 function boolean(
-  node: ExpressionNode,
+  node: BooleanExpressionNode,
   reducer: (left: number, right: number) => number,
 ): ReducerFunction {
   if (!node.left) {

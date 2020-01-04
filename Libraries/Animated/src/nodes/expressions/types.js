@@ -19,48 +19,152 @@ export type ExpressionParam =
   | ExpressionNode
   | number;
 
-export type ExpressionNode = {
+type BaseExpressionNode = {
   type: string,
-  a?: ExpressionNode,
-  b?: ExpressionNode,
-  others?: ExpressionNode[],
-  left?: ExpressionNode,
-  right?: ExpressionNode,
-  v?: ExpressionNode,
-  value?: number,
-  target?: ExpressionNode,
-  source?: ExpressionNode,
-  nodes?: ExpressionNode[],
-  expr?: ExpressionNode,
-  ifNode?: ExpressionNode,
-  elseNode?: ExpressionNode,
-  getTag?: () => number,
-  getValue?: () => number,
-  setValue?: (value: number) => void,
-  node?: AnimatedNode | AnimatedValue,
-  args?: ExpressionNode[],
-  callback?: (args: number[]) => void,
-  evaluator?: (...args: ExpressionParam[]) => ExpressionNode,
-  params?: ExpressionNode[],
+  nodeId: number,
 };
 
-export type NativeExpressionNode = {
-  type: string,
-  a?: ExpressionNode,
-  b?: ExpressionNode,
-  others?: ExpressionNode[],
-  left?: ExpressionNode,
-  right?: ExpressionNode,
-  v?: ExpressionNode,
-  value?: number,
-  target?: number,
-  source?: ExpressionNode,
-  nodes?: ExpressionNode[],
-  expr?: ExpressionNode,
-  ifNode?: ExpressionNode,
-  elseNode?: ExpressionNode,
-  tag?: number,
-  args?: ExpressionNode[],
-  params?: ExpressionNode[],
-  callback?: (args: number[]) => void,
+export type MultiExpressionNode = {
+  ...BaseExpressionNode,
+  a: ExpressionNode,
+  b: ExpressionNode,
+  others: ExpressionNode[],
 };
+
+export type UnaryExpressionNode = {
+  ...BaseExpressionNode,
+  v: ExpressionNode,
+};
+
+export type BooleanExpressionNode = {
+  ...BaseExpressionNode,
+  left: ExpressionNode,
+  right: ExpressionNode,
+};
+
+export type NumberExpressionNode = {
+  ...BaseExpressionNode,
+  value: number,
+};
+
+export type AnimatedValueExpressionNode = {
+  ...BaseExpressionNode,
+  node: AnimatedValue | AnimatedNode,
+  getTag: () => number,
+  getValue: () => number,
+  setValue: (value: number) => void,
+};
+
+export type SetStatementNode = {
+  ...BaseExpressionNode,
+  target: AnimatedValueExpressionNode,
+  source: ExpressionNode,
+};
+
+export type BlockStatementNode = {
+  ...BaseExpressionNode,
+  nodes: ExpressionNode[],
+};
+
+export type CondStatementNode = {
+  ...BaseExpressionNode,
+  expr: ExpressionNode,
+  ifNode: ExpressionNode,
+  elseNode: ExpressionNode,
+};
+
+export type CallStatementNode = {
+  ...BaseExpressionNode,
+  args: ExpressionNode[],
+  callback: (args: number[]) => void,
+};
+
+export type ProcStatementNode = {
+  ...BaseExpressionNode,
+  args: ExpressionNode[],
+  params: ExpressionNode[],
+  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
+};
+
+export type ExpressionNode =
+  | MultiExpressionNode
+  | BooleanExpressionNode
+  | UnaryExpressionNode
+  | NumberExpressionNode
+  | AnimatedValueExpressionNode
+  | SetStatementNode
+  | BlockStatementNode
+  | CondStatementNode
+  | CallStatementNode
+  | ProcStatementNode;
+
+export type NativeMultiExpressionNode = {
+  ...BaseExpressionNode,
+  a: NativeExpressionNode,
+  b: NativeExpressionNode,
+  others: NativeExpressionNode[],
+};
+
+export type NativeUnaryExpressionNode = {
+  ...BaseExpressionNode,
+  v: NativeExpressionNode,
+};
+
+export type NativeBooleanExpressionNode = {
+  ...BaseExpressionNode,
+  left: NativeExpressionNode,
+  right: NativeExpressionNode,
+};
+
+export type NativeNumberExpressionNode = {
+  ...BaseExpressionNode,
+  value: number,
+};
+
+export type NativeAnimatedValueExpressionNode = {
+  ...BaseExpressionNode,
+  tag: number,
+};
+
+export type NativeSetStatementNode = {
+  ...BaseExpressionNode,
+  target: number,
+  source: NativeExpressionNode,
+};
+
+export type NativeBlockStatementNode = {
+  ...BaseExpressionNode,
+  nodes: NativeExpressionNode[],
+};
+
+export type NativeCondStatementNode = {
+  ...BaseExpressionNode,
+  expr: NativeExpressionNode,
+  ifNode: NativeExpressionNode,
+  elseNode: NativeExpressionNode,
+};
+
+export type NativeCallStatementNode = {
+  ...BaseExpressionNode,
+  args: NativeExpressionNode[],
+  callback: (args: number[]) => void,
+};
+
+export type NativeProcStatementNode = {
+  ...BaseExpressionNode,
+  args: NativeExpressionNode[],
+  params: NativeExpressionNode[],
+  expr: NativeExpressionNode,
+};
+
+export type NativeExpressionNode =
+  | NativeMultiExpressionNode
+  | NativeBooleanExpressionNode
+  | NativeUnaryExpressionNode
+  | NativeNumberExpressionNode
+  | NativeAnimatedValueExpressionNode
+  | NativeSetStatementNode
+  | NativeBlockStatementNode
+  | NativeCondStatementNode
+  | NativeCallStatementNode
+  | NativeProcStatementNode;
