@@ -243,22 +243,18 @@ int _animationId = -1;
     }];
     if(found) {
       [self.manager stopAnimation:animationId];
-      return (CGFloat)0.0;
+      return (CGFloat)1.0;
     }
     return (CGFloat)0.0;
   };
 }
 
 - (evalBlock) evalBlockWithFormat:(NSDictionary*)node {
-  NSArray* args = node[@"args"];
   NSString* format = node[@"format"];
-  NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
-  for(int i=0; i<[args count]; i++) {
-    [evals addObject:[self evalBlockWithNode:args[i]]];
-  }
+  NSArray<evalBlock>* evals = [self evalFromArgs:node[@"args"]];
   
   return ^{
-    double* argList = calloc(1UL, sizeof(double) * evals.count);
+    CGFloat* argList = (CGFloat*) calloc(1UL, sizeof(CGFloat) * evals.count);
     for (int i = 0; i < evals.count; i++) {
        argList[i] = evals[i]();
     }
@@ -279,15 +275,10 @@ int _animationId = -1;
 }
 
 - (evalBlock) evalBlockWithCall:(NSDictionary*)node {
-  NSArray* args = node[@"args"];
   NSNumber* nodeId = node[@"nodeId"];
-  NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
-  for(int i=0; i<[args count]; i++) {
-    [evals addObject:[self evalBlockWithNode:args[i]]];
-  }
-  
+  NSArray<evalBlock>* evals = [self evalFromArgs:node[@"args"]];
   return ^ {
-    NSMutableArray* values = [[NSMutableArray alloc] initWithCapacity:[args count]];
+    NSMutableArray* values = [[NSMutableArray alloc] initWithCapacity:evals.count];
     for(int i=0; i<evals.count; i++) {
       [values addObject:[NSNumber numberWithFloat:evals[i]()]];
     }
@@ -298,11 +289,7 @@ int _animationId = -1;
 }
 
 - (evalBlock) evalBlockWithBlock:(NSDictionary*)node {
-  NSArray* nodes = node[@"args"];
-  NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
-  for(int i=0; i<[nodes count]; i++) {
-    [evals addObject:[self evalBlockWithNode:nodes[i]]];
-  }
+  NSArray<evalBlock>* evals = [self evalFromArgs:node[@"args"]];
   return ^ {
     CGFloat retVal = 0.0f;
     for(int i=0; i<evals.count; i++) {
@@ -363,19 +350,23 @@ int _animationId = -1;
 - (evalBlock) evalBlockWithMultiOperator:(NSDictionary*)op reducer:(evalMultipOpReducer)reducer {
   evalBlock evalA = [self evalBlockWithNode:op[@"a"]];
   evalBlock evalB = [self evalBlockWithNode:op[@"b"]];
-  NSArray* others = op[@"args"];
-  NSMutableArray<evalBlock>* evalOthers = [[NSMutableArray alloc] init];
-  for(int i=0; i<[others count]; i++) {
-    [evalOthers addObject:[self evalBlockWithNode:others[i]]];
-  }
+  NSArray<evalBlock>* evals = [self evalFromArgs:op[@"args"]];
   
   return ^ {
     CGFloat acc = reducer(evalA(), evalB());
-    for(int i=0; i<[evalOthers count]; i++) {
-      acc = reducer(acc, evalOthers[i]());
+    for(int i=0; i<[evals count]; i++) {
+      acc = reducer(acc, evals[i]());
     }
     return acc;
   };
+}
+
+- (NSArray*) evalFromArgs:(NSArray*)args {
+  NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
+  for(int i=0; i<[args count]; i++) {
+    [evals addObject:[self evalBlockWithNode:args[i]]];
+  }
+  return evals;
 }
 
 @end
