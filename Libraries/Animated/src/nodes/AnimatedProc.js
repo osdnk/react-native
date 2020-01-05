@@ -33,7 +33,7 @@ class AnimatedProc extends AnimatedWithChildren {
   }
 
   __attach() {
-    this._expression.__addChild(this);
+    this._expression.__attach();
     this._args.forEach(a => a.__addChild(this));
   }
 
@@ -43,7 +43,7 @@ class AnimatedProc extends AnimatedWithChildren {
   }
 
   __detach() {
-    this._expression.__removeChild(this);
+    this._expression.__detach();
     this._args.forEach(a => a.__removeChild(this));
     super.__detach();
   }
