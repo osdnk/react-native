@@ -11,14 +11,20 @@
 const AnimatedWithChildren = require('../AnimatedWithChildren');
 const AnimatedValue = require('../AnimatedValue');
 
-import type {ExpressionNode, ExpressionParam} from './types';
+import type {
+  ExpressionNode,
+  FormatExpressionNode,
+  SetStatementNode,
+  BlockStatementNode,
+  ExpressionParam,
+} from './types';
 import {factories} from './factories';
-const {block, cond, sub, eq, add, neq, set, call} = factories;
+const {block, cond, sub, eq, add, neq, set, format, call} = factories;
 
 export function onChange(
   value: AnimatedWithChildren,
   expression: ExpressionNode,
-): ExpressionNode {
+): BlockStatementNode {
   const prevValue = new AnimatedValue(Number.MIN_SAFE_INTEGER);
   value.__addChild(prevValue);
   return block(
@@ -27,7 +33,10 @@ export function onChange(
   );
 }
 
-export function debug(message: string, node: ExpressionParam): ExpressionNode {
+export function debug(
+  message: string,
+  node: ExpressionParam,
+): BlockStatementNode {
   return block(
     call([node], (args: number[]) => {
       console.info(message, args[0]);
@@ -36,7 +45,7 @@ export function debug(message: string, node: ExpressionParam): ExpressionNode {
   );
 }
 
-export function diff(value: AnimatedValue): ExpressionNode {
+export function diff(value: AnimatedValue): BlockStatementNode {
   const stash = new AnimatedValue(0);
   const prevValue = new AnimatedValue(Number.MIN_SAFE_INTEGER);
   value.__addChild(prevValue);
@@ -50,8 +59,13 @@ export function diff(value: AnimatedValue): ExpressionNode {
   ]);
 }
 
-export function acc(value: AnimatedValue): ExpressionNode {
+export function acc(value: AnimatedValue): SetStatementNode {
   const accumulator = new AnimatedValue(0);
   value.__addChild(accumulator);
   return set(accumulator, add(accumulator, value));
+}
+
+export function concat(...args: ExpressionParam[]): FormatExpressionNode {
+  const formatStr = args.map(_ => '%f').join('');
+  return format(formatStr, ...args);
 }
