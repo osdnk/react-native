@@ -16,6 +16,9 @@ typedef CGFloat ( ^evalOpReducer )(CGFloat left, CGFloat right);
 typedef CGFloat ( ^evalMultipOpReducer )(CGFloat prev, CGFloat cur);
 typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 
+NSMutableDictionary<NSNumber*, NSNumber*>* _animations;
+int _animationId = -1;
+
 @implementation RCTExpressionAnimatedNode
 {
   evalBlock _evalBlock;
@@ -27,6 +30,9 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 {
   if (self = [super initWithTag:tag config:config]) {
     _expression = config[@"expression"];
+    if(_animations == NULL) {
+      _animations = [[NSMutableDictionary alloc] init];
+    }
   }
 
   return self;
@@ -181,7 +187,15 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return [self evalBlockWithBlock:node];
   } else if([type isEqualToString:@"call"]) {
     return [self evalBlockWithCall:node];
-  }
+  } else if([type isEqualToString:@"timing"]) {
+    return [self evalBlockWithAnimation:node];
+  } else if([type isEqualToString:@"spring"]) {
+    return [self evalBlockWithAnimation:node];
+  } else if([type isEqualToString:@"decay"]) {
+    return [self evalBlockWithAnimation:node];
+  } else if([type isEqualToString:@"stopAnimation"]) {
+     return [self evalBlockWithStopAnimation:node];
+   }
   
   /* Conversion */
   else if([type isEqualToString:@"value"]) {
@@ -194,6 +208,45 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return [self evalBlockWithCastBoolean:node];
   }
   return ^{ return (CGFloat)0.0f; };
+}
+
+- (evalBlock) evalBlockWithAnimation:(NSDictionary*)node {
+  NSNumber* nodeTag = node[@"target"];
+  NSDictionary* config = node[@"config"];
+  evalBlock callback = node[@"callback"] ? [self evalBlockWithNode:node[@"callback"]] : ^{ return (CGFloat)0.0; };
+  
+  return ^{
+    if(_animations[nodeTag] != NULL) {
+      [self.manager stopAnimation:_animations[nodeTag]];
+      [_animations removeObjectForKey:nodeTag];
+    }
+    NSNumber* animationId = [NSNumber numberWithInt:_animationId--];
+    _animations[nodeTag] = animationId;
+    [self.manager startAnimatingNode:animationId nodeTag:nodeTag config:config endCallback:^(NSArray *response) {
+      [_animations removeObjectForKey:nodeTag];
+      callback();
+    }];
+    return (CGFloat)[animationId floatValue];
+  };
+}
+
+- (evalBlock) evalBlockWithStopAnimation:(NSDictionary*)node {
+  NSNumber* animationId = node[@"animationId"];
+  return ^{
+    __block BOOL found = NO;
+    [_animations enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSNumber * _Nonnull obj, BOOL * _Nonnull stop) {
+      if([obj isEqualToNumber:animationId]) {
+        [_animations removeObjectForKey:key];
+        *stop = YES;
+        found = YES;
+      }
+    }];
+    if(found) {
+      [self.manager stopAnimation:animationId];
+      return (CGFloat)0.0;
+    }
+    return (CGFloat)0.0;
+  };
 }
 
 - (evalBlock) evalBlockWithFormat:(NSDictionary*)node {

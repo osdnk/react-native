@@ -23,6 +23,10 @@ import type {
   CallStatementNode,
   FormatExpressionNode,
   CastBooleanExpressionNode,
+  TimingStatementNode,
+  SpringStatementNode,
+  DecayStatementNode,
+  StopAnimationStatementNode,
   NativeExpressionNode,
   NativeMultiExpressionNode,
   NativeUnaryExpressionNode,
@@ -35,7 +39,15 @@ import type {
   NativeCallStatementNode,
   NativeFormatExpressionNode,
   NativeCastBooleanExpressionNode,
+  NativeTimingStatementNode,
+  NativeSpringStatementNode,
+  NativeDecayStatementNode,
+  NativeStopAnimationStatementNode,
 } from './types';
+
+import TimingAnimation from '../../animations/TimingAnimation';
+import SpringAnimation from '../../animations/SpringAnimation';
+import DecayAnimation from '../../animations/DecayAnimation';
 
 const converters = {
   add: multi,
@@ -76,13 +88,64 @@ const converters = {
   call: convertCall,
   format: convertFormat,
   castBoolean: convertCastBoolean,
+  timing: convertTiming,
+  spring: convertSpring,
+  decay: convertDecay,
+  stopAnimation: convertStopAnimation,
 };
 
 function convert(v: ?ExpressionNode): NativeExpressionNode {
   if (v === undefined || v === null) {
     throw Error('Value not defined.');
   }
+  if (converters[v.type] === null) {
+    throw Error('Native converter for ' + v.type + ' was not found.');
+  }
   return converters[v.type](v);
+}
+
+function convertTiming(node: TimingStatementNode): NativeTimingStatementNode {
+  return {
+    type: 'timing',
+    nodeId: node.nodeId,
+    target: node.target && node.target.getTag && node.target.getTag(),
+    config: new TimingAnimation(
+      (node.config: any),
+    ).__getNativeAnimationConfig(),
+    callback: node.callback ? convert(node.callback) : null,
+  };
+}
+
+function convertSpring(node: SpringStatementNode): NativeSpringStatementNode {
+  return {
+    type: 'spring',
+    nodeId: node.nodeId,
+    target: node.target && node.target.getTag && node.target.getTag(),
+    config: new SpringAnimation(
+      (node.config: any),
+    ).__getNativeAnimationConfig(),
+    callback: node.callback ? convert(node.callback) : null,
+  };
+}
+
+function convertDecay(node: DecayStatementNode): NativeDecayStatementNode {
+  return {
+    type: 'decay',
+    nodeId: node.nodeId,
+    target: node.target && node.target.getTag && node.target.getTag(),
+    config: new DecayAnimation((node.config: any)).__getNativeAnimationConfig(),
+    callback: node.callback ? convert(node.callback) : null,
+  };
+}
+
+function convertStopAnimation(
+  node: StopAnimationStatementNode,
+): NativeStopAnimationStatementNode {
+  return {
+    type: 'stopAnimation',
+    nodeId: node.nodeId,
+    animationId: node.animationId,
+  };
 }
 
 function convertFormat(node: FormatExpressionNode): NativeFormatExpressionNode {

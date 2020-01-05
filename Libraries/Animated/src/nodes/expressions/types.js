@@ -13,6 +13,10 @@
 const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
 
+import type {TimingAnimationConfig} from '../../animations/TimingAnimation';
+import type {SpringAnimationConfig} from '../../animations/SpringAnimation';
+import type {DecayAnimationConfig} from '../../animations/DecayAnimation';
+
 export type ExpressionParam =
   | AnimatedValue
   | AnimatedNode
@@ -90,6 +94,32 @@ export type CastBooleanExpressionNode = {
   v: ExpressionNode,
 };
 
+export type TimingStatementNode = {
+  ...BaseExpressionNode,
+  target: AnimatedValueExpressionNode,
+  config: TimingAnimationConfig,
+  callback: ExpressionNode | null,
+};
+
+export type SpringStatementNode = {
+  ...BaseExpressionNode,
+  target: AnimatedValueExpressionNode,
+  config: SpringAnimationConfig,
+  callback: ExpressionNode | null,
+};
+
+export type DecayStatementNode = {
+  ...BaseExpressionNode,
+  target: AnimatedValueExpressionNode,
+  config: DecayAnimationConfig,
+  callback: ExpressionNode | null,
+};
+
+export type StopAnimationStatementNode = {
+  ...BaseExpressionNode,
+  animationId: number,
+};
+
 export type ExpressionNode =
   | MultiExpressionNode
   | BooleanExpressionNode
@@ -99,7 +129,11 @@ export type ExpressionNode =
   | SetStatementNode
   | BlockStatementNode
   | CondStatementNode
-  | CallStatementNode;
+  | CallStatementNode
+  | TimingStatementNode
+  | SpringStatementNode
+  | DecayStatementNode
+  | StopAnimationStatementNode;
 
 export type NativeMultiExpressionNode = {
   ...BaseExpressionNode,
@@ -164,6 +198,48 @@ export type NativeCastBooleanExpressionNode = {
   v: NativeExpressionNode,
 };
 
+export type NativeTimingStatementNode = {
+  ...BaseExpressionNode,
+  target: number,
+  config: {type: 'frames', frames: [], toValue: number, iterations: number},
+  callback: NativeExpressionNode | null,
+};
+
+export type NativeSpringStatementNode = {
+  ...BaseExpressionNode,
+  target: number,
+  config: {
+    type: 'spring',
+    overshootClamping: boolean,
+    restDisplacementThreshold: number,
+    restSpeedThreshold: number,
+    stiffness: number,
+    damping: number,
+    mass: number,
+    initialVelocity: number,
+    toValue: number,
+    iterations: number,
+  },
+  callback: NativeExpressionNode | null,
+};
+
+export type NativeDecayStatementNode = {
+  ...BaseExpressionNode,
+  target: number,
+  config: {
+    type: 'decay',
+    deceleration: number,
+    velocity: number,
+    iterations: number,
+  },
+  callback: NativeExpressionNode | null,
+};
+
+export type NativeStopAnimationStatementNode = {
+  ...BaseExpressionNode,
+  animationId: number,
+};
+
 export type NativeExpressionNode =
   | NativeMultiExpressionNode
   | NativeBooleanExpressionNode
@@ -175,4 +251,8 @@ export type NativeExpressionNode =
   | NativeCondStatementNode
   | NativeCallStatementNode
   | NativeFormatExpressionNode
-  | NativeCastBooleanExpressionNode;
+  | NativeCastBooleanExpressionNode
+  | NativeTimingStatementNode
+  | NativeSpringStatementNode
+  | NativeDecayStatementNode
+  | NativeStopAnimationStatementNode;

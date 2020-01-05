@@ -8,13 +8,17 @@
 package com.facebook.react.animated;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /*package*/ class ExpressionAnimatedNode extends ValueAnimatedNode {
 
@@ -38,10 +42,16 @@ import java.util.List;
   private final ReadableMap mExpression;
   private EvalFunction mEvalFunc;
 
+  private static HashMap<Integer, Integer> _animations;
+  private static int _animationId = -1;
+
   public ExpressionAnimatedNode(
     ReadableMap config, NativeAnimatedNodesManager nativeAnimatedNodesManager) {
     mNativeAnimatedNodesManager = nativeAnimatedNodesManager;
     mExpression = config.getMap("expression");
+    if(_animations == null) {
+      _animations = new HashMap<>();
+    }
   }
 
   @Override
@@ -273,12 +283,65 @@ import java.util.List;
       case "call": return createCall(node);
       case "format": return createFormat(node);
       case "castBoolean": return createCastBoolean(node);
+      case "timing": return createAnimation(node);
+      case "spring": return createAnimation(node);
+      case "decay": return createAnimation(node);
+      case "stopAnimation": return createStopAnimation(node);
       default:
         return new EvalFunction() {
           @Override
           public double eval() { return 0; }
         };
     }
+  }
+
+  private EvalFunction createAnimation(ReadableMap node) {
+    final int targetTag = node.getInt("target");
+    final ReadableMap config = node.getMap("config");
+
+    ReadableMap callback = node.getMap("callback");
+    final EvalFunction callbackEval = callback != null ? createEvalFunc(callback) : null;
+
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        if(_animations.get(targetTag) != null) {
+          mNativeAnimatedNodesManager.stopAnimation(_animations.get(targetTag));
+          _animations.remove(targetTag);
+        }
+        int animationId = _animationId--;
+        _animations.put(targetTag, animationId);
+        mNativeAnimatedNodesManager.startAnimatingNode(animationId, targetTag, config, new Callback() {
+          @Override
+          public void invoke(Object... args) {
+            _animations.remove(targetTag);
+            if(callbackEval != null) {
+              callbackEval.eval();
+            }
+          }
+        });
+        return animationId;
+      }
+    };
+  }
+
+  private EvalFunction createStopAnimation(ReadableMap node) {
+    int animationId = node.getInt("animationId");
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        Iterator it = _animations.entrySet().iterator();
+        while (it.hasNext()) {
+          Map.Entry<Integer, Integer> pair = (Map.Entry)it.next();
+          if(pair.getValue() == animationId) {
+            _animations.remove(pair.getKey());
+            mNativeAnimatedNodesManager.stopAnimation(animationId);
+            break;
+          }
+        }
+        return 0;
+      }
+    };
   }
 
   private EvalFunction createFormat(ReadableMap node) {

@@ -14,6 +14,10 @@ const AnimatedExpression = require('./AnimatedExpression');
 const AnimatedValue = require('./AnimatedValue');
 const AnimatedNode = require('./AnimatedNode');
 const AnimatedWithChildren = require('./AnimatedWithChildren');
+const AnimatedInterpolation = require('./AnimatedInterpolation');
+
+import type {InterpolationConfigType} from './AnimatedInterpolation';
+
 import type {ExpressionNode} from './expressions';
 
 class AnimatedProc extends AnimatedWithChildren {
@@ -62,6 +66,10 @@ class AnimatedProc extends AnimatedWithChildren {
       params: this._params.map(a => a.__getNativeTag()),
       expression: this._expression.__getNativeTag(),
     };
+  }
+
+  interpolate(config: InterpolationConfigType): AnimatedInterpolation {
+    return new AnimatedInterpolation(this, config);
   }
 }
 

@@ -31,6 +31,9 @@ const {
   debug,
   eq,
   neq,
+  timing,
+  spring,
+  decay,
   boolean,
 } = Animated.E;
 
@@ -48,8 +51,10 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
   state = {
     native: new Animated.Value(0),
     js: new Animated.Value(0),
-    nativedummy: new Animated.Value(0),
-    jsdummy: new Animated.Value(0),
+    nativeflag: new Animated.Value(0),
+    nativedummy: new Animated.Value(50),
+    jsdummy: new Animated.Value(50),
+    jsflag: new Animated.Value(0),
   };
 
   current = 0;
@@ -86,6 +91,7 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
             {this.props.children(
               this.state.native,
               this.state.nativedummy,
+              this.state.nativeflag,
               nativeCalculator,
             )}
           </View>
@@ -96,6 +102,7 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
             {this.props.children(
               this.state.js,
               this.state.jsdummy,
+              this.state.jsflag,
               jsCalculator,
             )}
           </View>
@@ -409,7 +416,7 @@ exports.examples = [
     render: function(): React.Node {
       return (
         <Tester type="timing" config={{duration: 1000}}>
-          {(anim, dummy, calculator) => {
+          {(anim, dummy, flag, calculator) => {
             return (
               <>
                 <Animated.ScrollView
@@ -444,7 +451,44 @@ exports.examples = [
                   style={[
                     styles.block,
                     {
-                      borderRadius: dummy,
+                      width: Animated.expression(
+                        block(
+                          cond(
+                            greaterThan(anim, 0.5),
+                            cond(eq(flag, 0), [
+                              set(flag, 1),
+                              spring(
+                                dummy,
+                                {
+                                  toValue: 100,
+                                  mass: 1,
+                                  stiffness: 180,
+                                  damping: 12,
+                                  useNativeDriver: false,
+                                },
+                                debug('dummy animation ended', flag),
+                              ),
+                              debug('dummy animation -> 50 started', dummy),
+                            ]),
+                            cond(eq(flag, 1), [
+                              set(flag, 0),
+                              spring(
+                                dummy,
+                                {
+                                  toValue: 50,
+                                  mass: 1,
+                                  stiffness: 180,
+                                  damping: 12,
+                                  useNativeDriver: false,
+                                },
+                                debug('dummy animation ended', flag),
+                              ),
+                              debug('dummy animation -> 10 started', dummy),
+                            ]),
+                          ),
+                          dummy,
+                        ),
+                      ),
                       transform: [
                         {
                           translateX: anim.interpolate({
@@ -465,23 +509,7 @@ exports.examples = [
                           }),
                         },
                       ],
-                      backgroundColor: Animated.expression(
-                        block(
-                          cond(
-                            greaterThan(anim, 0.5),
-                            cond(neq(dummy, 50), [
-                              set(dummy, 50),
-                              debug('dummy changed to 50', dummy),
-                            ]),
-                            cond(eq(dummy, 50), [
-                              set(dummy, 10),
-                              debug('dummy changed to 10', dummy),
-                            ]),
-                          ),
-                          //cond(greaterThan(anim, 0.5), 0, 1),
-                          calculator(anim),
-                        ),
-                      ).interpolate({
+                      backgroundColor: calculator(anim).interpolate({
                         inputRange: [0, 1],
                         outputRange: ['#FF0000', '#00FF00'],
                       }),

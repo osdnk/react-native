@@ -10,6 +10,12 @@
 
 const sprintf = require('sprintf-js').sprintf;
 const AnimatedNode = require('../AnimatedNode');
+const AnimatedValue = require('../AnimatedValue');
+
+import Animation from '../../animations/Animation';
+import TimingAnimation from '../../animations/TimingAnimation';
+import SpringAnimation from '../../animations/SpringAnimation';
+import DecayAnimation from '../../animations/DecayAnimation';
 
 import type {
   ExpressionNode,
@@ -25,9 +31,16 @@ import type {
   CallStatementNode,
   FormatExpressionNode,
   CastBooleanExpressionNode,
+  TimingStatementNode,
+  SpringStatementNode,
+  DecayStatementNode,
+  StopAnimationStatementNode,
 } from './types';
 
 type ReducerFunction = () => number;
+
+const _animations: {[number]: Animation, ...} = {};
+let _animationId = 0;
 
 const add = (node: MultiExpressionNode) => multi(node, (p, c) => p + c);
 const sub = (node: MultiExpressionNode) => multi(node, (p, c) => p - c);
@@ -78,6 +91,10 @@ const cond = condReducer;
 const set = setReducer;
 const block = blockReducer;
 const call = callReducer;
+const timing = timingReducer;
+const spring = springReducer;
+const decay = decayReducer;
+const stopAnimation = stopAnimationReducer;
 
 const evaluators = {
   add,
@@ -116,6 +133,10 @@ const evaluators = {
   call,
   value,
   number,
+  timing,
+  spring,
+  decay,
+  stopAnimation,
 };
 
 function createEvaluator(
@@ -151,6 +172,76 @@ function createEvaluatorInternal(element: ExpressionParam): ReducerFunction {
     throw new Error('Error: Node type ' + node.type + ' not found.');
   }
   return evaluators[node.type](element);
+}
+
+function timingReducer(node: TimingStatementNode): ReducerFunction {
+  const animationValue = ((node.target.node: any): AnimatedValue);
+  const singleConfig: any = node.config;
+  const callback = node.callback
+    ? createEvaluatorInternal(node.callback)
+    : null;
+  return () => {
+    const animationId = _animationId++;
+    _animations[animationId] = new TimingAnimation(singleConfig);
+    animationValue.animate(_animations[animationId], ({finished}) => {
+      delete _animations[animationId];
+      if (callback) {
+        callback();
+      }
+    });
+    return animationId;
+  };
+}
+
+function springReducer(node: SpringStatementNode): ReducerFunction {
+  const animationValue = ((node.target.node: any): AnimatedValue);
+  const singleConfig: any = node.config;
+  const callback = node.callback
+    ? createEvaluatorInternal(node.callback)
+    : null;
+  return () => {
+    const animationId = _animationId++;
+    _animations[animationId] = new SpringAnimation(singleConfig);
+    animationValue.animate(_animations[animationId], ({finished}) => {
+      delete _animations[animationId];
+      if (callback) {
+        callback();
+      }
+    });
+    return animationId;
+  };
+}
+
+function decayReducer(node: DecayStatementNode): ReducerFunction {
+  const animationValue = ((node.target.node: any): AnimatedValue);
+  const singleConfig: any = node.config;
+  const callback = node.callback
+    ? createEvaluatorInternal(node.callback)
+    : null;
+  return () => {
+    const animationId = _animationId++;
+    _animations[animationId] = new DecayAnimation(singleConfig);
+    animationValue.animate(_animations[animationId], ({finished}) => {
+      delete _animations[animationId];
+      if (callback) {
+        callback();
+      }
+    });
+    return animationId;
+  };
+}
+
+function stopAnimationReducer(
+  node: StopAnimationStatementNode,
+): ReducerFunction {
+  return () => {
+    if (_animations[node.animationId]) {
+      _animations[node.animationId].stop();
+      delete _animations[node.animationId];
+      return 1;
+    }
+    return 0;
+  };
 }
 
 function formatReducer(node: FormatExpressionNode): ReducerFunction {

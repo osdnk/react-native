@@ -11,6 +11,11 @@
 'use strict';
 
 const AnimatedValue = require('../AnimatedValue');
+
+import type {TimingAnimationConfig} from '../../animations/TimingAnimation';
+import type {SpringAnimationConfig} from '../../animations/SpringAnimation';
+import type {DecayAnimationConfig} from '../../animations/DecayAnimation';
+
 let _nodeId = 0;
 
 import type {
@@ -27,6 +32,10 @@ import type {
   FormatExpressionNode,
   CastBooleanExpressionNode,
   ExpressionParam,
+  TimingStatementNode,
+  SpringStatementNode,
+  DecayStatementNode,
+  StopAnimationStatementNode,
 } from './types';
 
 type MultiFactory = (
@@ -69,6 +78,26 @@ type FormatFactory = (
 
 type CastBooleanFactory = (v: ExpressionParam) => CastBooleanExpressionNode;
 
+type TimingAnimationFactory = (
+  v: AnimatedValue,
+  config: TimingAnimationConfig,
+  callback: ?ExpressionNode,
+) => TimingStatementNode;
+
+type SpringAnimationFactory = (
+  v: AnimatedValue,
+  config: SpringAnimationConfig,
+  callback: ?ExpressionNode,
+) => SpringStatementNode;
+
+type DecayAnimationFactory = (
+  v: AnimatedValue,
+  config: DecayAnimationConfig,
+  callback: ?ExpressionNode,
+) => DecayStatementNode;
+
+type StopAnimationFactory = (animationId: number) => StopAnimationStatementNode;
+
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
 const multiply: MultiFactory = multi('multiply');
@@ -105,6 +134,10 @@ const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
 const format: FormatFactory = formatFactory;
 const castBoolean: CastBooleanFactory = castBooleanFactory;
+const timing: TimingAnimationFactory = timingFactory;
+const spring: SpringAnimationFactory = springFactory;
+const decay: DecayAnimationFactory = decayFactory;
+const stopAnimation: StopAnimationFactory = stopAnimationFactory;
 
 function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
@@ -130,6 +163,56 @@ function resolve(v: ExpressionParam): ExpressionNode {
       value: ((v: any): number),
     }: NumberExpressionNode);
   }
+}
+
+function timingFactory(
+  v: AnimatedValue,
+  config: TimingAnimationConfig,
+  callback: ?ExpressionNode,
+): TimingStatementNode {
+  return {
+    type: 'timing',
+    nodeId: _nodeId++,
+    target: ((resolve(v): any): AnimatedValueExpressionNode),
+    config: config,
+    callback: callback || null,
+  };
+}
+
+function springFactory(
+  v: AnimatedValue,
+  config: SpringAnimationConfig,
+  callback: ?ExpressionNode,
+): SpringStatementNode {
+  return {
+    type: 'spring',
+    nodeId: _nodeId++,
+    target: ((resolve(v): any): AnimatedValueExpressionNode),
+    config: config,
+    callback: callback || null,
+  };
+}
+
+function decayFactory(
+  v: AnimatedValue,
+  config: DecayAnimationConfig,
+  callback: ?ExpressionNode,
+): DecayStatementNode {
+  return {
+    type: 'decay',
+    nodeId: _nodeId++,
+    target: ((resolve(v): any): AnimatedValueExpressionNode),
+    config: config,
+    callback: callback || null,
+  };
+}
+
+function stopAnimationFactory(animationId: number): StopAnimationStatementNode {
+  return {
+    type: 'stopAnimation',
+    nodeId: _nodeId++,
+    animationId: animationId,
+  };
 }
 
 function formatFactory(
@@ -278,4 +361,8 @@ export const factories = {
   call,
   format,
   boolean: castBoolean,
+  timing,
+  spring,
+  decay,
+  stopAnimation,
 };
