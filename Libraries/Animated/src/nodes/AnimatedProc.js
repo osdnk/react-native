@@ -33,13 +33,11 @@ class AnimatedProc extends AnimatedWithChildren {
   }
 
   __attach() {
-    console.log('proc attach');
     this._expression.__addChild(this);
     this._args.forEach(a => a.__addChild(this));
   }
 
   __makeNative() {
-    console.log('proc make native');
     this._expression.__makeNative();
     super.__makeNative();
   }
@@ -58,7 +56,6 @@ class AnimatedProc extends AnimatedWithChildren {
   }
 
   __getNativeConfig(): any {
-    console.log('proc __getNativeConfig');
     return {
       type: 'proc',
       args: this._args.map(a => a.__getNativeTag()),
@@ -87,7 +84,6 @@ export function createAnimatedProc(
     params.push(new AnimatedParam(0));
   }
   const expression = cb(...params);
-  console.log(JSON.stringify(expression));
   return (...args: AnimatedNode[]) =>
     new AnimatedProc(new AnimatedExpression(expression), args, params);
 }
