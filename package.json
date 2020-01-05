@@ -154,7 +154,7 @@
     "signedsource": "^1.0.0",
     "ws": "^6.1.4",
     "yargs": "^14.2.0",
-    "sprintf-js": "^1.0.3"
+    "sprintf-js": "*"
   },
   "detox": {
     "test-runner": "jest",
