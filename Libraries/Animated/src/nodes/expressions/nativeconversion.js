@@ -21,7 +21,6 @@ import type {
   BlockStatementNode,
   CondStatementNode,
   CallStatementNode,
-  ProcStatementNode,
   FormatExpressionNode,
   CastBooleanExpressionNode,
   NativeExpressionNode,
@@ -34,7 +33,6 @@ import type {
   NativeBlockStatementNode,
   NativeCondStatementNode,
   NativeCallStatementNode,
-  NativeProcStatementNode,
   NativeFormatExpressionNode,
   NativeCastBooleanExpressionNode,
 } from './types';
@@ -76,7 +74,6 @@ const converters = {
   set: convertSet,
   block: convertBlock,
   call: convertCall,
-  callProc: convertProc,
   format: convertFormat,
   castBoolean: convertCastBoolean,
 };
@@ -107,16 +104,6 @@ function convertCastBoolean(
   };
 }
 
-function convertProc(node: ProcStatementNode): NativeProcStatementNode {
-  return {
-    type: node.type,
-    nodeId: node.nodeId,
-    args: (node.args ? node.args : []).map(convert),
-    params: (node.params ? node.params : []).map(convert),
-    expr: convert(node.evaluator(...(node.params ? node.params : []))),
-  };
-}
-
 function convertCall(node: CallStatementNode): NativeCallStatementNode {
   return {
     type: node.type,
@@ -130,7 +117,7 @@ function convertBlock(node: BlockStatementNode): NativeBlockStatementNode {
   return {
     type: node.type,
     nodeId: node.nodeId,
-    nodes: (node.nodes ? node.nodes : []).map(convert),
+    args: node.args.map(convert),
   };
 }
 
@@ -162,7 +149,7 @@ function multi(node: MultiExpressionNode): NativeMultiExpressionNode {
     nodeId: node.nodeId,
     a: convert(node.a),
     b: convert(node.b),
-    others: (node.others || []).map(convert),
+    args: node.args.map(convert),
   };
 }
 

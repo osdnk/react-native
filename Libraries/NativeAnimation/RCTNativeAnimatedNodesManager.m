@@ -28,6 +28,7 @@
 #import <React/RCTValueAnimatedNode.h>
 #import <React/RCTTrackingAnimatedNode.h>
 #import <React/RCTExpressionAnimatedNode.h>
+#import <React/RCTProcAnimatedNode.h>
 
 typedef void (^RCTOnAnimationCallback)(RCTUIManager *uiManager);
 
@@ -185,7 +186,8 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
             @"subtraction" : [RCTSubtractionAnimatedNode class],
             @"transform" : [RCTTransformAnimatedNode class],
             @"tracking" : [RCTTrackingAnimatedNode class],
-            @"expression" : [RCTExpressionAnimatedNode class]
+            @"expression" : [RCTExpressionAnimatedNode class],
+            @"proc" : [RCTProcAnimatedNode class],
     };
   });
 

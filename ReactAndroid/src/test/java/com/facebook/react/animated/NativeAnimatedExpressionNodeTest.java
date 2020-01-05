@@ -129,7 +129,7 @@ public class NativeAnimatedExpressionNodeTest {
 
   private double evalExpression (ReadableMap expression) {
     mNativeAnimatedNodesManager
-      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "graph", expression));
+      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "expression", expression));
     ExpressionAnimatedNode node = (ExpressionAnimatedNode)mNativeAnimatedNodesManager.getNodeById(1);
     node.update();
     return node.mValue;
@@ -137,7 +137,7 @@ public class NativeAnimatedExpressionNodeTest {
 
   private String evalStringExpression (ReadableMap expression) {
     mNativeAnimatedNodesManager
-      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "graph", expression));
+      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "expression", expression));
     ExpressionAnimatedNode node = (ExpressionAnimatedNode)mNativeAnimatedNodesManager.getNodeById(1);
     node.update();
     return (String)node.mAnimatedObject;
@@ -145,7 +145,7 @@ public class NativeAnimatedExpressionNodeTest {
 
   private Boolean evalBooleanExpression (ReadableMap expression) {
     mNativeAnimatedNodesManager
-      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "graph", expression));
+      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "expression", expression));
     ExpressionAnimatedNode node = (ExpressionAnimatedNode)mNativeAnimatedNodesManager.getNodeById(1);
     node.update();
     return (Boolean)node.mAnimatedObject;
@@ -176,9 +176,9 @@ public class NativeAnimatedExpressionNodeTest {
         "a", createExpr("type", "multiply",
           "a", createNumber(10),
           "b", createNumber(10),
-          "others", JavaOnlyArray.of()),
+          "args", JavaOnlyArray.of()),
         "b", createNumber(2),
-        "others", JavaOnlyArray.of())
+        "args", JavaOnlyArray.of())
     );
     assertThat(valueToTest).isEqualTo(102);
   }
@@ -186,7 +186,7 @@ public class NativeAnimatedExpressionNodeTest {
   @Test public void testBlockExpressions () {
     double valueToTest = evalExpression(
       createExpr("type", "block",
-        "nodes", JavaOnlyArray.of(createNumber(20), createNumber(30)))
+        "args", JavaOnlyArray.of(createNumber(20), createNumber(30)))
     );
     assertThat(valueToTest).isEqualTo(30);
   }
@@ -219,7 +219,7 @@ public class NativeAnimatedExpressionNodeTest {
     double valueToTest = evalExpression(createExpr("type", "add",
       "a", createNumber(10),
       "b", createNumber(20),
-      "others", JavaOnlyArray.of(createNumber(30), createNumber(40))));
+      "args", JavaOnlyArray.of(createNumber(30), createNumber(40))));
 
     assertThat(valueToTest).isEqualTo(100);
   }
@@ -229,7 +229,7 @@ public class NativeAnimatedExpressionNodeTest {
     double valueToTest = evalExpression(createExpr("type", "sub",
       "a", createNumber(100),
       "b", createNumber(50),
-      "others", JavaOnlyArray.of(createNumber(30), createNumber(10))));
+      "args", JavaOnlyArray.of(createNumber(30), createNumber(10))));
 
     assertThat(valueToTest).isEqualTo(10);
   }
@@ -239,7 +239,7 @@ public class NativeAnimatedExpressionNodeTest {
     double valueToTest = evalExpression(createExpr("type", "multiply",
       "a", createNumber(2),
       "b", createNumber(2),
-      "others", JavaOnlyArray.of(createNumber(2), createNumber(2))));
+      "args", JavaOnlyArray.of(createNumber(2), createNumber(2))));
 
     assertThat(valueToTest).isEqualTo(16);
   }
@@ -249,7 +249,7 @@ public class NativeAnimatedExpressionNodeTest {
     double valueToTest = evalExpression(createExpr( "type", "divide",
       "a", createNumber(100),
       "b", createNumber(2),
-      "others", JavaOnlyArray.of(createNumber(2), createNumber(5))));
+      "args", JavaOnlyArray.of(createNumber(2), createNumber(5))));
 
     assertThat(valueToTest).isEqualTo(5);
   }
@@ -259,7 +259,7 @@ public class NativeAnimatedExpressionNodeTest {
     double valueToTest = evalExpression(createExpr( "type", "pow",
       "a", createNumber(2),
       "b", createNumber(2),
-      "others", JavaOnlyArray.of(createNumber(2))));
+      "args", JavaOnlyArray.of(createNumber(2))));
 
     assertThat(valueToTest).isEqualTo(16);
   }
@@ -269,7 +269,7 @@ public class NativeAnimatedExpressionNodeTest {
     double valueToTest = evalExpression(createExpr( "type", "modulo",
       "a", createNumber(20),
       "b", createNumber(8),
-      "others", JavaOnlyArray.of(createNumber(3))));
+      "args", JavaOnlyArray.of(createNumber(3))));
 
     assertThat(valueToTest).isEqualTo(1);
   }
@@ -333,7 +333,7 @@ public class NativeAnimatedExpressionNodeTest {
     assertThat(evalExpression(createExpr("type", "and",
       "a", createNumber(1),
       "b", createNumber(1),
-      "others", JavaOnlyArray.of(createNumber(1))))).isEqualTo(1);
+      "args", JavaOnlyArray.of(createNumber(1))))).isEqualTo(1);
   }
 
   @Test public void testAndExpressionReturnsFalse () {
@@ -341,14 +341,14 @@ public class NativeAnimatedExpressionNodeTest {
     assertThat(evalExpression(createExpr("type", "and",
       "a", createNumber(1),
       "b", createNumber(0),
-      "others", JavaOnlyArray.of(createNumber(1))))).isEqualTo(0);
+      "args", JavaOnlyArray.of(createNumber(1))))).isEqualTo(0);
   }
 
   @Test public void testOrExpressionReturnsTrue () {
     assertThat(evalExpression(createExpr("type", "or",
       "a", createNumber(0),
       "b", createNumber(0),
-      "others", JavaOnlyArray.of(createNumber(1))))).isEqualTo(1);
+      "args", JavaOnlyArray.of(createNumber(1))))).isEqualTo(1);
 
   }
 
@@ -356,7 +356,7 @@ public class NativeAnimatedExpressionNodeTest {
     assertThat(evalExpression(createExpr("type", "or",
       "a", createNumber(0),
       "b", createNumber(0),
-      "others", JavaOnlyArray.of(createNumber(0))))).isEqualTo(0);
+      "args", JavaOnlyArray.of(createNumber(0))))).isEqualTo(0);
   }
 
   @Test public void testNotExpressionReturnsTrue () {
@@ -458,14 +458,14 @@ public class NativeAnimatedExpressionNodeTest {
     assertThat(evalExpression(createExpr("type", "max",
       "a", createNumber(100),
       "b", createNumber(10),
-      "others", JavaOnlyArray.of(createNumber(1))))).isEqualTo(100);
+      "args", JavaOnlyArray.of(createNumber(1))))).isEqualTo(100);
   }
 
   @Test public void testMinReturnsMin () {
     assertThat(evalExpression(createExpr("type", "min",
       "a", createNumber(100),
       "b", createNumber(10),
-      "others", JavaOnlyArray.of(createNumber(50))))).isEqualTo(10);
+      "args", JavaOnlyArray.of(createNumber(50))))).isEqualTo(10);
   }
 
   @Test public void testCeilReturnsCeil () {

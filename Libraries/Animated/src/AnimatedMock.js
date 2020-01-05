@@ -18,6 +18,8 @@ const AnimatedProps = require('./nodes/AnimatedProps');
 const AnimatedValue = require('./nodes/AnimatedValue');
 const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 
+import {createAnimatedProc} from './nodes/AnimatedProc';
+
 import {factories} from './nodes/expressions';
 import * as derived from './nodes/expressions/derived';
 const useExpression = require('./useExpression');
@@ -136,6 +138,7 @@ module.exports = {
   ValueXY: AnimatedValueXY,
   Interpolation: AnimatedInterpolation,
   Node: AnimatedNode,
+
   decay,
   timing,
   spring,
@@ -159,5 +162,6 @@ module.exports = {
   unforkEvent: AnimatedImplementation.unforkEvent,
   Event: AnimatedEvent,
   useExpression,
+  proc: createAnimatedProc,
   __PropsOnlyForTests: AnimatedProps,
 };

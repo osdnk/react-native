@@ -24,7 +24,6 @@ import type {
   BlockStatementNode,
   CondStatementNode,
   CallStatementNode,
-  ProcStatementNode,
   FormatExpressionNode,
   CastBooleanExpressionNode,
   ExpressionParam,
@@ -33,7 +32,7 @@ import type {
 type MultiFactory = (
   a: ExpressionParam,
   b: ExpressionParam,
-  ...others: Array<ExpressionParam>
+  ...args: Array<ExpressionParam>
 ) => MultiExpressionNode;
 
 type UnaryFactory = (v: ExpressionParam) => UnaryExpressionNode;
@@ -55,17 +54,13 @@ type SetFactory = (
 ) => SetStatementNode;
 
 type BlockFactory = (
-  ...nodes: Array<ExpressionParam | Array<ExpressionParam>>
+  ...args: Array<ExpressionParam | Array<ExpressionParam>>
 ) => BlockStatementNode;
 
 type CallFactory = (
   args: ExpressionParam | ExpressionParam[],
   (args: number[]) => void,
 ) => CallStatementNode;
-
-type ProcFactory = (
-  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
-) => (...args: ExpressionParam[]) => ProcStatementNode;
 
 type FormatFactory = (
   formatStr: string,
@@ -108,7 +103,6 @@ const cond: ConditionFactory = condFactory;
 const set: SetFactory = setFactory;
 const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
-const proc: ProcFactory = procFactory;
 const format: FormatFactory = formatFactory;
 const castBoolean: CastBooleanFactory = castBooleanFactory;
 
@@ -158,22 +152,6 @@ function castBooleanFactory(v: ExpressionParam): CastBooleanExpressionNode {
   };
 }
 
-function procFactory(
-  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
-): (...args: ExpressionParam[]) => ProcStatementNode {
-  const params = new Array(evaluator.length);
-  for (let i = 0; i < params.length; i++) {
-    params[i] = new AnimatedValue(0);
-  }
-  return (...nodes: ExpressionParam[]) => ({
-    type: 'callProc',
-    nodeId: _nodeId++,
-    args: nodes.map(resolve),
-    params: params.map(resolve),
-    evaluator,
-  });
-}
-
 function setFactory(
   target: AnimatedValue,
   source: ExpressionParam,
@@ -187,12 +165,12 @@ function setFactory(
 }
 
 function blockFactory(
-  ...nodes: Array<ExpressionParam | Array<ExpressionParam>>
+  ...args: Array<ExpressionParam | Array<ExpressionParam>>
 ): BlockStatementNode {
   return {
     type: 'block',
     nodeId: _nodeId++,
-    nodes: nodes.map(n => (Array.isArray(n) ? blockFactory(...n) : resolve(n))),
+    args: args.map(n => (Array.isArray(n) ? blockFactory(...n) : resolve(n))),
   };
 }
 
@@ -236,13 +214,13 @@ function multi(type: string): MultiFactory {
   return (
     a1: ExpressionParam,
     b1: ExpressionParam,
-    ...others: Array<ExpressionParam>
+    ...args: Array<ExpressionParam>
   ) => ({
     type,
     nodeId: _nodeId++,
     a: resolve(a1),
     b: resolve(b1),
-    others: others.map(resolve),
+    args: args.map(resolve),
   });
 }
 
@@ -298,7 +276,6 @@ export const factories = {
   set,
   block,
   call,
-  proc,
   format,
   boolean: castBoolean,
 };

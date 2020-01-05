@@ -23,7 +23,6 @@ import type {
   BlockStatementNode,
   CondStatementNode,
   CallStatementNode,
-  ProcStatementNode,
   FormatExpressionNode,
   CastBooleanExpressionNode,
 } from './types';
@@ -79,7 +78,6 @@ const cond = condReducer;
 const set = setReducer;
 const block = blockReducer;
 const call = callReducer;
-const callProc = procReducer;
 
 const evaluators = {
   add,
@@ -118,7 +116,6 @@ const evaluators = {
   call,
   value,
   number,
-  callProc,
 };
 
 function createEvaluator(
@@ -177,29 +174,6 @@ function castBooleanReducer(node: CastBooleanExpressionNode): ReducerFunction {
   return () => evaluator();
 }
 
-function procReducer(node: ProcStatementNode): ReducerFunction {
-  if (!node.args) {
-    throw Error('Args is not set in proc');
-  }
-  const args = node.args.map(createEvaluatorInternal);
-  if (!node.params) {
-    throw Error('Arguments is not set in proc');
-  }
-  const params = node.params;
-  if (!node.evaluator) {
-    throw Error('Function body is not set in proc');
-  }
-  const expr = createEvaluatorInternal(node.evaluator(...params));
-
-  return () => {
-    for (let i = 0; i < args.length; i++) {
-      // $FlowFixMe
-      params[i].setValue(args[i]());
-    }
-    return expr();
-  };
-}
-
 function callReducer(node: CallStatementNode): ReducerFunction {
   const evalFuncs = (node.args ? node.args : []).map(createEvaluatorInternal);
   const callback = node.callback ? node.callback : (args: number[]) => {};
@@ -214,7 +188,7 @@ function callReducer(node: CallStatementNode): ReducerFunction {
 }
 
 function blockReducer(node: BlockStatementNode): ReducerFunction {
-  const evalFuncs = (node.nodes ? node.nodes : []).map(createEvaluatorInternal);
+  const evalFuncs = node.args.map(createEvaluatorInternal);
   return () => {
     let retVal = 0;
     for (let i = 0; i < evalFuncs.length; i++) {
@@ -270,11 +244,11 @@ function multi(
 ): ReducerFunction {
   const a = createEvaluatorInternal(node.a);
   const b = createEvaluatorInternal(node.b);
-  const others = (node.others || []).map(createEvaluatorInternal);
+  const args = node.args.map(createEvaluatorInternal);
   return () => {
     let acc = reducer(a(), b());
-    for (let i = 0; i < others.length; i++) {
-      acc = reducer(acc, others[i]());
+    for (let i = 0; i < args.length; i++) {
+      acc = reducer(acc, args[i]());
     }
     return acc;
   };

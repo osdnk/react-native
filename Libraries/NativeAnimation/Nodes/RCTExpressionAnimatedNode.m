@@ -181,9 +181,8 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
     return [self evalBlockWithBlock:node];
   } else if([type isEqualToString:@"call"]) {
     return [self evalBlockWithCall:node];
-  } else if([type isEqualToString:@"callProc"]) {
-    return [self evalBlockWithCallProc:node];
   }
+  
   /* Conversion */
   else if([type isEqualToString:@"value"]) {
     return [self evalBlockWithAnimatedNode:node];
@@ -226,24 +225,6 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
   };
 }
 
-  
-- (evalBlock) evalBlockWithCallProc:(NSDictionary*)node {
-  NSArray* args = node[@"args"];
-  NSArray* params = node[@"params"];
-  NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
-  for(int i=0; i<[args count]; i++) {
-    [evals addObject:[self evalBlockWithNode:args[i]]];
-  }
-  evalBlock evaluator = [self evalBlockWithNode:node[@"expr"]];
-  
-  return ^ {
-    for(int i=0; i<[args count]; i++) {
-      [self.manager setAnimatedNodeValue:params[i][@"tag"] value:[NSNumber numberWithFloat:evals[i]()]];
-    }
-    return evaluator();
-  };
-}
-
 - (evalBlock) evalBlockWithCall:(NSDictionary*)node {
   NSArray* args = node[@"args"];
   NSNumber* nodeId = node[@"nodeId"];
@@ -264,7 +245,7 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 }
 
 - (evalBlock) evalBlockWithBlock:(NSDictionary*)node {
-  NSArray* nodes = node[@"nodes"];
+  NSArray* nodes = node[@"args"];
   NSMutableArray<evalBlock>* evals = [[NSMutableArray alloc] init];
   for(int i=0; i<[nodes count]; i++) {
     [evals addObject:[self evalBlockWithNode:nodes[i]]];
@@ -329,7 +310,7 @@ typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
 - (evalBlock) evalBlockWithMultiOperator:(NSDictionary*)op reducer:(evalMultipOpReducer)reducer {
   evalBlock evalA = [self evalBlockWithNode:op[@"a"]];
   evalBlock evalB = [self evalBlockWithNode:op[@"b"]];
-  NSArray* others = op[@"others"];
+  NSArray* others = op[@"args"];
   NSMutableArray<evalBlock>* evalOthers = [[NSMutableArray alloc] init];
   for(int i=0; i<[others count]; i++) {
     [evalOthers addObject:[self evalBlockWithNode:others[i]]];

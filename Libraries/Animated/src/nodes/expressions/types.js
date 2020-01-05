@@ -28,7 +28,7 @@ export type MultiExpressionNode = {
   ...BaseExpressionNode,
   a: ExpressionNode,
   b: ExpressionNode,
-  others: ExpressionNode[],
+  args: ExpressionNode[],
 };
 
 export type UnaryExpressionNode = {
@@ -63,7 +63,7 @@ export type SetStatementNode = {
 
 export type BlockStatementNode = {
   ...BaseExpressionNode,
-  nodes: ExpressionNode[],
+  args: ExpressionNode[],
 };
 
 export type CondStatementNode = {
@@ -77,13 +77,6 @@ export type CallStatementNode = {
   ...BaseExpressionNode,
   args: ExpressionNode[],
   callback: (args: number[]) => void,
-};
-
-export type ProcStatementNode = {
-  ...BaseExpressionNode,
-  args: ExpressionNode[],
-  params: ExpressionNode[],
-  evaluator: (...args: ExpressionParam[]) => ExpressionNode,
 };
 
 export type FormatExpressionNode = {
@@ -106,14 +99,13 @@ export type ExpressionNode =
   | SetStatementNode
   | BlockStatementNode
   | CondStatementNode
-  | CallStatementNode
-  | ProcStatementNode;
+  | CallStatementNode;
 
 export type NativeMultiExpressionNode = {
   ...BaseExpressionNode,
   a: NativeExpressionNode,
   b: NativeExpressionNode,
-  others: NativeExpressionNode[],
+  args: NativeExpressionNode[],
 };
 
 export type NativeUnaryExpressionNode = {
@@ -145,7 +137,7 @@ export type NativeSetStatementNode = {
 
 export type NativeBlockStatementNode = {
   ...BaseExpressionNode,
-  nodes: NativeExpressionNode[],
+  args: NativeExpressionNode[],
 };
 
 export type NativeCondStatementNode = {
@@ -159,13 +151,6 @@ export type NativeCallStatementNode = {
   ...BaseExpressionNode,
   args: NativeExpressionNode[],
   callback: (args: number[]) => void,
-};
-
-export type NativeProcStatementNode = {
-  ...BaseExpressionNode,
-  args: NativeExpressionNode[],
-  params: NativeExpressionNode[],
-  expr: NativeExpressionNode,
 };
 
 export type NativeFormatExpressionNode = {
@@ -189,6 +174,5 @@ export type NativeExpressionNode =
   | NativeBlockStatementNode
   | NativeCondStatementNode
   | NativeCallStatementNode
-  | NativeProcStatementNode
   | NativeFormatExpressionNode
   | NativeCastBooleanExpressionNode;

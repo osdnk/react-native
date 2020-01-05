@@ -192,6 +192,8 @@ import java.util.Set;
       node = new TrackingAnimatedNode(config, this);
     } else if ("expression".equals(type)) {
       node = new ExpressionAnimatedNode(config, this);
+    } else if ("proc".equals(type)) {
+      node = new ProcAnimatedNode(config, this);
     } else {
       throw new JSApplicationIllegalArgumentException("Unsupported node type: " + type);
     }

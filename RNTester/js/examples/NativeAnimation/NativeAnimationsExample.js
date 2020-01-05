@@ -29,14 +29,17 @@ const {
   format,
   greaterThan,
   debug,
-  proc,
-  onChange,
   eq,
   neq,
   boolean,
 } = Animated.E;
 
-const calculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
+// TODO: Fix issue with proc failing after remount due to animated nodes
+// being deallocated.
+const nativeCalculator = Animated.proc(anim =>
+  cond(greaterThan(anim, 0.5), 0, 1),
+);
+const jsCalculator = Animated.proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
 
 const AnimatedSlider = Animated.createAnimatedComponent(Slider);
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
@@ -80,13 +83,21 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
             <Text>Native:</Text>
           </View>
           <View style={styles.row}>
-            {this.props.children(this.state.native, this.state.nativedummy)}
+            {this.props.children(
+              this.state.native,
+              this.state.nativedummy,
+              nativeCalculator,
+            )}
           </View>
           <View>
             <Text>JavaScript:</Text>
           </View>
           <View style={styles.row}>
-            {this.props.children(this.state.js, this.state.jsdummy)}
+            {this.props.children(
+              this.state.js,
+              this.state.jsdummy,
+              jsCalculator,
+            )}
           </View>
         </View>
       </TouchableWithoutFeedback>
@@ -398,7 +409,7 @@ exports.examples = [
     render: function(): React.Node {
       return (
         <Tester type="timing" config={{duration: 1000}}>
-          {(anim, dummy) => {
+          {(anim, dummy, calculator) => {
             return (
               <>
                 <Animated.ScrollView
@@ -467,6 +478,7 @@ exports.examples = [
                               debug('dummy changed to 10', dummy),
                             ]),
                           ),
+                          //cond(greaterThan(anim, 0.5), 0, 1),
                           calculator(anim),
                         ),
                       ).interpolate({

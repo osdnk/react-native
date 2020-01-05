@@ -1093,7 +1093,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   CGFloat ( ^eval ) (NSDictionary*);
   RCTNativeAnimatedNodesManager* manager = _nodesManager;
   eval = ^(NSDictionary* graph) {
-    [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"graph": graph}];
+    [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"expression": graph}];
     RCTExpressionAnimatedNode* node = (RCTExpressionAnimatedNode*)[manager findNodeById:@100];
     [node performUpdate];
     return node.value;
@@ -1101,7 +1101,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   
   NSString* ( ^evalString ) (NSDictionary*);
   evalString = ^(NSDictionary* graph) {
-    [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"graph": graph}];
+    [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"expression": graph}];
     RCTExpressionAnimatedNode* node = (RCTExpressionAnimatedNode*)[manager findNodeById:@100];
     [node performUpdate];
     return (NSString*)node.animatedObject;
@@ -1109,7 +1109,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   
   BOOL ( ^evalBool ) (NSDictionary*);
   evalBool = ^(NSDictionary* graph) {
-    [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"graph": graph}];
+    [manager createAnimatedNode:@100 config:@{@"type": @"expression", @"expression": graph}];
     RCTExpressionAnimatedNode* node = (RCTExpressionAnimatedNode*)[manager findNodeById:@100];
     [node performUpdate];
     return [(NSNumber*)node.animatedObject boolValue];
@@ -1131,13 +1131,13 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
         @"type": @"multiply",
         @"a": n(10),
         @"b": n(10),
-        @"others": @[n(20)]
+        @"args": @[n(20)]
     }
   }), 2010, @"Did not calculate a nested expression");
   
   // Should support blocks expressions
   XCTAssertEqual(eval(@{
-    @"type":@"block", @"nodes": @[
+    @"type":@"block", @"args": @[
         @{
             @"type": @"add",
             @"a": n(10),
@@ -1145,7 +1145,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
                 @"type": @"multiply",
                 @"a": n(10),
                 @"b": n(10),
-                @"others": @[n(20)]
+                @"args": @[n(20)]
             }
         }
     ]}), 2010, @"Did not handle expressions in a block");
@@ -1186,12 +1186,12 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(node.value, 100, @"Did not set the correct value");
   
   // Should do math
-  XCTAssertEqual(eval(@{@"type": @"add", @"a": n(10), @"b": n(10), @"others": @[n(10)]}), 30, @"Add did not work");
-  XCTAssertEqual(eval(@{@"type": @"sub", @"a": n(100), @"b": n(10), @"others": @[n(10)]}), 80, @"Sub did not work");
-  XCTAssertEqual(eval(@{@"type": @"multiply", @"a": n(10), @"b": n(10), @"others": @[n(10)]}), 1000, @"Multiply did not work");
-  XCTAssertEqual(eval(@{@"type": @"divide", @"a": n(1000), @"b": n(10), @"others": @[n(10)]}), 10, @"Divide did not work");
-  XCTAssertEqual(eval(@{@"type": @"pow", @"a": n(2), @"b": n(2), @"others": @[n(2)]}), 16, @"Power did not work");
-  XCTAssertEqual(eval(@{@"type": @"modulo", @"a": n(20), @"b": n(8), @"others": @[n(3)]}), 1, @"Modulo did not work");
+  XCTAssertEqual(eval(@{@"type": @"add", @"a": n(10), @"b": n(10), @"args": @[n(10)]}), 30, @"Add did not work");
+  XCTAssertEqual(eval(@{@"type": @"sub", @"a": n(100), @"b": n(10), @"args": @[n(10)]}), 80, @"Sub did not work");
+  XCTAssertEqual(eval(@{@"type": @"multiply", @"a": n(10), @"b": n(10), @"args": @[n(10)]}), 1000, @"Multiply did not work");
+  XCTAssertEqual(eval(@{@"type": @"divide", @"a": n(1000), @"b": n(10), @"args": @[n(10)]}), 10, @"Divide did not work");
+  XCTAssertEqual(eval(@{@"type": @"pow", @"a": n(2), @"b": n(2), @"args": @[n(2)]}), 16, @"Power did not work");
+  XCTAssertEqual(eval(@{@"type": @"modulo", @"a": n(20), @"b": n(8), @"args": @[n(3)]}), 1, @"Modulo did not work");
   
   // Should do math functions
   XCTAssertEqual(eval(@{@"type": @"abs", @"v": n(-16)}), 16, @"abs did not work");
@@ -1207,10 +1207,10 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(eval(@{@"type": @"round", @"v": n(20.5)}), 21, @"round did not work");
   
   // Shold do operators
-  XCTAssertEqual(eval(@{@"type": @"and", @"a": n(1), @"b": n(1), @"others": @[n(1)]}), 1, @"and did not work");
-  XCTAssertEqual(eval(@{@"type": @"and", @"a": n(0), @"b": n(1), @"others": @[n(1)]}), 0, @"and did not work");
-  XCTAssertEqual(eval(@{@"type": @"or", @"a": n(0), @"b": n(1), @"others": @[n(1)]}), 1, @"or did not work");
-  XCTAssertEqual(eval(@{@"type": @"or", @"a": n(0), @"b": n(0), @"others": @[n(0)]}), 0, @"or did not work");
+  XCTAssertEqual(eval(@{@"type": @"and", @"a": n(1), @"b": n(1), @"args": @[n(1)]}), 1, @"and did not work");
+  XCTAssertEqual(eval(@{@"type": @"and", @"a": n(0), @"b": n(1), @"args": @[n(1)]}), 0, @"and did not work");
+  XCTAssertEqual(eval(@{@"type": @"or", @"a": n(0), @"b": n(1), @"args": @[n(1)]}), 1, @"or did not work");
+  XCTAssertEqual(eval(@{@"type": @"or", @"a": n(0), @"b": n(0), @"args": @[n(0)]}), 0, @"or did not work");
   XCTAssertEqual(eval(@{@"type": @"not", @"v": n(1)}), 0, @"not did not work");
   XCTAssertEqual(eval(@{@"type": @"not", @"v": n(0)}), 1, @"not did not work");
   
@@ -1235,8 +1235,8 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(eval(@{@"type": @"greaterOrEq", @"left": n(100), @"right": n(10)}), 1, @"greaterOrEq did not work");
   XCTAssertEqual(eval(@{@"type": @"greaterOrEq", @"left": n(10), @"right": n(100)}), 0, @"greaterOrEq did not work");
   
-  XCTAssertEqual(eval(@{@"type": @"max", @"a": n(10), @"b": n(20), @"others": @[n(200)]}), 200, @"max did not work");
-  XCTAssertEqual(eval(@{@"type": @"min", @"a": n(15), @"b": n(200), @"others": @[n(10)]}), 10, @"min did not work");
+  XCTAssertEqual(eval(@{@"type": @"max", @"a": n(10), @"b": n(20), @"args": @[n(200)]}), 200, @"max did not work");
+  XCTAssertEqual(eval(@{@"type": @"min", @"a": n(15), @"b": n(200), @"args": @[n(10)]}), 10, @"min did not work");
   
   XCTAssertEqual(eval(@{@"type": @"ceil", @"v": n(10.1)}), 11, @"ceil did not work");
   XCTAssertEqual(eval(@{@"type": @"floor", @"v": n(10.9)}), 10, @"floor did not work");

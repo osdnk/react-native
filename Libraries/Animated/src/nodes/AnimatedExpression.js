@@ -31,7 +31,6 @@ class AnimatedExpression extends AnimatedWithChildren {
     | CastBooleanExpressionNode;
 
   _args: Array<any>;
-  _params: Array<any>;
   _evaluator: (() => number) | null;
   _callListeners: {[key: string]: CallCallbackListener, ...};
   _nativeCallCallbackListener: ?any;
@@ -40,31 +39,28 @@ class AnimatedExpression extends AnimatedWithChildren {
     super();
     this._expression = expression;
     this._args = [];
-    this._params = [];
     this._callListeners = {};
   }
 
   __attach() {
-    collectArguments(-1, this._expression, this._args, this._params);
+    collectArguments(-1, this._expression, this._args);
     // Collect arguments and add this node as a child to each argument
     this._args.forEach(a => {
-      if (typeof a.node === 'function') {
-        this.__addListener(a.id, a.node);
+      if (a.func) {
+        this.__addListener(a.id, a.func);
       } else {
         a.node.node.__addChild(this);
       }
     });
-    this._params.forEach(p => p.node.node.__attach());
   }
 
   __detach() {
     this._args.forEach(a => {
-      if (typeof a.node !== 'function') {
+      if (a.node) {
         a.node.node.__removeChild(this);
       }
     });
     this._evaluator = null;
-    this._params.forEach(p => p.node.node.__detach());
     this.__stopListeningToCallCallbacks();
     super.__detach();
   }
@@ -84,8 +80,8 @@ class AnimatedExpression extends AnimatedWithChildren {
   }
 
   __makeNative() {
+    this._args.forEach(a => a.node && a.node.node.__makeNative());
     super.__makeNative();
-    this._params.forEach(p => p.node.node.__makeNative());
     this.__startListeningToCallCallbacks();
   }
 
@@ -138,37 +134,28 @@ function collectArguments(
   parentId: number,
   node: ?(ExpressionNode | Function),
   args: Array<any>,
-  params: Array<any>,
 ) {
   if (node) {
     if (typeof node === 'function') {
-      args.push({id: parentId, node});
+      args.push({id: parentId, func: node});
+      return;
     } else if (node.type === 'value') {
       args.push({id: parentId, node});
-    } else if (node.type === 'callProc') {
-      node.params &&
-        node.params.forEach(p => params.push({id: parentId, node: p}));
-      node.args && node.args.forEach(p => params.push({id: parentId, node: p}));
     }
 
     const id = node.nodeId;
-
-    collectArguments(id, node.a ? node.a : null, args, params);
-    collectArguments(id, node.b ? node.b : null, args, params);
-    collectArguments(id, node.left ? node.left : null, args, params);
-    collectArguments(id, node.right ? node.right : null, args, params);
-    collectArguments(id, node.expr ? node.expr : null, args, params);
-    collectArguments(id, node.ifNode ? node.ifNode : null, args, params);
-    collectArguments(id, node.elseNode ? node.elseNode : null, args, params);
-    collectArguments(id, node.target ? node.target : null, args, params);
-    collectArguments(id, node.source ? node.source : null, args, params);
-    collectArguments(id, node.v ? node.v : null, args, params);
-    node.others &&
-      node.others.forEach(n => collectArguments(id, n, args, params));
-    node.nodes &&
-      node.nodes.forEach(n => collectArguments(id, n, args, params));
-    node.args && node.args.forEach(n => collectArguments(id, n, args, params));
-    collectArguments(id, node.callback ? node.callback : null, args, params);
+    collectArguments(id, node.a ? node.a : null, args);
+    collectArguments(id, node.b ? node.b : null, args);
+    collectArguments(id, node.left ? node.left : null, args);
+    collectArguments(id, node.right ? node.right : null, args);
+    collectArguments(id, node.expr ? node.expr : null, args);
+    collectArguments(id, node.ifNode ? node.ifNode : null, args);
+    collectArguments(id, node.elseNode ? node.elseNode : null, args);
+    collectArguments(id, node.target ? node.target : null, args);
+    collectArguments(id, node.source ? node.source : null, args);
+    collectArguments(id, node.v ? node.v : null, args);
+    collectArguments(id, node.callback ? node.callback : null, args);
+    node.args && node.args.forEach(a => collectArguments(id, a, args));
   }
 }
 

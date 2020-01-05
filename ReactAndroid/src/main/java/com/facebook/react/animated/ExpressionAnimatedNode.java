@@ -271,7 +271,6 @@ import java.util.List;
       case "set": return createSet(node);
       case "block": return createBlock(node);
       case "call": return createCall(node);
-      case "callProc": return createCallProc(node);
       case "format": return createFormat(node);
       case "castBoolean": return createCastBoolean(node);
       default:
@@ -314,27 +313,6 @@ import java.util.List;
     };
   }
 
-  private EvalFunction createCallProc(ReadableMap node) {
-    ReadableArray args = node.getArray("args");
-    final ReadableArray params = node.getArray("params");
-    final List<EvalFunction> evalfunctions = new ArrayList<>();
-    for(int i=0; i<args.size(); i++) {
-      evalfunctions.add(createEvalFunc(args.getMap(i)));
-    }
-
-    final EvalFunction evaluator = createEvalFunc(node.getMap("expr"));
-    return new EvalFunction() {
-      @Override
-      public double eval() {
-        for(int i=0; i<evalfunctions.size(); i++) {
-          mNativeAnimatedNodesManager.setAnimatedNodeValue(
-            params.getMap(i).getInt("tag"), evalfunctions.get(i).eval());
-        }
-        return evaluator.eval();
-      }
-    };
-  }
-
   private EvalFunction createCall(ReadableMap node) {
     ReadableArray args = node.getArray("args");
     final int nodeId = node.getInt("nodeId");
@@ -363,7 +341,7 @@ import java.util.List;
   }
 
   private EvalFunction createBlock(ReadableMap node) {
-    ReadableArray nodes = node.getArray("nodes");
+    ReadableArray nodes = node.getArray("args");
     final List<EvalFunction> evalfunctions= new ArrayList<>(1);
     for(int i=0; i<nodes.size(); i++) {
       evalfunctions.add(createEvalFunc(nodes.getMap(i)));
@@ -411,7 +389,7 @@ import java.util.List;
   private EvalFunction createMultiOp(ReadableMap node, final ReduceMulti reducer) {
     final EvalFunction a = createEvalFunc(node.getMap("a"));
     final EvalFunction b = createEvalFunc(node.getMap("b"));
-    ReadableArray others = node.getArray("others");
+    ReadableArray others = node.getArray("args");
     final List<EvalFunction> othersMapped= new ArrayList<>(1);
     for(int i=0; i<others.size(); i++) {
       othersMapped.add(createEvalFunc(others.getMap(i)));

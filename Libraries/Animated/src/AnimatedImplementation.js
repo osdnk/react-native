@@ -32,6 +32,7 @@ const useExpression = require('./useExpression');
 
 const createAnimatedComponent = require('./createAnimatedComponent');
 
+import {createAnimatedProc} from './nodes/AnimatedProc';
 import {factories} from './nodes/expressions';
 import * as derived from './nodes/expressions/derived';
 
@@ -732,6 +733,8 @@ module.exports = {
   Event: AnimatedEvent,
 
   useExpression,
+
+  proc: createAnimatedProc,
 
   __PropsOnlyForTests: AnimatedProps,
 };
