@@ -255,10 +255,29 @@ int _animationId = -1;
   
   return ^{
     CGFloat* argList = (CGFloat*) calloc(1UL, sizeof(CGFloat) * evals.count);
+  
     for (int i = 0; i < evals.count; i++) {
-       argList[i] = evals[i]();
+      CGFloat v = evals[i]();
+      argList[i] = v;
     }
-    NSString* result = [[NSString alloc] initWithFormat:format, *argList];
+    NSMutableString* result = [[NSMutableString alloc] init];
+    const char* p = [format UTF8String];
+    const char* str = p;
+    const char* cur = p;
+    int i = 0;
+    while(*p != '\0') {
+      if(*p == '/' && *(p+1) != '\0') p+= 2;
+      else if(*p == '%') {
+        while(*p != '\0' && *p != 'f') p++;
+        p++;
+        char subbuff[(p - cur)+1];
+        memset(subbuff, 0, (p-cur)+1);
+        memcpy(subbuff, &str[cur - str], p - str);
+        [result appendFormat:[NSString stringWithUTF8String: subbuff], argList[i]];
+        i++;
+        cur = p;
+      } else p++;
+    }
     free (argList);
     
     self.animatedObject = result;
