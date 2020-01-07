@@ -35,7 +35,12 @@ class AnimatedExpression extends AnimatedWithChildren {
   _callListeners: {[key: string]: CallCallbackListener, ...};
   _nativeCallCallbackListener: ?any;
 
-  constructor(expression: ExpressionNode) {
+  constructor(
+    expression:
+      | ExpressionNode
+      | FormatExpressionNode
+      | CastBooleanExpressionNode,
+  ) {
     super();
     this._expression = expression;
     this._args = [];

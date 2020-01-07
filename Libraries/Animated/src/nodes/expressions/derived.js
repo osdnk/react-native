@@ -36,13 +36,17 @@ export function onChange(
 export function debug(
   message: string,
   node: ExpressionParam,
-): BlockStatementNode {
-  return block(
-    call([node], (args: number[]) => {
-      console.info(message, args[0]);
-    }),
-    node,
-  );
+): BlockStatementNode | number {
+  if (__DEV__) {
+    return block(
+      call([node], (args: number[]) => {
+        console.info(message, args[0]);
+      }),
+      node,
+    );
+  } else {
+    return 0;
+  }
 }
 
 export function diff(value: AnimatedValue): BlockStatementNode {
