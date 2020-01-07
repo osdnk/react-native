@@ -1242,7 +1242,7 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(eval(@{@"type": @"floor", @"v": n(10.9)}), 10, @"floor did not work");
   
   // Conversion
-  XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f", @"args": @[n(10.123456678)]}) isEqualToString:@"10.12"], @"format did not work");
+  XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f is %.2f", @"args": @[n(17.123456678), n(14.123456)]}) isEqualToString:@"17.12 is 14.12"], @"format did not work");
   
   XCTAssertTrue(evalBool(@{@"type": @"castBoolean", @"v": n(23)}), @"boolean did not work");
   XCTAssertFalse(evalBool(@{@"type": @"castBoolean", @"v": n(0)}), @"boolean did not work");
