@@ -12,6 +12,9 @@
 
 const React = require('react');
 
+import {API} from 'react-native/Libraries/Animated/src/NativeAnimatedHelper';
+API.addEnqueuedUpdateProp('text');
+
 const {
   View,
   Text,
@@ -445,7 +448,11 @@ exports.examples = [
                 <AnimatedTextInput
                   underlineColorAndroid="transparent"
                   editable={false}
-                  {...{text: Animated.expression(format('Value: %.2f', anim))}}
+                  {...{
+                    text: Animated.expression(
+                      format('Value: %.2f - %.2f', anim, dummy),
+                    ),
+                  }}
                 />
                 <Animated.View
                   style={[
