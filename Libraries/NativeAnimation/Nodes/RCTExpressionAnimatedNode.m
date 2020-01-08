@@ -10,6 +10,7 @@
 #import <React/RCTEventEmitter.h>
 #import <React/RCTNativeAnimatedNodesManager.h>
 #import <React/RCTValueAnimatedNode.h>
+#import <React/RCTAnimationDriver.h>
 
 typedef CGFloat ( ^evalBlock )(void);
 typedef CGFloat ( ^evalOpReducer )(CGFloat left, CGFloat right);
@@ -151,7 +152,18 @@ int _animationId = -1;
     return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
       return !v;
     }];
-  }
+  } else if([type isEqualToString:@"diff"]) {
+    __block CGFloat prevValue = FLT_MIN;
+    return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
+      if(prevValue == FLT_MIN) {
+       prevValue = v;
+       return 0;
+      }
+      CGFloat stash = prevValue;
+      prevValue = v;
+      return v - stash;
+    }];
+   }
   /* Comparsion */
   else if([type isEqualToString:@"eq"]) {
     return [self evalBlockWithOperator:node reducer:^CGFloat(CGFloat left, CGFloat right) {
@@ -177,7 +189,10 @@ int _animationId = -1;
     return [self evalBlockWithOperator:node reducer:^CGFloat(CGFloat left, CGFloat right) {
       return left >= right;
     }];
+  } else if([type isEqualToString:@"clockRunning"]) {
+    return [self evalBlockWithClockRunning:node];
   }
+  
   /* Statements */
   else if([type isEqualToString:@"cond"]) {
     return [self evalBlockWithCondition: node];
@@ -195,7 +210,9 @@ int _animationId = -1;
     return [self evalBlockWithAnimation:node];
   } else if([type isEqualToString:@"stopAnimation"]) {
      return [self evalBlockWithStopAnimation:node];
-   }
+  } else if([type isEqualToString:@"startClock"]) {
+    return [self evalBlockWithAnimation:node];
+  }
   
   /* Conversion */
   else if([type isEqualToString:@"value"]) {
@@ -208,6 +225,33 @@ int _animationId = -1;
     return [self evalBlockWithCastBoolean:node];
   }
   return ^{ return (CGFloat)0.0f; };
+}
+
+- (evalBlock) evalBlockWithClockRunning:(NSDictionary*)node {
+  NSNumber* nodeTag = node[@"target"];
+  return ^{
+    RCTValueAnimatedNode* node = (RCTValueAnimatedNode*)[self.manager findNodeById:nodeTag];
+    for (id<RCTAnimationDriver> driver in self.manager.activeAnimations) {
+      if ([driver.valueNode isEqual:node]) {
+        return (CGFloat)1.0;
+      }
+    }
+    return (CGFloat)0.0;
+  };
+}
+
+- (evalBlock) evalBlockWithStopClock:(NSDictionary*)node {
+  NSNumber* nodeTag = node[@"target"];
+  return ^{
+     RCTValueAnimatedNode* node = (RCTValueAnimatedNode*)[self.manager findNodeById:nodeTag];
+       for (id<RCTAnimationDriver> driver in self.manager.activeAnimations) {
+         if ([driver.valueNode isEqual:node]) {
+           [self.manager stopAnimation:driver.animationId];
+           return (CGFloat)1.0;
+         }
+       }
+    return (CGFloat)0.0;
+  };
 }
 
 - (evalBlock) evalBlockWithAnimation:(NSDictionary*)node {
@@ -231,9 +275,10 @@ int _animationId = -1;
 }
 
 - (evalBlock) evalBlockWithStopAnimation:(NSDictionary*)node {
-  NSNumber* animationId = node[@"animationId"];
+  evalBlock evalAnimationId = [self evalBlockWithNode:node[@"animationId"]];
   return ^{
     __block BOOL found = NO;
+    NSNumber* animationId = [NSNumber numberWithInt:round(evalAnimationId())];
     [_animations enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSNumber * _Nonnull obj, BOOL * _Nonnull stop) {
       if([obj isEqualToNumber:animationId]) {
         [_animations removeObjectForKey:key];

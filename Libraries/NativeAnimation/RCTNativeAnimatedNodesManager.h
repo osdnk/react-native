@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTUIManager.h>
+#import <React/RCTAnimationDriver.h>
 
 #import <React/RCTAnimatedNode.h>
 
@@ -16,6 +17,7 @@
 @interface RCTNativeAnimatedNodesManager : NSObject
 
 @property (nonatomic, copy, readonly) NSSet<NSString*>* layoutProps;
+@property (nonatomic, copy, readonly) NSSet<id<RCTAnimationDriver>> *activeAnimations;
 
 - (nonnull instancetype)initWithBridge:(nonnull RCTBridge *)bridge;
 

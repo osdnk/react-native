@@ -16,6 +16,7 @@ import Animation from '../../animations/Animation';
 import TimingAnimation from '../../animations/TimingAnimation';
 import SpringAnimation from '../../animations/SpringAnimation';
 import DecayAnimation from '../../animations/DecayAnimation';
+import ClockAnimation from '../../animations/ClockAnimation';
 
 import type {
   ExpressionNode,
@@ -34,7 +35,10 @@ import type {
   TimingStatementNode,
   SpringStatementNode,
   DecayStatementNode,
+  StartClockStatementNode,
+  StopClockStatementNode,
   StopAnimationStatementNode,
+  ClockRunningExpressionNode,
 } from './types';
 
 type ReducerFunction = () => number;
@@ -95,6 +99,11 @@ const timing = timingReducer;
 const spring = springReducer;
 const decay = decayReducer;
 const stopAnimation = stopAnimationReducer;
+const diff = diffReducer;
+const startClock = startClockReducer;
+const stopClock = stopClockReducer;
+const clockRunning = clockRunningReducer;
+const animationRunning = clockRunningReducer;
 
 const evaluators = {
   add,
@@ -137,6 +146,11 @@ const evaluators = {
   spring,
   decay,
   stopAnimation,
+  startClock,
+  stopClock,
+  clockRunning,
+  animationRunning,
+  diff,
 };
 
 function createEvaluator(
@@ -172,6 +186,56 @@ function createEvaluatorInternal(element: ExpressionParam): ReducerFunction {
     throw new Error('Error: Node type ' + node.type + ' not found.');
   }
   return evaluators[node.type](element);
+}
+
+function startClockReducer(node: StartClockStatementNode): ReducerFunction {
+  const animationValue = ((node.target.node: any): AnimatedValue);
+  const singleConfig: any = node.config;
+  const callback = node.callback
+    ? createEvaluatorInternal(node.callback)
+    : null;
+  return () => {
+    const animation = new ClockAnimation(singleConfig);
+    animationValue.animate(animation, ({finished}) => {
+      if (callback) {
+        callback();
+      }
+    });
+    return 1;
+  };
+}
+
+function stopClockReducer(node: StopClockStatementNode): ReducerFunction {
+  const animationValue = ((node.target.node: any): AnimatedValue);
+  return () => {
+    // $FlowFixMe - we need to check the animation for the node
+    if (animationValue._animation) {
+      animationValue._animation.stop();
+      return 1;
+    }
+    return 0;
+  };
+}
+
+function clockRunningReducer(
+  node: ClockRunningExpressionNode,
+): ReducerFunction {
+  const animationValue = ((node.target.node: any): AnimatedValue);
+  // $FlowFixMe - we need to check the animation for the node
+  return () => (animationValue._animation ? 1 : 0);
+}
+
+function diffReducer(node: UnaryExpressionNode): ReducerFunction {
+  let prevValue = Number.MIN_SAFE_INTEGER;
+  return unary(node, v => {
+    if (prevValue === Number.MIN_SAFE_INTEGER) {
+      prevValue = v;
+      return 0;
+    }
+    const stash = prevValue;
+    prevValue = v;
+    return v - stash;
+  });
 }
 
 function timingReducer(node: TimingStatementNode): ReducerFunction {
@@ -234,10 +298,12 @@ function decayReducer(node: DecayStatementNode): ReducerFunction {
 function stopAnimationReducer(
   node: StopAnimationStatementNode,
 ): ReducerFunction {
+  const evalAnimationId = createEvaluatorInternal(node.animationId);
   return () => {
-    if (_animations[node.animationId]) {
-      _animations[node.animationId].stop();
-      delete _animations[node.animationId];
+    const animationId = evalAnimationId();
+    if (_animations[animationId]) {
+      _animations[animationId].stop();
+      delete _animations[animationId];
       return 1;
     }
     return 0;

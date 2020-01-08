@@ -27,6 +27,9 @@ import type {
   SpringStatementNode,
   DecayStatementNode,
   StopAnimationStatementNode,
+  StartClockStatementNode,
+  StopClockStatementNode,
+  ClockRunningExpressionNode,
   NativeExpressionNode,
   NativeMultiExpressionNode,
   NativeUnaryExpressionNode,
@@ -43,11 +46,15 @@ import type {
   NativeSpringStatementNode,
   NativeDecayStatementNode,
   NativeStopAnimationStatementNode,
+  NativeStartClockStatementNode,
+  NativeStopClockStatementNode,
+  NativeClockRunningExpressionNode,
 } from './types';
 
 import TimingAnimation from '../../animations/TimingAnimation';
 import SpringAnimation from '../../animations/SpringAnimation';
 import DecayAnimation from '../../animations/DecayAnimation';
+import ClockAnimation from '../../animations/ClockAnimation';
 
 const converters = {
   add: multi,
@@ -92,6 +99,10 @@ const converters = {
   spring: convertSpring,
   decay: convertDecay,
   stopAnimation: convertStopAnimation,
+  startClock: convertStartClock,
+  stopClock: convertStopClock,
+  clockRunning: convertClockRunning,
+  diff: unary,
 };
 
 function convert(v: ?ExpressionNode): NativeExpressionNode {
@@ -102,6 +113,38 @@ function convert(v: ?ExpressionNode): NativeExpressionNode {
     throw Error('Native converter for ' + v.type + ' was not found.');
   }
   return converters[v.type](v);
+}
+
+function convertStartClock(
+  node: StartClockStatementNode,
+): NativeStartClockStatementNode {
+  return {
+    type: 'startClock',
+    nodeId: node.nodeId,
+    target: node.target && node.target.getTag && node.target.getTag(),
+    config: new ClockAnimation((node.config: any)).__getNativeAnimationConfig(),
+    callback: node.callback ? convert(node.callback) : null,
+  };
+}
+
+function convertStopClock(
+  node: StopClockStatementNode,
+): NativeStopClockStatementNode {
+  return {
+    type: 'stopClock',
+    nodeId: node.nodeId,
+    target: node.target && node.target.getTag && node.target.getTag(),
+  };
+}
+
+function convertClockRunning(
+  node: ClockRunningExpressionNode,
+): NativeClockRunningExpressionNode {
+  return {
+    type: 'clockRunning',
+    nodeId: node.nodeId,
+    target: node.target && node.target.getTag && node.target.getTag(),
+  };
 }
 
 function convertTiming(node: TimingStatementNode): NativeTimingStatementNode {
@@ -144,7 +187,7 @@ function convertStopAnimation(
   return {
     type: 'stopAnimation',
     nodeId: node.nodeId,
-    animationId: node.animationId,
+    animationId: convert(node.animationId),
   };
 }
 

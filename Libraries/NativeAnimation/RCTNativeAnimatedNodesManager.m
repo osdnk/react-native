@@ -17,6 +17,7 @@
 #import <React/RCTEventAnimation.h>
 #import <React/RCTFrameAnimation.h>
 #import <React/RCTDecayAnimation.h>
+#import <React/RCTClockAnimation.h>
 #import <React/RCTInterpolationAnimatedNode.h>
 #import <React/RCTModuloAnimatedNode.h>
 #import <React/RCTMultiplicationAnimatedNode.h>
@@ -138,6 +139,10 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
 - (NSSet<NSString*>*) layoutProps
 {
   return _layoutProps;
+}
+
+- (NSSet<id<RCTAnimationDriver>>*) activeAnimations {
+  return _activeAnimations;
 }
 
 - (BOOL)isNodeManagedByFabric:(nonnull NSNumber *)tag
@@ -380,6 +385,11 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
                                                      config:config
                                                     forNode:valueNode
                                                    callBack:callBack];
+  } else if ([type isEqual:@"clock"]) {
+  animationDriver = [[RCTClockAnimation alloc] initWithId:animationId
+                                                   config:config
+                                                  forNode:valueNode
+                                                 callBack:callBack];
   } else {
     RCTLogError(@"Unsupported animation type: %@", config[@"type"]);
     return;

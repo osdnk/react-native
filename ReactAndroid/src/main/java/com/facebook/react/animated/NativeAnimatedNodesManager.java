@@ -153,6 +153,10 @@ import java.util.Set;
     return mActiveAnimations.size() > 0 || mUpdatedNodes.size() > 0;
   }
 
+  public SparseArray<AnimationDriver> getAnimations() {
+    return  mActiveAnimations;
+  }
+
   public void addEnqueuedUpdateProp(String propName) {
     if(!layoutProps.contains(propName)) {
       layoutProps.add(propName);
@@ -295,7 +299,8 @@ import java.util.Set;
       animation = new SpringAnimation(animationConfig);
     } else if ("decay".equals(type)) {
       animation = new DecayAnimation(animationConfig);
-    } else {
+    } else if ("clock".equals(type)) {
+      animation = new ClockAnimation(animationConfig);} else {
       throw new JSApplicationIllegalArgumentException("Unsupported animation type: " + type);
     }
     animation.mId = animationId;

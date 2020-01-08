@@ -18,6 +18,7 @@ API.addEnqueuedUpdateProp('text');
 const {
   View,
   Text,
+  Button,
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -37,6 +38,9 @@ const {
   timing,
   spring,
   decay,
+  diff,
+  or,
+  clockRunning,
   boolean,
 } = Animated.E;
 
@@ -53,14 +57,19 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
   state = {
     native: new Animated.Value(0),
-    js: new Animated.Value(0),
     nativeflag: new Animated.Value(0),
     nativedummy: new Animated.Value(50),
+    nativeclock: new Animated.Value(0),
+
+    js: new Animated.Value(0),
     jsdummy: new Animated.Value(50),
     jsflag: new Animated.Value(0),
+    jsclock: new Animated.Value(0),
   };
 
   current = 0;
+  clockNative = undefined;
+  clockJS = undefined;
 
   onPress = () => {
     const animConfig =
@@ -83,6 +92,28 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
     }).start();
   };
 
+  onStart = () => {
+    this.clockNative = Animated.clock(this.state.nativeclock, {
+      useNativeDriver: true,
+    });
+    this.clockNative.start(() => console.log('NATIVE CLOCK STOPPED'));
+    this.clockJS = Animated.clock(this.state.jsclock, {
+      useNativeDriver: false,
+    });
+    this.clockJS.start(() => console.log('JS CLOCK STOPPED'));
+  };
+
+  onStop = () => {
+    if (this.clockNative) {
+      this.clockNative.stop();
+      this.clockNative = undefined;
+    }
+    if (this.clockJS) {
+      this.clockJS.stop();
+      this.clockJS = undefined;
+    }
+  };
+
   render() {
     return (
       <TouchableWithoutFeedback onPress={this.onPress}>
@@ -96,6 +127,9 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
               this.state.nativedummy,
               this.state.nativeflag,
               nativeCalculator,
+              this.onStart,
+              this.onStop,
+              this.state.nativeclock,
             )}
           </View>
           <View>
@@ -107,6 +141,9 @@ class Tester extends React.Component<$FlowFixMeProps, $FlowFixMeState> {
               this.state.jsdummy,
               this.state.jsflag,
               jsCalculator,
+              this.onStart,
+              this.onStop,
+              this.state.jsclock,
             )}
           </View>
         </View>
@@ -419,7 +456,15 @@ exports.examples = [
     render: function(): React.Node {
       return (
         <Tester type="timing" config={{duration: 1000}}>
-          {(anim, dummy, flag, calculator) => {
+          {(
+            anim,
+            dummy,
+            flag,
+            calculator,
+            onStartClock,
+            onStopClock,
+            clock,
+          ) => {
             return (
               <>
                 <Animated.ScrollView
@@ -444,16 +489,31 @@ exports.examples = [
                     />
                   </View>
                 </Animated.ScrollView>
-
+                <Button title="Start clock" onPress={onStartClock} />
+                <Button title="Stop clock" onPress={onStopClock} />
                 <AnimatedTextInput
                   underlineColorAndroid="transparent"
                   editable={false}
                   {...{
                     text: Animated.expression(
-                      format('Value: %.2f - %.2f', anim, dummy),
+                      format('Value: %.2f - clock diff: %f', anim, diff(clock)),
                     ),
                   }}
                 />
+                <Animated.View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: Animated.expression(
+                      cond(clockRunning(clock), 1, 0),
+                    ).interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['red', 'green'],
+                    }),
+                  }}
+                />
+
                 <Animated.View
                   style={[
                     styles.block,

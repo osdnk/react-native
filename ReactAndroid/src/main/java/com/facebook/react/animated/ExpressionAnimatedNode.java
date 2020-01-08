@@ -7,6 +7,8 @@
 
 package com.facebook.react.animated;
 
+import android.util.SparseArray;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableArray;
@@ -253,6 +255,7 @@ import java.util.Map;
           return left >= right? 1.0 : 0.0;
         }
       });
+      case "diff": return createDiff(node);
       /* Variables */
       case "value" : {
         int nodeId = node.getInt("tag");
@@ -287,12 +290,50 @@ import java.util.Map;
       case "spring": return createAnimation(node);
       case "decay": return createAnimation(node);
       case "stopAnimation": return createStopAnimation(node);
+      case "startClock": return createAnimation(node);
+      case "stopClock": return createStopClock(node);
+      case "clockRunning": return createClockRunning(node);
       default:
         return new EvalFunction() {
           @Override
           public double eval() { return 0; }
         };
     }
+  }
+
+  private EvalFunction createClockRunning(ReadableMap node) {
+    final int targetTag = node.getInt("target");
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        SparseArray<AnimationDriver> animations = mNativeAnimatedNodesManager.getAnimations();
+        ValueAnimatedNode node = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(targetTag);
+        for(int i=0; i<animations.size() - 1; i++) {
+          if(animations.get(i).mAnimatedValue == node) {
+            return 1;
+          }
+        }
+        return 0;
+      }
+    };
+  }
+
+  private EvalFunction createStopClock(ReadableMap node) {
+    final int targetTag = node.getInt("target");
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        SparseArray<AnimationDriver> animations = mNativeAnimatedNodesManager.getAnimations();
+        ValueAnimatedNode node = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(targetTag);
+        for(int i=0; i<animations.size() - 1; i++) {
+          if(animations.get(i).mAnimatedValue == node) {
+            mNativeAnimatedNodesManager.stopAnimation(animations.get(i).mId);
+            return 1;
+          }
+        }
+        return 0;
+      }
+    };
   }
 
   private EvalFunction createAnimation(ReadableMap node) {
@@ -344,13 +385,27 @@ import java.util.Map;
     };
   }
 
+  private EvalFunction createDiff(ReadableMap node) {
+    final double[] prevValue = {Double.MIN_VALUE};
+    final EvalFunction evaluator = createEvalFunc(node.getMap("v"));
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        double v = evaluator.eval();
+        if(prevValue[0] == Double.MIN_VALUE) {
+          prevValue[0] = v;
+          return 0;
+        }
+        double stash = prevValue[0];
+        prevValue[0]= v;
+        return v - stash;
+      }
+    };
+  }
+
   private EvalFunction createFormat(ReadableMap node) {
     final String format = node.getString("format");
-    ReadableArray args = node.getArray("args");
-    final List<EvalFunction> evalfunctions= new ArrayList<>(1);
-    for(int i=0; i<args.size(); i++) {
-      evalfunctions.add(createEvalFunc(args.getMap(i)));
-    }
+    final List<EvalFunction> evalfunctions = createEvalFunctions(node.getArray("args"));
 
     return new EvalFunction() {
       @Override
@@ -377,12 +432,8 @@ import java.util.Map;
   }
 
   private EvalFunction createCall(ReadableMap node) {
-    ReadableArray args = node.getArray("args");
     final int nodeId = node.getInt("nodeId");
-    final List<EvalFunction> evalfunctions = new ArrayList<>(1);
-    for(int i=0; i<args.size(); i++) {
-      evalfunctions.add(createEvalFunc(args.getMap(i)));
-    }
+    final List<EvalFunction> evalfunctions = createEvalFunctions(node.getArray("args"));
 
     return new EvalFunction() {
       @Override
@@ -404,11 +455,7 @@ import java.util.Map;
   }
 
   private EvalFunction createBlock(ReadableMap node) {
-    ReadableArray nodes = node.getArray("args");
-    final List<EvalFunction> evalfunctions= new ArrayList<>(1);
-    for(int i=0; i<nodes.size(); i++) {
-      evalfunctions.add(createEvalFunc(nodes.getMap(i)));
-    }
+    final List<EvalFunction> evalfunctions = createEvalFunctions(node.getArray("args"));
 
     return new EvalFunction() {
       @Override
@@ -452,11 +499,7 @@ import java.util.Map;
   private EvalFunction createMultiOp(ReadableMap node, final ReduceMulti reducer) {
     final EvalFunction a = createEvalFunc(node.getMap("a"));
     final EvalFunction b = createEvalFunc(node.getMap("b"));
-    ReadableArray others = node.getArray("args");
-    final List<EvalFunction> othersMapped= new ArrayList<>(1);
-    for(int i=0; i<others.size(); i++) {
-      othersMapped.add(createEvalFunc(others.getMap(i)));
-    }
+    final List<EvalFunction> othersMapped= createEvalFunctions(node.getArray("args"));
 
     return new EvalFunction() {
       @Override
@@ -489,5 +532,13 @@ import java.util.Map;
         return reducer.reduce(left.eval(), right.eval());
       }
     };
+  }
+
+  private List<EvalFunction> createEvalFunctions(ReadableArray args) {
+    final List<EvalFunction> evalfunctions= new ArrayList<>(1);
+    for(int i=0; i<args.size(); i++) {
+      evalfunctions.add(createEvalFunc(args.getMap(i)));
+    }
+    return evalfunctions;
   }
 }

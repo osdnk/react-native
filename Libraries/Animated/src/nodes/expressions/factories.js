@@ -15,6 +15,7 @@ const AnimatedValue = require('../AnimatedValue');
 import type {TimingAnimationConfig} from '../../animations/TimingAnimation';
 import type {SpringAnimationConfig} from '../../animations/SpringAnimation';
 import type {DecayAnimationConfig} from '../../animations/DecayAnimation';
+import type {ClockAnimationConfig} from '../../animations/ClockAnimation';
 
 let _nodeId = 0;
 
@@ -35,7 +36,10 @@ import type {
   TimingStatementNode,
   SpringStatementNode,
   DecayStatementNode,
+  StartClockStatementNode,
+  StopClockStatementNode,
   StopAnimationStatementNode,
+  ClockRunningExpressionNode,
 } from './types';
 
 type MultiFactory = (
@@ -96,7 +100,19 @@ type DecayAnimationFactory = (
   callback: ?ExpressionNode,
 ) => DecayStatementNode;
 
-type StopAnimationFactory = (animationId: number) => StopAnimationStatementNode;
+type StopAnimationFactory = (
+  animationId: ExpressionParam,
+) => StopAnimationStatementNode;
+
+type StartClockAnimationFactory = (
+  v: AnimatedValue,
+  config: ClockAnimationConfig,
+  callback: ?ExpressionNode,
+) => StartClockStatementNode;
+
+type ClockRunningFactory = (v: AnimatedValue) => ClockRunningExpressionNode;
+
+type StopClockAnimationFactory = (v: AnimatedValue) => StopClockStatementNode;
 
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
@@ -132,14 +148,19 @@ const cond: ConditionFactory = condFactory;
 const set: SetFactory = setFactory;
 const block: BlockFactory = blockFactory;
 const call: CallFactory = callFactory;
+const diff: UnaryFactory = unary('diff');
 const format: FormatFactory = formatFactory;
 const castBoolean: CastBooleanFactory = castBooleanFactory;
 const timing: TimingAnimationFactory = timingFactory;
 const spring: SpringAnimationFactory = springFactory;
 const decay: DecayAnimationFactory = decayFactory;
+const startClock: StartClockAnimationFactory = startClockFactory;
+const stopClock: StopClockAnimationFactory = stopClockFactory;
+const clockRunning: ClockRunningFactory = clockRunningFactory;
+const animationRunning: ClockRunningFactory = clockRunningFactory;
 const stopAnimation: StopAnimationFactory = stopAnimationFactory;
 
-function resolve(v: ExpressionParam): ExpressionNode {
+export function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
     // Expression ExpressionNode
     if (v.hasOwnProperty('type')) {
@@ -207,11 +228,43 @@ function decayFactory(
   };
 }
 
-function stopAnimationFactory(animationId: number): StopAnimationStatementNode {
+function stopAnimationFactory(
+  animationId: ExpressionParam,
+): StopAnimationStatementNode {
   return {
     type: 'stopAnimation',
     nodeId: _nodeId++,
-    animationId: animationId,
+    animationId: resolve(animationId),
+  };
+}
+
+function startClockFactory(
+  v: AnimatedValue,
+  config: ClockAnimationConfig,
+  callback: ?ExpressionNode,
+): StartClockStatementNode {
+  return {
+    type: 'startClock',
+    nodeId: _nodeId++,
+    target: ((resolve(v): any): AnimatedValueExpressionNode),
+    config: config,
+    callback: callback || null,
+  };
+}
+
+function stopClockFactory(v: AnimatedValue): StopClockStatementNode {
+  return {
+    type: 'stopClock',
+    nodeId: _nodeId++,
+    target: ((resolve(v): any): AnimatedValueExpressionNode),
+  };
+}
+
+function clockRunningFactory(v: AnimatedValue): ClockRunningExpressionNode {
+  return {
+    type: 'clockRunning',
+    nodeId: _nodeId++,
+    target: ((resolve(v): any): AnimatedValueExpressionNode),
   };
 }
 
@@ -364,5 +417,10 @@ export const factories = {
   timing,
   spring,
   decay,
+  startClock,
+  stopClock,
+  clockRunning,
+  animationRunning,
   stopAnimation,
+  diff,
 };

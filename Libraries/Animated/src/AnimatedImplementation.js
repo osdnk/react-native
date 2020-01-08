@@ -28,6 +28,7 @@ const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 const DecayAnimation = require('./animations/DecayAnimation');
 const SpringAnimation = require('./animations/SpringAnimation');
 const TimingAnimation = require('./animations/TimingAnimation');
+const ClockAnimation = require('./animations/ClockAnimation');
 const useExpression = require('./useExpression');
 
 const createAnimatedComponent = require('./createAnimatedComponent');
@@ -44,6 +45,7 @@ import type {
 import type {TimingAnimationConfig} from './animations/TimingAnimation';
 import type {DecayAnimationConfig} from './animations/DecayAnimation';
 import type {SpringAnimationConfig} from './animations/SpringAnimation';
+import type {ClockAnimationConfig} from './animations/ClockAnimation';
 import type {Mapping, EventConfig} from './AnimatedEvent';
 
 export type CompositeAnimation = {
@@ -264,6 +266,51 @@ const decay = function(
     const singleConfig: any = configuration;
     singleValue.stopTracking();
     singleValue.animate(new DecayAnimation(singleConfig), callback);
+  };
+
+  return (
+    maybeVectorAnim(value, config, decay) || {
+      start: function(callback?: ?EndCallback): void {
+        start(value, config, callback);
+      },
+
+      stop: function(): void {
+        value.stopAnimation();
+      },
+
+      reset: function(): void {
+        value.resetAnimation();
+      },
+
+      _startNativeLoop: function(iterations?: number): void {
+        const singleConfig = {...config, iterations};
+        /* $FlowFixMe(>=0.111.0 site=react_native_fb) This comment suppresses
+         * an error found when Flow v0.111 was deployed. To see the error,
+         * delete this comment and run Flow. */
+        start(value, singleConfig);
+      },
+
+      _isUsingNativeDriver: function(): boolean {
+        return config.useNativeDriver || false;
+      },
+    }
+  );
+};
+
+const clock = function(
+  value: AnimatedValue | AnimatedValueXY,
+  config: ClockAnimationConfig,
+): CompositeAnimation {
+  const start = function(
+    animatedValue: AnimatedValue | AnimatedValueXY,
+    configuration: ClockAnimationConfig,
+    callback?: ?EndCallback,
+  ): void {
+    callback = _combineCallbacks(callback, configuration);
+    const singleValue: any = animatedValue;
+    const singleConfig: any = configuration;
+    singleValue.stopTracking();
+    singleValue.animate(new ClockAnimation(singleConfig), callback);
   };
 
   return (
@@ -600,6 +647,13 @@ module.exports = {
    * See http://facebook.github.io/react-native/docs/animated.html#spring
    */
   spring,
+
+  /**
+   * Animates a value with time untill the animation is stopped
+   *
+   * See http://facebook.github.io/react-native/docs/animated.html#clock
+   */
+  clock,
 
   /**
    * Creates a new Animated expression composed from a node expression

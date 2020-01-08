@@ -16,6 +16,7 @@ const AnimatedValue = require('../AnimatedValue');
 import type {TimingAnimationConfig} from '../../animations/TimingAnimation';
 import type {SpringAnimationConfig} from '../../animations/SpringAnimation';
 import type {DecayAnimationConfig} from '../../animations/DecayAnimation';
+import type {ClockAnimationConfig} from '../../animations/ClockAnimation';
 
 export type ExpressionParam =
   | AnimatedValue
@@ -115,9 +116,26 @@ export type DecayStatementNode = {
   callback: ExpressionNode | null,
 };
 
+export type StartClockStatementNode = {
+  ...BaseExpressionNode,
+  target: AnimatedValueExpressionNode,
+  config: ClockAnimationConfig,
+  callback: ExpressionNode | null,
+};
+
+export type StopClockStatementNode = {
+  ...BaseExpressionNode,
+  target: AnimatedValueExpressionNode,
+};
+
 export type StopAnimationStatementNode = {
   ...BaseExpressionNode,
-  animationId: number,
+  animationId: ExpressionNode,
+};
+
+export type ClockRunningExpressionNode = {
+  ...BaseExpressionNode,
+  target: AnimatedValueExpressionNode,
 };
 
 export type ExpressionNode =
@@ -133,6 +151,9 @@ export type ExpressionNode =
   | TimingStatementNode
   | SpringStatementNode
   | DecayStatementNode
+  | StartClockStatementNode
+  | StopClockStatementNode
+  | ClockRunningExpressionNode
   | StopAnimationStatementNode;
 
 export type NativeMultiExpressionNode = {
@@ -237,7 +258,26 @@ export type NativeDecayStatementNode = {
 
 export type NativeStopAnimationStatementNode = {
   ...BaseExpressionNode,
-  animationId: number,
+  animationId: NativeExpressionNode,
+};
+
+export type NativeStartClockStatementNode = {
+  ...BaseExpressionNode,
+  target: number,
+  config: {
+    type: 'clock',
+  },
+  callback: NativeExpressionNode | null,
+};
+
+export type NativeStopClockStatementNode = {
+  ...BaseExpressionNode,
+  target: number,
+};
+
+export type NativeClockRunningExpressionNode = {
+  ...BaseExpressionNode,
+  target: number,
 };
 
 export type NativeExpressionNode =
@@ -255,4 +295,7 @@ export type NativeExpressionNode =
   | NativeTimingStatementNode
   | NativeSpringStatementNode
   | NativeDecayStatementNode
+  | NativeStartClockStatementNode
+  | NativeStopClockStatementNode
+  | NativeClockRunningExpressionNode
   | NativeStopAnimationStatementNode;

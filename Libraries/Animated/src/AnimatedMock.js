@@ -30,6 +30,7 @@ import type {EndCallback} from './animations/Animation';
 import type {TimingAnimationConfig} from './animations/TimingAnimation';
 import type {DecayAnimationConfig} from './animations/DecayAnimation';
 import type {SpringAnimationConfig} from './animations/SpringAnimation';
+import type {ClockAnimationConfig} from './animations/ClockAnimation';
 import type {Mapping, EventConfig} from './AnimatedEvent';
 
 /**
@@ -91,6 +92,13 @@ const decay = function(
   return emptyAnimation;
 };
 
+const clock = function(
+  value: AnimatedValue | AnimatedValueXY,
+  config: ClockAnimationConfig,
+): CompositeAnimation {
+  return emptyAnimation;
+};
+
 const sequence = function(
   animations: Array<CompositeAnimation>,
 ): CompositeAnimation {
@@ -142,6 +150,7 @@ module.exports = {
   decay,
   timing,
   spring,
+  clock,
   expression: AnimatedImplementation.expression,
   E: {...factories, ...derived},
   add: AnimatedImplementation.add,

@@ -17,9 +17,10 @@ import type {
   SetStatementNode,
   BlockStatementNode,
   ExpressionParam,
+  NumberExpressionNode,
 } from './types';
-import {factories} from './factories';
-const {block, cond, sub, eq, add, neq, set, format, call} = factories;
+import {factories, resolve} from './factories';
+const {block, cond, eq, add, neq, set, format, call} = factories;
 
 export function onChange(
   value: AnimatedWithChildren,
@@ -36,7 +37,7 @@ export function onChange(
 export function debug(
   message: string,
   node: ExpressionParam,
-): BlockStatementNode | number {
+): BlockStatementNode | NumberExpressionNode {
   if (__DEV__) {
     return block(
       call([node], (args: number[]) => {
@@ -45,22 +46,8 @@ export function debug(
       node,
     );
   } else {
-    return 0;
+    return ((resolve(0): any): NumberExpressionNode);
   }
-}
-
-export function diff(value: AnimatedValue): BlockStatementNode {
-  const stash = new AnimatedValue(0);
-  const prevValue = new AnimatedValue(Number.MIN_SAFE_INTEGER);
-  value.__addChild(prevValue);
-  return block([
-    set(
-      stash,
-      cond(eq(prevValue, Number.MIN_SAFE_INTEGER), sub(value, prevValue), 0),
-    ),
-    set(prevValue, value),
-    stash,
-  ]);
 }
 
 export function acc(value: AnimatedValue): SetStatementNode {
