@@ -308,8 +308,8 @@ import java.util.Map;
       public double eval() {
         SparseArray<AnimationDriver> animations = mNativeAnimatedNodesManager.getAnimations();
         ValueAnimatedNode node = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(targetTag);
-        for(int i=0; i<animations.size() - 1; i++) {
-          if(animations.get(i).mAnimatedValue == node) {
+        for(int i=0; i<animations.size(); i++) {
+          if(animations.valueAt(i).mAnimatedValue == node) {
             return 1;
           }
         }
@@ -325,8 +325,8 @@ import java.util.Map;
       public double eval() {
         SparseArray<AnimationDriver> animations = mNativeAnimatedNodesManager.getAnimations();
         ValueAnimatedNode node = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(targetTag);
-        for(int i=0; i<animations.size() - 1; i++) {
-          if(animations.get(i).mAnimatedValue == node) {
+        for(int i=0; i<animations.size(); i++) {
+          if(animations.valueAt(i).mAnimatedValue == node) {
             mNativeAnimatedNodesManager.stopAnimation(animations.get(i).mId);
             return 1;
           }

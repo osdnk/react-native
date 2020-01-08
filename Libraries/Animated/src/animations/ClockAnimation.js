@@ -31,7 +31,7 @@ class ClockAnimation extends Animation {
   constructor(config: ClockAnimationConfigSingle) {
     super();
     this._useNativeDriver = shouldUseNativeDriver(config);
-    this.__isInteraction = config.isInteraction ?? !this._useNativeDriver;
+    this.__isInteraction = false;
     this.__iterations = 0;
   }
 
