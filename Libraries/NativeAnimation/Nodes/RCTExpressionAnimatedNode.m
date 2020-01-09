@@ -295,36 +295,16 @@ int _animationId = -1;
 }
 
 - (evalBlock) evalBlockWithFormat:(NSDictionary*)node {
-  NSString* format = node[@"format"];
   NSArray<evalBlock>* evals = [self evalFromArgs:node[@"args"]];
-  
+  NSArray<NSString*>* formats = [self formatStringsFromFormat:node[@"format"]];
+  if(evals.count != formats.count) {
+    RCTFatal(RCTErrorWithMessage(@"Format arguments and format string does not contain the same number or arguments."));
+  }
   return ^{
-    CGFloat* argList = (CGFloat*) calloc(1UL, sizeof(CGFloat) * evals.count);
-  
-    for (int i = 0; i < evals.count; i++) {
-      CGFloat v = evals[i]();
-      argList[i] = v;
-    }
     NSMutableString* result = [[NSMutableString alloc] init];
-    const char* p = [format UTF8String];
-    const char* str = p;
-    const char* cur = p;
-    int i = 0;
-    while(*p != '\0') {
-      if(*p == '/' && *(p+1) != '\0') p+= 2;
-      else if(*p == '%') {
-        while(*p != '\0' && *p != 'f') p++;
-        p++;
-        char subbuff[(p - cur)+1];
-        memset(subbuff, 0, (p-cur)+1);
-        memcpy(subbuff, &str[cur - str], p - str);
-        [result appendFormat:[NSString stringWithUTF8String: subbuff], argList[i]];
-        i++;
-        cur = p;
-      } else p++;
+    for (int i = 0; i < formats.count; i++) {
+      [result appendFormat:formats[i], evals[i]()];
     }
-    free (argList);
-    
     self.animatedObject = result;
     return (CGFloat)0.0f;
   };
@@ -431,6 +411,31 @@ int _animationId = -1;
     [evals addObject:[self evalBlockWithNode:args[i]]];
   }
   return evals;
+}
+
+- (NSArray<NSString*>*) formatStringsFromFormat:(NSString*)format {
+  NSMutableArray* result = [[NSMutableArray alloc] init];
+  
+  const char* p = [format UTF8String];
+  const char* str = p;
+  const char* cur = p;
+    
+  while(*p != '\0') {
+    if(*p == '/' && *(p+1) != '\0') p+= 2;
+    else if(*p == '%') {
+      // We only accept the f specifier. If another one is used
+      // the string will just go on to the end and be incorrect.
+      while(*p != '\0' && *p != 'f') p++;
+      p++;
+      char subbuff[(p - cur)+1];
+      memset(subbuff, 0, (p-cur)+1);
+      memcpy(subbuff, &str[cur - str], p - str);
+      [result addObject:[NSString stringWithUTF8String: subbuff]];  
+      cur = p;
+    } else p++;
+  }
+  
+  return result;
 }
 
 @end
