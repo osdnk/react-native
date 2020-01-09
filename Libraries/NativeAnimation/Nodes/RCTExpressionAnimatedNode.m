@@ -212,7 +212,9 @@ int _animationId = -1;
      return [self evalBlockWithStopAnimation:node];
   } else if([type isEqualToString:@"startClock"]) {
     return [self evalBlockWithAnimation:node];
-  }
+  } else if([type isEqualToString:@"stopClock"]) {
+     return [self evalBlockWithStopClock:node];
+   }
   
   /* Conversion */
   else if([type isEqualToString:@"value"]) {
@@ -224,6 +226,7 @@ int _animationId = -1;
   } else if([type isEqualToString:@"castBoolean"]) {
     return [self evalBlockWithCastBoolean:node];
   }
+  RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Could not find expression type %@.", type]));
   return ^{ return (CGFloat)0.0f; };
 }
 
@@ -257,7 +260,7 @@ int _animationId = -1;
 - (evalBlock) evalBlockWithAnimation:(NSDictionary*)node {
   NSNumber* nodeTag = node[@"target"];
   NSDictionary* config = node[@"config"];
-  evalBlock callback = node[@"callback"] ? [self evalBlockWithNode:node[@"callback"]] : ^{ return (CGFloat)0.0; };
+  evalBlock callback = ![[node objectForKey:@"callback"] isEqual:[NSNull null]] ? [self evalBlockWithNode:node[@"callback"]] : ^{ return (CGFloat)0.0; };
   
   return ^{
     if(_animations[nodeTag] != NULL) {
@@ -430,7 +433,7 @@ int _animationId = -1;
       char subbuff[(p - cur)+1];
       memset(subbuff, 0, (p-cur)+1);
       memcpy(subbuff, &str[cur - str], p - str);
-      [result addObject:[NSString stringWithUTF8String: subbuff]];  
+      [result addObject:[NSString stringWithUTF8String: subbuff]];
       cur = p;
     } else p++;
   }

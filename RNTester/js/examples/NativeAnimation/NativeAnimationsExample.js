@@ -38,6 +38,8 @@ const {
   timing,
   spring,
   decay,
+  startClock,
+  stopClock,
   diff,
   or,
   clockRunning,
@@ -524,6 +526,7 @@ exports.examples = [
                             greaterThan(anim, 0.5),
                             cond(eq(flag, 0), [
                               set(flag, 1),
+                              startClock(clock, {useNativeDriver: false}),
                               spring(
                                 dummy,
                                 {
@@ -539,6 +542,7 @@ exports.examples = [
                             ]),
                             cond(eq(flag, 1), [
                               set(flag, 0),
+                              stopClock(clock),
                               spring(
                                 dummy,
                                 {
