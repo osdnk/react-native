@@ -41,6 +41,7 @@ const {
   startClock,
   stopClock,
   diff,
+  interpolate,
   or,
   clockRunning,
   boolean,
