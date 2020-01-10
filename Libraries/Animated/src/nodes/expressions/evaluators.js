@@ -32,9 +32,9 @@ import type {
   CallStatementNode,
   FormatExpressionNode,
   CastBooleanExpressionNode,
-  TimingStatementNode,
-  SpringStatementNode,
-  DecayStatementNode,
+  StartTimingStatementNode,
+  StartSpringStatementNode,
+  StartDecayStatementNode,
   StartClockStatementNode,
   StopClockStatementNode,
   StopAnimationStatementNode,
@@ -95,9 +95,9 @@ const cond = condReducer;
 const set = setReducer;
 const block = blockReducer;
 const call = callReducer;
-const timing = timingReducer;
-const spring = springReducer;
-const decay = decayReducer;
+const startTiming = timingReducer;
+const startSpring = springReducer;
+const startDecay = decayReducer;
 const stopAnimation = stopAnimationReducer;
 const diff = diffReducer;
 const startClock = startClockReducer;
@@ -142,9 +142,9 @@ const evaluators = {
   call,
   value,
   number,
-  timing,
-  spring,
-  decay,
+  startTiming,
+  startSpring,
+  startDecay,
   stopAnimation,
   startClock,
   stopClock,
@@ -238,7 +238,7 @@ function diffReducer(node: UnaryExpressionNode): ReducerFunction {
   });
 }
 
-function timingReducer(node: TimingStatementNode): ReducerFunction {
+function timingReducer(node: StartTimingStatementNode): ReducerFunction {
   const animationValue = ((node.target.node: any): AnimatedValue);
   const singleConfig: any = node.config;
   const callback = node.callback
@@ -257,7 +257,7 @@ function timingReducer(node: TimingStatementNode): ReducerFunction {
   };
 }
 
-function springReducer(node: SpringStatementNode): ReducerFunction {
+function springReducer(node: StartSpringStatementNode): ReducerFunction {
   const animationValue = ((node.target.node: any): AnimatedValue);
   const singleConfig: any = node.config;
   const callback = node.callback
@@ -276,7 +276,7 @@ function springReducer(node: SpringStatementNode): ReducerFunction {
   };
 }
 
-function decayReducer(node: DecayStatementNode): ReducerFunction {
+function decayReducer(node: StartDecayStatementNode): ReducerFunction {
   const animationValue = ((node.target.node: any): AnimatedValue);
   const singleConfig: any = node.config;
   const callback = node.callback

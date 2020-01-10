@@ -286,9 +286,9 @@ import java.util.Map;
       case "call": return createCall(node);
       case "format": return createFormat(node);
       case "castBoolean": return createCastBoolean(node);
-      case "timing": return createAnimation(node);
-      case "spring": return createAnimation(node);
-      case "decay": return createAnimation(node);
+      case "startTiming": return createAnimation(node);
+      case "startSpring": return createAnimation(node);
+      case "startDecay": return createAnimation(node);
       case "stopAnimation": return createStopAnimation(node);
       case "startClock": return createAnimation(node);
       case "stopClock": return createStopClock(node);
@@ -327,7 +327,7 @@ import java.util.Map;
         ValueAnimatedNode node = (ValueAnimatedNode)mNativeAnimatedNodesManager.getNodeById(targetTag);
         for(int i=0; i<animations.size(); i++) {
           if(animations.valueAt(i).mAnimatedValue == node) {
-            mNativeAnimatedNodesManager.stopAnimation(animations.get(i).mId);
+            mNativeAnimatedNodesManager.stopAnimation(animations.valueAt(i).mId);
             return 1;
           }
         }

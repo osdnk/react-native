@@ -35,9 +35,9 @@ const {
   debug,
   eq,
   neq,
-  timing,
-  spring,
-  decay,
+  startTiming,
+  startSpring,
+  startDecay,
   startClock,
   stopClock,
   diff,
@@ -526,7 +526,7 @@ exports.examples = [
                             cond(eq(flag, 0), [
                               set(flag, 1),
                               startClock(clock, {useNativeDriver: false}),
-                              spring(
+                              startSpring(
                                 dummy,
                                 {
                                   toValue: 100,
@@ -542,7 +542,7 @@ exports.examples = [
                             cond(eq(flag, 1), [
                               set(flag, 0),
                               stopClock(clock),
-                              spring(
+                              startSpring(
                                 dummy,
                                 {
                                   toValue: 50,

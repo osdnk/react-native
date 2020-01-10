@@ -202,11 +202,11 @@ int _animationId = -1;
     return [self evalBlockWithBlock:node];
   } else if([type isEqualToString:@"call"]) {
     return [self evalBlockWithCall:node];
-  } else if([type isEqualToString:@"timing"]) {
+  } else if([type isEqualToString:@"startTiming"]) {
     return [self evalBlockWithAnimation:node];
-  } else if([type isEqualToString:@"spring"]) {
+  } else if([type isEqualToString:@"startSpring"]) {
     return [self evalBlockWithAnimation:node];
-  } else if([type isEqualToString:@"decay"]) {
+  } else if([type isEqualToString:@"startDecay"]) {
     return [self evalBlockWithAnimation:node];
   } else if([type isEqualToString:@"stopAnimation"]) {
      return [self evalBlockWithStopAnimation:node];

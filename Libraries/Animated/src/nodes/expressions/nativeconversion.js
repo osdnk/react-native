@@ -23,9 +23,9 @@ import type {
   CallStatementNode,
   FormatExpressionNode,
   CastBooleanExpressionNode,
-  TimingStatementNode,
-  SpringStatementNode,
-  DecayStatementNode,
+  StartTimingStatementNode,
+  StartSpringStatementNode,
+  StartDecayStatementNode,
   StopAnimationStatementNode,
   StartClockStatementNode,
   StopClockStatementNode,
@@ -42,9 +42,9 @@ import type {
   NativeCallStatementNode,
   NativeFormatExpressionNode,
   NativeCastBooleanExpressionNode,
-  NativeTimingStatementNode,
-  NativeSpringStatementNode,
-  NativeDecayStatementNode,
+  NativeStartTimingStatementNode,
+  NativeStartSpringStatementNode,
+  NativeStartDecayStatementNode,
   NativeStopAnimationStatementNode,
   NativeStartClockStatementNode,
   NativeStopClockStatementNode,
@@ -95,9 +95,9 @@ const converters = {
   call: convertCall,
   format: convertFormat,
   castBoolean: convertCastBoolean,
-  timing: convertTiming,
-  spring: convertSpring,
-  decay: convertDecay,
+  startTiming: convertTiming,
+  startSpring: convertSpring,
+  startDecay: convertDecay,
   stopAnimation: convertStopAnimation,
   startClock: convertStartClock,
   stopClock: convertStopClock,
@@ -147,9 +147,11 @@ function convertClockRunning(
   };
 }
 
-function convertTiming(node: TimingStatementNode): NativeTimingStatementNode {
+function convertTiming(
+  node: StartTimingStatementNode,
+): NativeStartTimingStatementNode {
   return {
-    type: 'timing',
+    type: 'startTiming',
     nodeId: node.nodeId,
     target: node.target && node.target.getTag && node.target.getTag(),
     config: new TimingAnimation(
@@ -159,9 +161,11 @@ function convertTiming(node: TimingStatementNode): NativeTimingStatementNode {
   };
 }
 
-function convertSpring(node: SpringStatementNode): NativeSpringStatementNode {
+function convertSpring(
+  node: StartSpringStatementNode,
+): NativeStartSpringStatementNode {
   return {
-    type: 'spring',
+    type: 'startSpring',
     nodeId: node.nodeId,
     target: node.target && node.target.getTag && node.target.getTag(),
     config: new SpringAnimation(
@@ -171,9 +175,11 @@ function convertSpring(node: SpringStatementNode): NativeSpringStatementNode {
   };
 }
 
-function convertDecay(node: DecayStatementNode): NativeDecayStatementNode {
+function convertDecay(
+  node: StartDecayStatementNode,
+): NativeStartDecayStatementNode {
   return {
-    type: 'decay',
+    type: 'startDecay',
     nodeId: node.nodeId,
     target: node.target && node.target.getTag && node.target.getTag(),
     config: new DecayAnimation((node.config: any)).__getNativeAnimationConfig(),

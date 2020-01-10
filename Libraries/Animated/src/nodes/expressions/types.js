@@ -95,21 +95,21 @@ export type CastBooleanExpressionNode = {
   v: ExpressionNode,
 };
 
-export type TimingStatementNode = {
+export type StartTimingStatementNode = {
   ...BaseExpressionNode,
   target: AnimatedValueExpressionNode,
   config: TimingAnimationConfig,
   callback: ExpressionNode | null,
 };
 
-export type SpringStatementNode = {
+export type StartSpringStatementNode = {
   ...BaseExpressionNode,
   target: AnimatedValueExpressionNode,
   config: SpringAnimationConfig,
   callback: ExpressionNode | null,
 };
 
-export type DecayStatementNode = {
+export type StartDecayStatementNode = {
   ...BaseExpressionNode,
   target: AnimatedValueExpressionNode,
   config: DecayAnimationConfig,
@@ -148,9 +148,9 @@ export type ExpressionNode =
   | BlockStatementNode
   | CondStatementNode
   | CallStatementNode
-  | TimingStatementNode
-  | SpringStatementNode
-  | DecayStatementNode
+  | StartTimingStatementNode
+  | StartSpringStatementNode
+  | StartDecayStatementNode
   | StartClockStatementNode
   | StopClockStatementNode
   | ClockRunningExpressionNode
@@ -219,14 +219,14 @@ export type NativeCastBooleanExpressionNode = {
   v: NativeExpressionNode,
 };
 
-export type NativeTimingStatementNode = {
+export type NativeStartTimingStatementNode = {
   ...BaseExpressionNode,
   target: number,
   config: {type: 'frames', frames: [], toValue: number, iterations: number},
   callback: NativeExpressionNode | null,
 };
 
-export type NativeSpringStatementNode = {
+export type NativeStartSpringStatementNode = {
   ...BaseExpressionNode,
   target: number,
   config: {
@@ -244,7 +244,7 @@ export type NativeSpringStatementNode = {
   callback: NativeExpressionNode | null,
 };
 
-export type NativeDecayStatementNode = {
+export type NativeStartDecayStatementNode = {
   ...BaseExpressionNode,
   target: number,
   config: {
@@ -292,9 +292,9 @@ export type NativeExpressionNode =
   | NativeCallStatementNode
   | NativeFormatExpressionNode
   | NativeCastBooleanExpressionNode
-  | NativeTimingStatementNode
-  | NativeSpringStatementNode
-  | NativeDecayStatementNode
+  | NativeStartTimingStatementNode
+  | NativeStartSpringStatementNode
+  | NativeStartDecayStatementNode
   | NativeStartClockStatementNode
   | NativeStopClockStatementNode
   | NativeClockRunningExpressionNode
