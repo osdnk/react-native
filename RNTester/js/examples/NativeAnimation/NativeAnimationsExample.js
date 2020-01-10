@@ -492,8 +492,6 @@ exports.examples = [
                     />
                   </View>
                 </Animated.ScrollView>
-                <Button title="Start clock" onPress={onStartClock} />
-                <Button title="Stop clock" onPress={onStopClock} />
                 <AnimatedTextInput
                   underlineColorAndroid="transparent"
                   editable={false}
@@ -563,10 +561,12 @@ exports.examples = [
                       ),
                       transform: [
                         {
-                          translateX: anim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 200],
-                          }),
+                          translateX: Animated.expression(
+                            interpolate(anim, {
+                              inputRange: [0, 1],
+                              outputRange: [0, 200],
+                            }),
+                          ),
                         },
                         {
                           translateY: anim.interpolate({

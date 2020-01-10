@@ -77,18 +77,14 @@ export function concat(...args: ExpressionParam[]): FormatExpressionNode {
   return format(formatStr, ...args);
 }
 
-export const Extrapolate = {
-  EXTEND: 'extend',
-  CLAMP: 'clamp',
-  IDENTITY: 'identity',
-};
+type Extrapolate = 'extend' | 'clamp' | 'identity';
 
 export type InterpolatConfig = {
   inputRange: number[],
   outputRange: ExpressionParam[],
-  extrapolate: $Keys<typeof Extrapolate>,
-  extrapolateLeft: $Keys<typeof Extrapolate>,
-  extrapolateRight: $Keys<typeof Extrapolate>,
+  extrapolate?: Extrapolate,
+  extrapolateLeft?: Extrapolate,
+  extrapolateRight?: Extrapolate,
 };
 
 function interpolateInternalSingle(value, inputRange, outputRange, offset) {
@@ -125,7 +121,7 @@ export function interpolate(
   const {
     inputRange,
     outputRange,
-    extrapolate = Extrapolate.EXTEND,
+    extrapolate = 'extend',
     extrapolateLeft,
     extrapolateRight,
   } = config;
@@ -134,21 +130,21 @@ export function interpolate(
   const right = extrapolateRight || extrapolate;
   let output = interpolateInternal(value, inputRange, outputRange);
 
-  if (left === Extrapolate.EXTEND) {
-  } else if (left === Extrapolate.CLAMP) {
+  if (left === 'extend') {
+  } else if (left === 'clamp') {
     output = cond(lessThan(value, inputRange[0]), outputRange[0], output);
-  } else if (left === Extrapolate.IDENTITY) {
+  } else if (left === 'identiy') {
     output = cond(lessThan(value, inputRange[0]), value, output);
   }
 
-  if (right === Extrapolate.EXTEND) {
-  } else if (right === Extrapolate.CLAMP) {
+  if (right === 'extend') {
+  } else if (right === 'clamp') {
     output = cond(
       greaterThan(value, inputRange[inputRange.length - 1]),
       outputRange[outputRange.length - 1],
       output,
     );
-  } else if (right === Extrapolate.IDENTITY) {
+  } else if (right === 'identiy') {
     output = cond(
       greaterThan(value, inputRange[inputRange.length - 1]),
       value,
