@@ -430,6 +430,14 @@ int _animationId = -1;
       // the string will just go on to the end and be incorrect.
       while(*p != '\0' && *p != 'f') p++;
       p++;
+      // Move on to the end or to the next specifier
+      while(*(p+1) != '\0' && *(p+1) != '%') {
+        if(*p == '/') {
+          p+=2;
+        } else {
+          p++;
+        }
+      };
       char subbuff[(p - cur)+1];
       memset(subbuff, 0, (p-cur)+1);
       memcpy(subbuff, &str[cur - str], p - str);
