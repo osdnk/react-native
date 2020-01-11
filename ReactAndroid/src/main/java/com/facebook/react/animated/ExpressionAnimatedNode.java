@@ -367,7 +367,7 @@ import java.util.Map;
   }
 
   private EvalFunction createStopAnimation(ReadableMap node) {
-    int animationId = node.getInt("animationId");
+    final int animationId = node.getInt("animationId");
     return new EvalFunction() {
       @Override
       public double eval() {

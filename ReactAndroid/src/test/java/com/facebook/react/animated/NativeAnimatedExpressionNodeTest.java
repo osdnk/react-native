@@ -127,6 +127,53 @@ public class NativeAnimatedExpressionNodeTest {
     mNativeAnimatedNodesManager = new NativeAnimatedNodesManager(mUIManagerMock, mReactApplicationContextMock);
   }
 
+  /**
+   * Generates a simple animated nodes graph and attaches the props node to a
+   * given {@param viewTag} Parameter {@param opacity} is used as a initial value
+   * for the "opacity" attribute.
+   *
+   * <p>
+   * Nodes are connected as follows (nodes IDs in parens): ValueNode(valueTag) ->
+   * StyleNode(2) -> PropNode(3)
+   */
+  private void createSimpleAnimatedViewWithOpacity(int viewTag, int valueTag, double opacity) {
+    mNativeAnimatedNodesManager.createAnimatedNode(valueTag, JavaOnlyMap.of("type", "value", "value", opacity, "offset", 0d));
+    mNativeAnimatedNodesManager.createAnimatedNode(2,
+      JavaOnlyMap.of("type", "style", "style", JavaOnlyMap.of("opacity", valueTag)));
+    mNativeAnimatedNodesManager.createAnimatedNode(3,
+      JavaOnlyMap.of("type", "props", "props", JavaOnlyMap.of("style", 2)));
+    mNativeAnimatedNodesManager.connectAnimatedNodes(valueTag, 2);
+    mNativeAnimatedNodesManager.connectAnimatedNodes(2, 3);
+    mNativeAnimatedNodesManager.connectAnimatedNodeToView(3, viewTag);
+  }
+
+  /**
+   * Generates a simple animated nodes graph and attaches the props node to a
+   * given {@param viewTag} Parameter {@param opacity} is used as a initial value
+   * for the "opacity" attribute. The opacity parameter is an expression that
+   * sets a value on the animated node.
+   *
+   * <p>
+   * Nodes are connected as follows (nodes IDs in parens): ExpressionNode(1) ->
+   * StyleNode(2) -> PropNode(3)
+   */
+  private void createSimpleAnimatedViewWithOpacityFromExpression(int viewTag, int valueTag, double opacity) {
+    mNativeAnimatedNodesManager.createAnimatedNode(valueTag, JavaOnlyMap.of("type", "value", "value", opacity, "offset", 0d));
+    mNativeAnimatedNodesManager
+      .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "expression", createExpr("type", "set",
+        "target", 100,
+        "source", createNumber(0.5))
+      ));
+
+    mNativeAnimatedNodesManager.createAnimatedNode(2,
+      JavaOnlyMap.of("type", "style", "style", JavaOnlyMap.of("opacity", 1)));
+    mNativeAnimatedNodesManager.createAnimatedNode(3,
+      JavaOnlyMap.of("type", "props", "props", JavaOnlyMap.of("style", 2)));
+    mNativeAnimatedNodesManager.connectAnimatedNodes(1, 2);
+    mNativeAnimatedNodesManager.connectAnimatedNodes(2, 3);
+    mNativeAnimatedNodesManager.connectAnimatedNodeToView(3, viewTag);
+  }
+
   private double evalExpression (ReadableMap expression) {
     mNativeAnimatedNodesManager
       .createAnimatedNode(1, JavaOnlyMap.of("type", "expression", "expression", expression));
@@ -202,7 +249,7 @@ public class NativeAnimatedExpressionNodeTest {
     assertThat(valueToTest).isEqualTo(100);
   }
 
-  @Test public void testSettingValues () {
+  @Test public void testSetValue() {
     mNativeAnimatedNodesManager.createAnimatedNode(100, JavaOnlyMap.of(
       "type", "value", "value", 10, "offset", 0));
     ValueAnimatedNode node = (ValueAnimatedNode )mNativeAnimatedNodesManager.getNodeById(100);
@@ -212,6 +259,68 @@ public class NativeAnimatedExpressionNodeTest {
       "source", createNumber(1))
     );
     assertThat(node.mValue).isEqualTo(1);
+  }
+
+  @Test public void testSetValueReturnsSource() {
+    createSimpleAnimatedViewWithOpacityFromExpression(50, 100, 1);
+
+    ValueAnimatedNode valueNode = (ValueAnimatedNode )mNativeAnimatedNodesManager.getNodeById(100);
+
+    ArgumentCaptor<ReadableMap> stylesCaptor = ArgumentCaptor.forClass(ReadableMap.class);
+
+    mNativeAnimatedNodesManager.runUpdates(nextFrameTime());
+    verify(mUIManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture());
+
+    // Verify that the style of the view has an opacity of the returned value
+    assertThat(stylesCaptor.getValue().getDouble("opacity")).isEqualTo(0.5);
+
+    // ...And that the value node is updated
+    assertThat(valueNode.mValue).isEqualTo(0.5);
+
+  }
+
+  @Test public void testSetFromExpressionUpdatesParentNode() {
+    createSimpleAnimatedViewWithOpacity(50, 100, 1);
+
+    mNativeAnimatedNodesManager
+      .createAnimatedNode(1000, JavaOnlyMap.of("type", "expression", "expression", createExpr("type", "set",
+        "target", 100,
+        "source", createExpr("type", "sub",
+          "a", createExpr("type", "value", "tag", 100),
+          "b", createNumber(0.1),
+          "args", JavaOnlyArray.of()
+          ))
+      ));
+
+    // Connect expression to animated value just as we'd we doing from javascript
+    mNativeAnimatedNodesManager.connectAnimatedNodes(100, 1000);
+
+    ValueAnimatedNode animatedValue = (ValueAnimatedNode )mNativeAnimatedNodesManager.getNodeById(100);
+    //ExpressionAnimatedNode node = (ExpressionAnimatedNode)mNativeAnimatedNodesManager.getNodeById(1000);
+
+    ArgumentCaptor<ReadableMap> stylesCaptor = ArgumentCaptor.forClass(ReadableMap.class);
+
+    // First time the expression evaluates and updates the animated value since the
+    // expression is created (new nodes will always be in the update list
+    mNativeAnimatedNodesManager.runUpdates(nextFrameTime());
+    assertThat(animatedValue.mValue).isEqualTo(0.9);
+
+    // Make sure synchronouslyUpdateViewOnUIThread was called
+    verify(mUIManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture());
+    reset(mUIManagerMock);
+
+    mNativeAnimatedNodesManager.runUpdates(nextFrameTime());
+    assertThat(animatedValue.mValue).isEqualTo(0.8);
+
+    // Make sure synchronouslyUpdateViewOnUIThread was called
+    verify(mUIManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture());
+    reset(mUIManagerMock);
+
+    mNativeAnimatedNodesManager.runUpdates(nextFrameTime());
+    assertThat(animatedValue.mValue).isLessThan(0.8);
+
+    // Make sure synchronouslyUpdateViewOnUIThread was called
+    verify(mUIManagerMock).synchronouslyUpdateViewOnUIThread(eq(50), stylesCaptor.capture());
   }
 
   @Test
