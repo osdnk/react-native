@@ -232,7 +232,7 @@ function springFactory(
     config: {
       ...config,
       velocity:
-        config.velocity !== undefined ? resolve(config.velocity) : undefined,
+        config.velocity !== undefined ? resolve(config.velocity) : resolve(0),
     },
     callback: callback || null,
   };

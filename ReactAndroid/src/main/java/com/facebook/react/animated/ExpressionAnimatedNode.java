@@ -296,8 +296,9 @@ import java.util.Map;
       case "startClock":
         return createAnimation(node, getDefaultConfigEvaluator(node.getMap("config")));
       case "startSpring":
+        return createAnimation(node, getSpringConfigEvaluator(node.getMap("config")));
       case "startDecay":
-        return createAnimation(node, getVelocityConfigEvaluator(node.getMap("config")));
+        return createAnimation(node, getDecayConfigEvaluator(node.getMap("config")));
       case "stopAnimation": return createStopAnimation(node);
       case "stopClock": return createStopClock(node);
       case "clockRunning": return createClockRunning(node);
@@ -353,7 +354,7 @@ import java.util.Map;
     };
   }
 
-  private EvalConfig getVelocityConfigEvaluator(ReadableMap configNode) {
+  private EvalConfig getDecayConfigEvaluator(ReadableMap configNode) {
     final EvalFunction evalVelocity = createEvalFunc(configNode.getMap("velocity"));
     return new EvalConfig() {
       @Override
@@ -365,9 +366,33 @@ import java.util.Map;
           if(propKey.equals("type")) {
             result.putString("type", configNode.getString("type"));
           } else if(propKey.equals("velocity")) {
-            result.putDouble("velocity", evalVelocity.eval());
+            result.putDouble(propKey, evalVelocity.eval());
           } else {
-            result.putDouble(propKey, configNode.getDouble(propKey));
+            result.putDouble(propKey, configNode.getDynamic(propKey).asDouble());
+          }
+        }
+        return result;
+      }
+    };
+  }
+
+  private EvalConfig getSpringConfigEvaluator(ReadableMap configNode) {
+    final EvalFunction evalVelocity = createEvalFunc(configNode.getMap("initialVelocity"));
+    return new EvalConfig() {
+      @Override
+      public ReadableMap eval() {
+        WritableMap result = new WritableNativeMap();
+        ReadableMapKeySetIterator keyIterator = configNode.keySetIterator();
+        while (keyIterator.hasNextKey()) {
+          String propKey = keyIterator.nextKey();
+          if(propKey.equals("type")) {
+            result.putString("type", configNode.getString("type"));
+          } else if(propKey.equals("initialVelocity")) {
+            result.putDouble(propKey, evalVelocity.eval());
+          } else if(propKey.equals("overshootClamping")) {
+            result.putBoolean(propKey, configNode.getBoolean("overshootClamping"));
+          } else {
+            result.putDouble(propKey, configNode.getDynamic(propKey).asDouble());
           }
         }
         return result;

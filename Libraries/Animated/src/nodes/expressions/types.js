@@ -112,7 +112,7 @@ export type StartSpringAnimationNodeConfig = {
   overshootClamping?: boolean,
   restDisplacementThreshold?: number,
   restSpeedThreshold?: number,
-  velocity?: ExpressionNode,
+  velocity: ExpressionNode,
   bounciness?: number,
   speed?: number,
   tension?: number,
