@@ -330,7 +330,11 @@ function formatReducer(node: FormatExpressionNode): ReducerFunction {
   }
   const args = node.args.map(createEvaluatorInternal);
   return () => {
-    return sprintf(node.format, ...args);
+    const results = [];
+    for (let i = 0; i < args.length; i++) {
+      results.push(args[i]());
+    }
+    return sprintf(node.format, ...results);
   };
 }
 
