@@ -1242,7 +1242,11 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(eval(@{@"type": @"floor", @"v": n(10.9)}), 10, @"floor did not work");
   
   // Conversion
+  XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f%% is %.2f%%", @"args": @[n(17.123456678), n(14.123456)]}) isEqualToString:@"17.12% is 14.12%"], @"format did not work");
+  
   XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f is %.2f", @"args": @[n(17.123456678), n(14.123456)]}) isEqualToString:@"17.12 is 14.12"], @"format did not work");
+  
+  XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f / %.2f", @"args": @[n(17.123456678), n(14.123456)]}) isEqualToString:@"17.12 / 14.12"], @"format with escape did not work");
   
   XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f is %.2f and this is the rest", @"args": @[n(17.123456678), n(14.123456)]}) isEqualToString:@"17.12 is 14.12 and this is the rest"], @"format did not work");
   
