@@ -109,8 +109,8 @@ export type StartSpringStatementNode = {
 };
 
 export type StartDecayAnimationNodeConfig = {
-  velocity: ExpressionParam,
-  deceleration?: ExpressionParam,
+  velocity: ExpressionNode,
+  deceleration?: number,
 };
 
 export type StartDecayStatementNode = {
@@ -254,7 +254,7 @@ export type NativeStartDecayStatementNode = {
   config: {
     type: 'decay',
     deceleration: number,
-    velocity: ExpressionNode,
+    velocity: NativeExpressionNode,
   },
   callback: NativeExpressionNode | null,
 };
