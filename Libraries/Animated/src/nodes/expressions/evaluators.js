@@ -198,9 +198,12 @@ function startClockReducer(node: StartClockStatementNode): ReducerFunction {
     : null;
   return () => {
     const animation = new ClockAnimation(singleConfig);
+    let localCallback = callback;
     animationValue.animate(animation, ({finished}) => {
-      if (callback) {
-        callback();
+      if (localCallback) {
+        const tmp = localCallback;
+        localCallback = null;
+        tmp();
       }
     });
     return 1;
@@ -248,11 +251,14 @@ function timingReducer(node: StartTimingStatementNode): ReducerFunction {
     : null;
   return () => {
     const animationId = _animationId++;
+    let localCallback = callback;
     _animations[animationId] = new TimingAnimation(singleConfig);
     animationValue.animate(_animations[animationId], ({finished}) => {
       delete _animations[animationId];
-      if (callback) {
-        callback();
+      if (localCallback) {
+        const tmp = localCallback;
+        localCallback = null;
+        tmp();
       }
     });
     return animationId;
@@ -267,11 +273,14 @@ function springReducer(node: StartSpringStatementNode): ReducerFunction {
     : null;
   return () => {
     const animationId = _animationId++;
+    let localCallback = callback;
     _animations[animationId] = new SpringAnimation(singleConfig);
     animationValue.animate(_animations[animationId], ({finished}) => {
       delete _animations[animationId];
-      if (callback) {
-        callback();
+      if (localCallback) {
+        const tmp = localCallback;
+        localCallback = null;
+        tmp();
       }
     });
     return animationId;
@@ -296,10 +305,13 @@ function decayReducer(node: StartDecayStatementNode): ReducerFunction {
 
     const animationId = _animationId++;
     _animations[animationId] = new DecayAnimation(config);
+    let localCallback = callback;
     animationValue.animate(_animations[animationId], ({finished}) => {
       delete _animations[animationId];
-      if (callback) {
-        callback();
+      if (localCallback) {
+        const tmp = localCallback;
+        localCallback = null;
+        tmp();
       }
     });
     return animationId;
