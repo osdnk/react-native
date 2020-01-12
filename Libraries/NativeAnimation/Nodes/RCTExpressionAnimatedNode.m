@@ -292,10 +292,14 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
       [_animations removeObjectForKey:nodeTag];
     }
     NSNumber* animationId = [NSNumber numberWithInt:_animationId--];
+    __block evalBlock localCallback = callback;
     _animations[nodeTag] = animationId;
     [self.manager startAnimatingNode:animationId nodeTag:nodeTag config:configEval() endCallback:^(NSArray *response) {
-      [_animations removeObjectForKey:nodeTag];
-      callback();
+      if(localCallback) {
+        [_animations removeObjectForKey:nodeTag];
+        localCallback();
+        localCallback = NULL;
+      }
     }];
     return (CGFloat)[animationId floatValue];
   };
