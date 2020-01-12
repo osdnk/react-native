@@ -11,9 +11,6 @@
 'use strict';
 
 const AnimatedValue = require('../AnimatedValue');
-
-import type {TimingAnimationConfig} from '../../animations/TimingAnimation';
-import type {SpringAnimationConfig} from '../../animations/SpringAnimation';
 import type {ClockAnimationConfig} from '../../animations/ClockAnimation';
 
 let _nodeId = 0;
@@ -32,10 +29,10 @@ import type {
   FormatExpressionNode,
   CastBooleanExpressionNode,
   ExpressionParam,
+  StartTimingAnimationNodeConfig,
   StartTimingStatementNode,
   StartSpringStatementNode,
   StartDecayStatementNode,
-  StartDecayAnimationNodeConfig,
   StartClockStatementNode,
   StopClockStatementNode,
   StopAnimationStatementNode,
@@ -82,21 +79,44 @@ type FormatFactory = (
 
 type CastBooleanFactory = (v: ExpressionParam) => CastBooleanExpressionNode;
 
+type StartSpringFactoryConfig = {
+  toValue: number | AnimatedValue,
+  overshootClamping?: boolean,
+  restDisplacementThreshold?: number,
+  restSpeedThreshold?: number,
+  velocity?: ExpressionParam,
+  bounciness?: number,
+  speed?: number,
+  tension?: number,
+  friction?: number,
+  stiffness?: number,
+  damping?: number,
+  mass?: number,
+  delay?: number,
+  iterations?: number,
+};
+
 type StartTimingAnimationFactory = (
   v: AnimatedValue,
-  config: TimingAnimationConfig,
+  config: StartTimingAnimationNodeConfig,
   callback: ?ExpressionNode,
 ) => StartTimingStatementNode;
 
 type StartSpringAnimationFactory = (
   v: AnimatedValue,
-  config: SpringAnimationConfig,
+  config: StartSpringFactoryConfig,
   callback: ?ExpressionNode,
 ) => StartSpringStatementNode;
 
+type StartDecayFactoryConfig = {
+  velocity: ExpressionParam,
+  deceleration?: number,
+  iterations?: number,
+};
+
 type StartDecayAnimationFactory = (
   v: AnimatedValue,
-  config: StartDecayAnimationNodeConfig,
+  config: StartDecayFactoryConfig,
   callback: ?ExpressionNode,
 ) => StartDecayStatementNode;
 
@@ -188,7 +208,7 @@ export function resolve(v: ExpressionParam): ExpressionNode {
 
 function timingFactory(
   v: AnimatedValue,
-  config: TimingAnimationConfig,
+  config: StartTimingAnimationNodeConfig,
   callback: ?ExpressionNode,
 ): StartTimingStatementNode {
   return {
@@ -202,21 +222,25 @@ function timingFactory(
 
 function springFactory(
   v: AnimatedValue,
-  config: SpringAnimationConfig,
+  config: StartSpringFactoryConfig,
   callback: ?ExpressionNode,
 ): StartSpringStatementNode {
   return {
     type: 'startSpring',
     nodeId: _nodeId++,
     target: ((resolve(v): any): AnimatedValueExpressionNode),
-    config: config,
+    config: {
+      ...config,
+      velocity:
+        config.velocity !== undefined ? resolve(config.velocity) : undefined,
+    },
     callback: callback || null,
   };
 }
 
 function decayFactory(
   v: AnimatedValue,
-  config: StartDecayAnimationNodeConfig,
+  config: StartDecayFactoryConfig,
   callback: ?ExpressionNode,
 ): StartDecayStatementNode {
   return {
@@ -226,6 +250,7 @@ function decayFactory(
     config: {
       velocity: resolve(config.velocity),
       deceleration: config.deceleration,
+      iterations: config.iterations,
     },
     callback: callback || null,
   };

@@ -13,8 +13,6 @@
 const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
 
-import type {TimingAnimationConfig} from '../../animations/TimingAnimation';
-import type {SpringAnimationConfig} from '../../animations/SpringAnimation';
 import type {ClockAnimationConfig} from '../../animations/ClockAnimation';
 
 export type ExpressionParam =
@@ -94,23 +92,49 @@ export type CastBooleanExpressionNode = {
   v: ExpressionNode,
 };
 
+export type StartTimingAnimationNodeConfig = {
+  toValue: number | AnimatedValue,
+  easing?: (value: number) => number,
+  duration?: number,
+  delay?: number,
+  iterations?: number,
+};
+
 export type StartTimingStatementNode = {
   ...BaseExpressionNode,
   target: AnimatedValueExpressionNode,
-  config: TimingAnimationConfig,
+  config: StartTimingAnimationNodeConfig,
   callback: ExpressionNode | null,
+};
+
+export type StartSpringAnimationNodeConfig = {
+  toValue: number | AnimatedValue,
+  overshootClamping?: boolean,
+  restDisplacementThreshold?: number,
+  restSpeedThreshold?: number,
+  velocity?: ExpressionNode,
+  bounciness?: number,
+  speed?: number,
+  tension?: number,
+  friction?: number,
+  stiffness?: number,
+  damping?: number,
+  mass?: number,
+  delay?: number,
+  iterations?: number,
 };
 
 export type StartSpringStatementNode = {
   ...BaseExpressionNode,
   target: AnimatedValueExpressionNode,
-  config: SpringAnimationConfig,
+  config: StartSpringAnimationNodeConfig,
   callback: ExpressionNode | null,
 };
 
 export type StartDecayAnimationNodeConfig = {
   velocity: ExpressionNode,
   deceleration?: number,
+  iterations?: number,
 };
 
 export type StartDecayStatementNode = {
@@ -226,7 +250,12 @@ export type NativeCastBooleanExpressionNode = {
 export type NativeStartTimingStatementNode = {
   ...BaseExpressionNode,
   target: number,
-  config: {type: 'frames', frames: [], toValue: number, iterations: number},
+  config: {
+    type: 'frames',
+    frames: [],
+    toValue: number,
+    iterations?: number,
+  },
   callback: NativeExpressionNode | null,
 };
 
@@ -241,9 +270,9 @@ export type NativeStartSpringStatementNode = {
     stiffness: number,
     damping: number,
     mass: number,
-    initialVelocity: number,
+    initialVelocity: NativeExpressionNode,
     toValue: number,
-    iterations: number,
+    iterations?: number,
   },
   callback: NativeExpressionNode | null,
 };
@@ -255,6 +284,7 @@ export type NativeStartDecayStatementNode = {
     type: 'decay',
     deceleration: number,
     velocity: NativeExpressionNode,
+    iterations?: number,
   },
   callback: NativeExpressionNode | null,
 };

@@ -205,9 +205,9 @@ int _animationId = -1;
   } else if([type isEqualToString:@"startTiming"]) {
     return [self evalBlockWithAnimation:node withConfigEvaluator:[self defaultConfigEvaluator:node[@"config"]]];
   } else if([type isEqualToString:@"startSpring"]) {
-    return [self evalBlockWithAnimation:node withConfigEvaluator:[self defaultConfigEvaluator:node[@"config"]]];
+    return [self evalBlockWithAnimation:node withConfigEvaluator:[self velocityConfigEvaluator:node[@"config"]]];
   } else if([type isEqualToString:@"startDecay"]) {
-    return [self evalBlockWithAnimation:node withConfigEvaluator:[self decayConfigEvaluator:node[@"config"]]];
+    return [self evalBlockWithAnimation:node withConfigEvaluator:[self velocityConfigEvaluator:node[@"config"]]];
   } else if([type isEqualToString:@"stopAnimation"]) {
      return [self evalBlockWithStopAnimation:node];
   } else if([type isEqualToString:@"startClock"]) {
@@ -265,7 +265,7 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
   };
 }
 
-- (evalConfig) decayConfigEvaluator:(NSDictionary*)configNode {
+- (evalConfig) velocityConfigEvaluator:(NSDictionary*)configNode {
   NSArray* keys = [configNode allKeys];
   evalBlock velocityEvaluator = [self evalBlockWithNode:configNode[@"velocity"]];
   return ^ {

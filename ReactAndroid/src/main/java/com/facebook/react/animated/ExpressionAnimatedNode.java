@@ -293,10 +293,11 @@ import java.util.Map;
       case "format": return createFormat(node);
       case "castBoolean": return createCastBoolean(node);
       case "startTiming":
-      case "startSpring":
       case "startClock":
         return createAnimation(node, getDefaultConfigEvaluator(node.getMap("config")));
-      case "startDecay": return createAnimation(node, getDecayConfigEvaluator(node.getMap("config")));
+      case "startSpring":
+      case "startDecay":
+        return createAnimation(node, getVelocityConfigEvaluator(node.getMap("config")));
       case "stopAnimation": return createStopAnimation(node);
       case "stopClock": return createStopClock(node);
       case "clockRunning": return createClockRunning(node);
@@ -352,7 +353,7 @@ import java.util.Map;
     };
   }
 
-  private EvalConfig getDecayConfigEvaluator(ReadableMap configNode) {
+  private EvalConfig getVelocityConfigEvaluator(ReadableMap configNode) {
     final EvalFunction evalVelocity = createEvalFunc(configNode.getMap("velocity"));
     return new EvalConfig() {
       @Override
@@ -386,14 +387,17 @@ import java.util.Map;
           mNativeAnimatedNodesManager.stopAnimation(_animations.get(targetTag));
           _animations.remove(targetTag);
         }
+        final EvalFunction[] localFinishedCallback = {callbackEval};
         int animationId = _animationId--;
         _animations.put(targetTag, animationId);
         mNativeAnimatedNodesManager.startAnimatingNode(animationId, targetTag, configEvaluator.eval(), new Callback() {
           @Override
           public void invoke(Object... args) {
             _animations.remove(targetTag);
-            if(callbackEval != null) {
-              callbackEval.eval();
+            if(localFinishedCallback[0] != null) {
+              EvalFunction tmp = localFinishedCallback[0];
+              localFinishedCallback[0] = null;
+              tmp.eval();
             }
           }
         });
