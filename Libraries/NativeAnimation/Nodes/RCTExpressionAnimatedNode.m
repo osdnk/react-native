@@ -203,15 +203,15 @@ int _animationId = -1;
   } else if([type isEqualToString:@"call"]) {
     return [self evalBlockWithCall:node];
   } else if([type isEqualToString:@"startTiming"]) {
-    return [self evalBlockWithAnimation:node];
+    return [self evalBlockWithAnimation:node withConfigEvaluator:[self defaultConfigEvaluator:node[@"config"]]];
   } else if([type isEqualToString:@"startSpring"]) {
-    return [self evalBlockWithAnimation:node];
+    return [self evalBlockWithAnimation:node withConfigEvaluator:[self defaultConfigEvaluator:node[@"config"]]];
   } else if([type isEqualToString:@"startDecay"]) {
-    return [self evalBlockWithAnimation:node];
+    return [self evalBlockWithAnimation:node withConfigEvaluator:[self decayConfigEvaluator:node[@"config"]]];
   } else if([type isEqualToString:@"stopAnimation"]) {
      return [self evalBlockWithStopAnimation:node];
   } else if([type isEqualToString:@"startClock"]) {
-    return [self evalBlockWithAnimation:node];
+    return [self evalBlockWithAnimation:node withConfigEvaluator:[self defaultConfigEvaluator:node[@"config"]]];
   } else if([type isEqualToString:@"stopClock"]) {
      return [self evalBlockWithStopClock:node];
    }
@@ -257,9 +257,33 @@ int _animationId = -1;
   };
 }
 
-- (evalBlock) evalBlockWithAnimation:(NSDictionary*)node {
+typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
+
+- (evalConfig) defaultConfigEvaluator:(NSDictionary*)configNode {
+  return ^ {
+    return configNode;
+  };
+}
+
+- (evalConfig) decayConfigEvaluator:(NSDictionary*)configNode {
+  NSArray* keys = [configNode allKeys];
+  evalBlock velocityEvaluator = [self evalBlockWithNode:configNode[@"velocity"]];
+  return ^ {
+    NSMutableDictionary* retVal = [[NSMutableDictionary alloc] init];
+    for(int i=0; i<keys.count; i++) {
+      if([keys[i] isEqualToString:@"velocity"]) {
+        [retVal setObject:[NSNumber numberWithFloat:velocityEvaluator()] forKey: keys[i]];
+      } else {
+        [retVal setObject:configNode[keys[i]] forKey:keys[i]];
+      }
+    }
+    return retVal;
+  };
+}
+
+- (evalBlock) evalBlockWithAnimation:(NSDictionary*)node withConfigEvaluator:(evalConfig)configEval {
+  
   NSNumber* nodeTag = node[@"target"];
-  NSDictionary* config = node[@"config"];
   evalBlock callback = ![[node objectForKey:@"callback"] isEqual:[NSNull null]] ? [self evalBlockWithNode:node[@"callback"]] : ^{ return (CGFloat)0.0; };
   
   return ^{
@@ -269,7 +293,7 @@ int _animationId = -1;
     }
     NSNumber* animationId = [NSNumber numberWithInt:_animationId--];
     _animations[nodeTag] = animationId;
-    [self.manager startAnimatingNode:animationId nodeTag:nodeTag config:config endCallback:^(NSArray *response) {
+    [self.manager startAnimatingNode:animationId nodeTag:nodeTag config:configEval() endCallback:^(NSArray *response) {
       [_animations removeObjectForKey:nodeTag];
       callback();
     }];

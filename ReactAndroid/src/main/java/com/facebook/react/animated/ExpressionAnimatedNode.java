@@ -13,8 +13,10 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +28,10 @@ import java.util.Map;
 
   interface EvalFunction {
     double eval();
+  }
+
+  interface EvalConfig {
+    ReadableMap eval();
   }
 
   interface ReduceMulti {
@@ -286,11 +292,12 @@ import java.util.Map;
       case "call": return createCall(node);
       case "format": return createFormat(node);
       case "castBoolean": return createCastBoolean(node);
-      case "startTiming": return createAnimation(node);
-      case "startSpring": return createAnimation(node);
-      case "startDecay": return createAnimation(node);
+      case "startTiming":
+      case "startSpring":
+      case "startClock":
+        return createAnimation(node, getDefaultConfigEvaluator(node.getMap("config")));
+      case "startDecay": return createAnimation(node, getDecayConfigEvaluator(node.getMap("config")));
       case "stopAnimation": return createStopAnimation(node);
-      case "startClock": return createAnimation(node);
       case "stopClock": return createStopClock(node);
       case "clockRunning": return createClockRunning(node);
       default:
@@ -336,10 +343,39 @@ import java.util.Map;
     };
   }
 
-  private EvalFunction createAnimation(ReadableMap node) {
-    final int targetTag = node.getInt("target");
-    final ReadableMap config = node.getMap("config");
+  private EvalConfig getDefaultConfigEvaluator(ReadableMap configNode) {
+    return new EvalConfig() {
+      @Override
+      public ReadableMap eval() {
+        return configNode;
+      }
+    };
+  }
 
+  private EvalConfig getDecayConfigEvaluator(ReadableMap configNode) {
+    final EvalFunction evalVelocity = createEvalFunc(configNode.getMap("velocity"));
+    return new EvalConfig() {
+      @Override
+      public ReadableMap eval() {
+        WritableMap result = new WritableNativeMap();
+        ReadableMapKeySetIterator keyIterator = configNode.keySetIterator();
+        while (keyIterator.hasNextKey()) {
+          String propKey = keyIterator.nextKey();
+          if(propKey.equals("type")) {
+            result.putString("type", configNode.getString("type"));
+          } else if(propKey.equals("velocity")) {
+            result.putDouble("velocity", evalVelocity.eval());
+          } else {
+            result.putDouble(propKey, configNode.getDouble(propKey));
+          }
+        }
+        return result;
+      }
+    };
+  }
+
+  private EvalFunction createAnimation(ReadableMap node, EvalConfig configEvaluator) {
+    final int targetTag = node.getInt("target");
     ReadableMap callback = node.getMap("callback");
     final EvalFunction callbackEval = callback != null ? createEvalFunc(callback) : null;
 
@@ -352,7 +388,7 @@ import java.util.Map;
         }
         int animationId = _animationId--;
         _animations.put(targetTag, animationId);
-        mNativeAnimatedNodesManager.startAnimatingNode(animationId, targetTag, config, new Callback() {
+        mNativeAnimatedNodesManager.startAnimatingNode(animationId, targetTag, configEvaluator.eval(), new Callback() {
           @Override
           public void invoke(Object... args) {
             _animations.remove(targetTag);

@@ -182,7 +182,11 @@ function convertDecay(
     type: 'startDecay',
     nodeId: node.nodeId,
     target: node.target && node.target.getTag && node.target.getTag(),
-    config: new DecayAnimation((node.config: any)).__getNativeAnimationConfig(),
+    config: {
+      type: 'decay',
+      velocity: convert(node.config.velocity),
+      deceleration: node.config.deceleration ?? 0.998,
+    },
     callback: node.callback ? convert(node.callback) : null,
   };
 }

@@ -14,7 +14,6 @@ const AnimatedValue = require('../AnimatedValue');
 
 import type {TimingAnimationConfig} from '../../animations/TimingAnimation';
 import type {SpringAnimationConfig} from '../../animations/SpringAnimation';
-import type {DecayAnimationConfig} from '../../animations/DecayAnimation';
 import type {ClockAnimationConfig} from '../../animations/ClockAnimation';
 
 let _nodeId = 0;
@@ -36,6 +35,7 @@ import type {
   StartTimingStatementNode,
   StartSpringStatementNode,
   StartDecayStatementNode,
+  StartDecayAnimationNodeConfig,
   StartClockStatementNode,
   StopClockStatementNode,
   StopAnimationStatementNode,
@@ -96,7 +96,7 @@ type StartSpringAnimationFactory = (
 
 type StartDecayAnimationFactory = (
   v: AnimatedValue,
-  config: DecayAnimationConfig,
+  config: StartDecayAnimationNodeConfig,
   callback: ?ExpressionNode,
 ) => StartDecayStatementNode;
 
@@ -216,14 +216,17 @@ function springFactory(
 
 function decayFactory(
   v: AnimatedValue,
-  config: DecayAnimationConfig,
+  config: StartDecayAnimationNodeConfig,
   callback: ?ExpressionNode,
 ): StartDecayStatementNode {
   return {
     type: 'startDecay',
     nodeId: _nodeId++,
     target: ((resolve(v): any): AnimatedValueExpressionNode),
-    config: config,
+    config: {
+      velocity: resolve(config.velocity),
+      deceleration: config.deceleration,
+    },
     callback: callback || null,
   };
 }

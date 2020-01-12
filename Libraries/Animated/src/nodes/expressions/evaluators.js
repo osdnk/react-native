@@ -18,6 +18,8 @@ import SpringAnimation from '../../animations/SpringAnimation';
 import DecayAnimation from '../../animations/DecayAnimation';
 import ClockAnimation from '../../animations/ClockAnimation';
 
+import type {DecayAnimationConfigSingle} from '../../animations/DecayAnimation';
+
 import type {
   ExpressionNode,
   ExpressionParam,
@@ -278,13 +280,22 @@ function springReducer(node: StartSpringStatementNode): ReducerFunction {
 
 function decayReducer(node: StartDecayStatementNode): ReducerFunction {
   const animationValue = ((node.target.node: any): AnimatedValue);
-  const singleConfig: any = node.config;
   const callback = node.callback
     ? createEvaluatorInternal(node.callback)
     : null;
+  const velocityEvaluator = createEvaluatorInternal(node.config.velocity);
   return () => {
+    const config: DecayAnimationConfigSingle = {
+      velocity: velocityEvaluator(),
+      deceleration:
+        node.config.deceleration !== undefined
+          ? node.config.deceleration
+          : 0.998,
+      useNativeDriver: false,
+    };
+
     const animationId = _animationId++;
-    _animations[animationId] = new DecayAnimation(singleConfig);
+    _animations[animationId] = new DecayAnimation(config);
     animationValue.animate(_animations[animationId], ({finished}) => {
       delete _animations[animationId];
       if (callback) {

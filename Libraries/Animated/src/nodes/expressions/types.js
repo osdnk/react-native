@@ -15,7 +15,6 @@ const AnimatedValue = require('../AnimatedValue');
 
 import type {TimingAnimationConfig} from '../../animations/TimingAnimation';
 import type {SpringAnimationConfig} from '../../animations/SpringAnimation';
-import type {DecayAnimationConfig} from '../../animations/DecayAnimation';
 import type {ClockAnimationConfig} from '../../animations/ClockAnimation';
 
 export type ExpressionParam =
@@ -109,10 +108,15 @@ export type StartSpringStatementNode = {
   callback: ExpressionNode | null,
 };
 
+export type StartDecayAnimationNodeConfig = {
+  velocity: ExpressionParam,
+  deceleration?: ExpressionParam,
+};
+
 export type StartDecayStatementNode = {
   ...BaseExpressionNode,
   target: AnimatedValueExpressionNode,
-  config: DecayAnimationConfig,
+  config: StartDecayAnimationNodeConfig,
   callback: ExpressionNode | null,
 };
 
@@ -250,8 +254,7 @@ export type NativeStartDecayStatementNode = {
   config: {
     type: 'decay',
     deceleration: number,
-    velocity: number,
-    iterations: number,
+    velocity: ExpressionNode,
   },
   callback: NativeExpressionNode | null,
 };
