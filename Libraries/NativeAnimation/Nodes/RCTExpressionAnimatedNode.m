@@ -454,22 +454,24 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
   while(*p != '\0') {
     if(*p == '%') {
       // Check for double % sign
-      if(*(p+1) != '%') {
+      if(*(p+1) == '%') {
+        // Skip double %% - they will be escaped
+        p+=2;
+      } else {
         // We only accept the f specifier. If another one is used
         // the string will just go on to the end and be incorrect.
         while(*p != '\0' && *p != 'f') p++;
         p++;
         // Move on to the end or to the next specifier
-        while(*(p+1) != '\0' && *(p+1) != '%') {
-            p++;
-        };
-        char subbuff[(p - cur)+1];
-        memset(subbuff, 0, (p-cur)+1);
-        memcpy(subbuff, &str[cur - str], p - str);
+        while(*p != '\0' && *p != '%') p++;
+        // Now lets get the data
+        int size = (p - cur)+1;
+        char* subbuff = malloc(size);
+        memset(subbuff, 0, size);
+        memcpy(subbuff, &str[cur - str], size-1);
         [result addObject:[NSString stringWithUTF8String: subbuff]];
+        free(subbuff);
         cur = p;
-      } else {
-        p+=2;
       }
     } else p++;
   }

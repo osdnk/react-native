@@ -1242,9 +1242,11 @@ static id RCTPropChecker(NSString *prop, NSNumber *value)
   XCTAssertEqual(eval(@{@"type": @"floor", @"v": n(10.9)}), 10, @"floor did not work");
   
   // Conversion
-  XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f%% is %.2f%%", @"args": @[n(17.123456678), n(14.123456)]}) isEqualToString:@"17.12% is 14.12%"], @"format did not work");
+  XCTAssertEqualObjects(evalString(@{@"type": @"format", @"format": @"%.2f%% is %.2f%%", @"args": @[n(17.123456678), n(14.123456)]}), @"17.12% is 14.12%", @"format did not work");
   
-  XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f is %.2f", @"args": @[n(17.123456678), n(14.123456)]}) isEqualToString:@"17.12 is 14.12"], @"format did not work");
+  XCTAssertEqualObjects(evalString(@{@"type": @"format", @"format": @"pan: %.2f / %.2f - offset: %.2f / %.2f", @"args": @[n(1.0), n(2.0), n(3.0), n(4.0)]}), @"pan: 1.00 / 2.00 - offset: 3.00 / 4.00", @"format did not work");
+  
+  XCTAssertEqualObjects(evalString(@{@"type": @"format", @"format": @"%.2f is %.2f", @"args": @[n(17.123456678), n(14.123456)]}), @"17.12 is 14.12", @"format did not work");
   
   XCTAssertTrue([evalString(@{@"type": @"format", @"format": @"%.2f / %.2f", @"args": @[n(17.123456678), n(14.123456)]}) isEqualToString:@"17.12 / 14.12"], @"format with escape did not work");
   
