@@ -444,6 +444,24 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
   return evals;
 }
 
+char* getNextDelimiter (const char* p) {
+  while(*p != '\0') {
+    switch(*p) {
+      case '%':
+        // delimiter found - make sure this isn't an escaped % sign
+        if(*(p+1) == '%') {
+          p+=2;
+        } else {
+          return (char*)p;
+        }
+        break;
+      default:
+        p++;
+    }
+  }
+  return (char*)p;
+}
+
 - (NSArray<NSString*>*) formatStringsFromFormat:(NSString*)format {
   NSMutableArray* result = [[NSMutableArray alloc] init];
   
@@ -451,29 +469,20 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
   const char* str = p;
   const char* cur = p;
     
+  p = getNextDelimiter(p);
   while(*p != '\0') {
     if(*p == '%') {
-      // Check for double % sign
-      if(*(p+1) == '%') {
-        // Skip double %% - they will be escaped
-        p+=2;
-      } else {
-        // We only accept the f specifier. If another one is used
-        // the string will just go on to the end and be incorrect.
-        while(*p != '\0' && *p != 'f') p++;
-        p++;
-        // Move on to the end or to the next specifier
-        while(*p != '\0' && *p != '%') p++;
-        // Now lets get the data
-        int size = (p - cur)+1;
-        char* subbuff = malloc(size);
-        memset(subbuff, 0, size);
-        memcpy(subbuff, &str[cur - str], size-1);
-        [result addObject:[NSString stringWithUTF8String: subbuff]];
-        free(subbuff);
-        cur = p;
-      }
-    } else p++;
+      // Move on to the end or to the next specifier
+      p = getNextDelimiter(p+1);
+      // Now lets get the data
+      int size = (p - cur)+1;
+      char* subbuff = malloc(size);
+      memset(subbuff, 0, size);
+      memcpy(subbuff, &str[cur - str], size-1);
+      [result addObject:[NSString stringWithUTF8String: subbuff]];
+      free(subbuff);
+      cur = p;
+    }
   }
   
   return result;
