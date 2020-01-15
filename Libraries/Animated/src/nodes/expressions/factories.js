@@ -11,7 +11,6 @@
 'use strict';
 
 const AnimatedValue = require('../AnimatedValue');
-import type {ClockAnimationConfig} from '../../animations/ClockAnimation';
 
 let _nodeId = 0;
 
@@ -126,7 +125,6 @@ type StopAnimationFactory = (
 
 type StartClockAnimationFactory = (
   v: AnimatedValue,
-  config: ClockAnimationConfig,
   callback: ?ExpressionNode,
 ) => StartClockStatementNode;
 
@@ -268,14 +266,15 @@ function stopAnimationFactory(
 
 function startClockFactory(
   v: AnimatedValue,
-  config: ClockAnimationConfig,
   callback: ?ExpressionNode,
 ): StartClockStatementNode {
   return {
     type: 'startClock',
     nodeId: _nodeId++,
     target: ((resolve(v): any): AnimatedValueExpressionNode),
-    config: config,
+    config: {
+      useNativeDriver: false,
+    },
     callback: callback || null,
   };
 }
