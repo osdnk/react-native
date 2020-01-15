@@ -122,7 +122,10 @@ function convertStartClock(
     type: 'startClock',
     nodeId: node.nodeId,
     target: node.target && node.target.getTag && node.target.getTag(),
-    config: new ClockAnimation((node.config: any)).__getNativeAnimationConfig(),
+    config: new ClockAnimation({
+      ...(node.config: any),
+      useNativeDriver: true,
+    }).__getNativeAnimationConfig(),
     callback: node.callback ? convert(node.callback) : null,
   };
 }
@@ -155,7 +158,10 @@ function convertTiming(
     nodeId: node.nodeId,
     target: node.target && node.target.getTag && node.target.getTag(),
     config: {
-      ...new TimingAnimation((node.config: any)).__getNativeAnimationConfig(),
+      ...new TimingAnimation({
+        ...(node.config: any),
+        useNativeDriver: true,
+      }).__getNativeAnimationConfig(),
       iterations: node.config.iterations,
     },
     callback: node.callback ? convert(node.callback) : null,
@@ -170,7 +176,10 @@ function convertSpring(
     nodeId: node.nodeId,
     target: node.target && node.target.getTag && node.target.getTag(),
     config: {
-      ...new SpringAnimation((node.config: any)).__getNativeAnimationConfig(),
+      ...new SpringAnimation({
+        ...(node.config: any),
+        useNativeDriver: true,
+      }).__getNativeAnimationConfig(),
       initialVelocity: convert(node.config.velocity),
       iterations: node.config.iterations,
     },

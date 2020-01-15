@@ -197,7 +197,10 @@ function startClockReducer(node: StartClockStatementNode): ReducerFunction {
     ? createEvaluatorInternal(node.callback)
     : null;
   return () => {
-    const animation = new ClockAnimation(singleConfig);
+    const animation = new ClockAnimation({
+      ...singleConfig,
+      useNativeDriver: false,
+    });
     let localCallback = callback;
     animationValue.animate(animation, ({finished}) => {
       if (localCallback) {
@@ -252,7 +255,10 @@ function timingReducer(node: StartTimingStatementNode): ReducerFunction {
   return () => {
     const animationId = _animationId++;
     let localCallback = callback;
-    _animations[animationId] = new TimingAnimation(singleConfig);
+    _animations[animationId] = new TimingAnimation({
+      ...singleConfig,
+      useNativeDriver: false,
+    });
     animationValue.animate(_animations[animationId], ({finished}) => {
       delete _animations[animationId];
       if (localCallback) {
@@ -274,7 +280,10 @@ function springReducer(node: StartSpringStatementNode): ReducerFunction {
   return () => {
     const animationId = _animationId++;
     let localCallback = callback;
-    _animations[animationId] = new SpringAnimation(singleConfig);
+    _animations[animationId] = new SpringAnimation({
+      ...singleConfig,
+      useNativeDriver: false,
+    });
     animationValue.animate(_animations[animationId], ({finished}) => {
       delete _animations[animationId];
       if (localCallback) {
