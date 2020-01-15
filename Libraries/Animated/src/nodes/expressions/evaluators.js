@@ -274,6 +274,7 @@ function timingReducer(node: StartTimingStatementNode): ReducerFunction {
 function springReducer(node: StartSpringStatementNode): ReducerFunction {
   const animationValue = ((node.target.node: any): AnimatedValue);
   const singleConfig: any = node.config;
+  const velocityEvaluator = createEvaluatorInternal(node.config.velocity);
   const callback = node.callback
     ? createEvaluatorInternal(node.callback)
     : null;
@@ -282,6 +283,7 @@ function springReducer(node: StartSpringStatementNode): ReducerFunction {
     let localCallback = callback;
     _animations[animationId] = new SpringAnimation({
       ...singleConfig,
+      velocity: velocityEvaluator(),
       useNativeDriver: false,
     });
     animationValue.animate(_animations[animationId], ({finished}) => {
