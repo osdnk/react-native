@@ -525,7 +525,7 @@ exports.examples = [
                             greaterThan(anim, 0.5),
                             cond(eq(flag, 0), [
                               set(flag, 1),
-                              startClock(clock, {useNativeDriver: false}),
+                              startClock(clock),
                               startSpring(
                                 dummy,
                                 {
@@ -533,7 +533,6 @@ exports.examples = [
                                   mass: 1,
                                   stiffness: 180,
                                   damping: 12,
-                                  useNativeDriver: false,
                                 },
                                 debug('dummy animation ended', flag),
                               ),
@@ -549,7 +548,6 @@ exports.examples = [
                                   mass: 1,
                                   stiffness: 180,
                                   damping: 12,
-                                  useNativeDriver: false,
                                 },
                                 debug('dummy animation ended', flag),
                               ),
