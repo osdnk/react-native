@@ -22,12 +22,12 @@ import type {ExpressionNode} from './expressions';
 
 class AnimatedProc extends AnimatedWithChildren {
   _expression: AnimatedExpression;
-  _args: AnimatedNode[];
+  _args: Array<AnimatedNode | number>;
   _params: AnimatedParam[];
 
   constructor(
     expression: AnimatedExpression,
-    args: Array<AnimatedNode>,
+    args: Array<AnimatedNode | number>,
     params: Array<AnimatedParam>,
   ) {
     super();
@@ -38,7 +38,9 @@ class AnimatedProc extends AnimatedWithChildren {
 
   __attach() {
     this._expression.__attach();
-    this._args.forEach(a => a.__addChild(this));
+    this._args
+      .filter(a => a instanceof AnimatedNode)
+      .forEach(a => ((a: any): AnimatedNode).__addChild(this));
   }
 
   __makeNative() {
@@ -48,21 +50,29 @@ class AnimatedProc extends AnimatedWithChildren {
 
   __detach() {
     this._expression.__detach();
-    this._args.forEach(a => a.__removeChild(this));
+    this._args
+      .filter(a => a instanceof AnimatedNode)
+      .forEach(a => ((a: any): AnimatedNode).__removeChild(this));
     super.__detach();
   }
 
   __getValue(): number {
-    this._args.forEach((a, index) =>
-      this._params[index].setValue(a.__getValue()),
-    );
+    this._args.forEach((a, index) => {
+      if (a instanceof AnimatedNode) {
+        this._params[index].setValue(a.__getValue());
+      } else {
+        this._params[index].setValue(a);
+      }
+    });
     return this._expression.__getValue();
   }
 
   __getNativeConfig(): any {
     return {
       type: 'proc',
-      args: this._args.map(a => a.__getNativeTag()),
+      args: this._args.map(a =>
+        a instanceof AnimatedNode ? a.__getNativeTag() : a,
+      ),
       params: this._params.map(a => a.__getNativeTag()),
       expression: this._expression.__getNativeTag(),
     };
@@ -85,13 +95,13 @@ class AnimatedParam extends AnimatedValue {
 }
 
 export function createAnimatedProc(
-  cb: (...args: AnimatedNode[]) => ExpressionNode,
+  cb: (...args: Array<AnimatedNode | number>) => ExpressionNode,
 ): (...args: AnimatedNode[]) => AnimatedProc {
   const params: AnimatedParam[] = [];
   for (let i = 0; i < cb.length; i++) {
     params.push(new AnimatedParam(0));
   }
   const expression = cb(...params);
-  return (...args: AnimatedNode[]) =>
+  return (...args: Array<AnimatedNode | number>) =>
     new AnimatedProc(new AnimatedExpression(expression), args, params);
 }
