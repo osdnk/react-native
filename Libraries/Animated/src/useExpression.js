@@ -14,16 +14,28 @@ import {useEffect} from 'react';
 import AnimatedExpression from './nodes/AnimatedExpression';
 
 import type {ExpressionNode} from './nodes/expressions';
+import {factories} from './nodes/expressions/factories';
 
-function useExpression(expression: () => ExpressionNode) {
+function useExpression(
+  expression: () => ExpressionNode | ExpressionNode[],
+  deps?: Array<any>,
+) {
   useEffect(() => {
-    const node = new AnimatedExpression(expression());
-    node.__attach();
+    const node = expression();
+    const expr =
+      node instanceof Array
+        ? new AnimatedExpression(
+            factories.block(((node: any): Array<ExpressionNode>)),
+          )
+        : new AnimatedExpression(node);
+
+    expr.__attach();
 
     return () => {
-      node.__detach();
+      expr.__detach();
     };
-  }, [expression]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expression].concat(deps));
 }
 
 module.exports = useExpression;
