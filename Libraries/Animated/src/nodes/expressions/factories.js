@@ -64,7 +64,7 @@ type SetFactory = (
 ) => SetStatementNode;
 
 type BlockFactory = (
-  ...args: Array<ExpressionParam | Array<ExpressionParam>>
+  ...args: Array<ExpressionNode | Array<ExpressionNode>>
 ) => BlockStatementNode;
 
 type CallFactory = (
@@ -206,7 +206,10 @@ export function resolve(v: ExpressionParam): ExpressionNode {
 }
 
 const invariantParam = (condition: any, param: string, funcName: string) =>
-  invariant(condition, `${param} is a require parameter for ${funcName}.`);
+  invariant(
+    condition !== undefined,
+    `${param} is a required parameter for ${funcName}.`,
+  );
 
 function timingFactory(
   v: AnimatedValue,
@@ -346,7 +349,7 @@ function setFactory(
 }
 
 function blockFactory(
-  ...args: Array<ExpressionParam | Array<ExpressionParam>>
+  ...args: Array<ExpressionNode | Array<ExpressionNode>>
 ): BlockStatementNode {
   return {
     type: 'block',
