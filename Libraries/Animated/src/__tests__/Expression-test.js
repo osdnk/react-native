@@ -188,4 +188,18 @@ describe('Animated Expressions', () => {
   it('should return floor', () => {
     expect(evalExpression(E.floor(10.9))).toBe(10);
   });
+
+  it('should return 0 the first time diff is evaluated', () => {
+    const value = new Animated.Value(0);
+    const expression = Animated.expression(E.diff(value));
+    expect(expression.__getValue()).toBe(0);
+  });
+
+  it('should return diff the second time diff is evaluated', () => {
+    const value = new Animated.Value(0);
+    const expression = Animated.expression(E.diff(value));
+    expression.__getValue();
+    value.setValue(10);
+    expect(expression.__getValue()).toBe(10);
+  });
 });
