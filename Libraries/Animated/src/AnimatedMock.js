@@ -18,6 +18,8 @@ const AnimatedProps = require('./nodes/AnimatedProps');
 const AnimatedValue = require('./nodes/AnimatedValue');
 const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 
+import {useCode, AnimatedClock} from './nodes/expressions/compatibility';
+
 import {createAnimatedProc} from './nodes/AnimatedProc';
 
 import {factories} from './nodes/expressions';
@@ -143,6 +145,7 @@ const event = function(argMapping: Array<?Mapping>, config: EventConfig): any {
 
 module.exports = {
   Value: AnimatedValue,
+  Clock: AnimatedClock,
   ValueXY: AnimatedValueXY,
   Interpolation: AnimatedInterpolation,
   Node: AnimatedNode,
@@ -171,6 +174,7 @@ module.exports = {
   unforkEvent: AnimatedImplementation.unforkEvent,
   Event: AnimatedEvent,
   useExpression,
+  useCode,
   proc: createAnimatedProc,
   __PropsOnlyForTests: AnimatedProps,
 };

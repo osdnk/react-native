@@ -59,7 +59,7 @@ export function debug(
       call([node], (args: number[]) => {
         console.info(message, args[0]);
       }),
-      node,
+      resolve(node),
     );
   } else {
     return ((resolve(0): any): NumberExpressionNode);

@@ -31,6 +31,8 @@ const TimingAnimation = require('./animations/TimingAnimation');
 const ClockAnimation = require('./animations/ClockAnimation');
 const useExpression = require('./useExpression');
 
+import {AnimatedClock, useCode} from './nodes/expressions/compatibility';
+
 const createAnimatedComponent = require('./createAnimatedComponent');
 
 import {createAnimatedProc} from './nodes/AnimatedProc';
@@ -606,6 +608,8 @@ module.exports = {
    * See http://facebook.github.io/react-native/docs/animated.html#value
    */
   Value: AnimatedValue,
+
+  Clock: AnimatedClock,
   /**
    * 2D value class for driving 2D animations, such as pan gestures.
    *
@@ -787,6 +791,7 @@ module.exports = {
   Event: AnimatedEvent,
 
   useExpression,
+  useCode,
 
   proc: createAnimatedProc,
 
