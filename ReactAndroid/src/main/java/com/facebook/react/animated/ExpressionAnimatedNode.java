@@ -345,7 +345,7 @@ import java.util.Map;
     };
   }
 
-  private EvalConfig getDefaultConfigEvaluator(ReadableMap configNode) {
+  private EvalConfig getDefaultConfigEvaluator(final ReadableMap configNode) {
     return new EvalConfig() {
       @Override
       public ReadableMap eval() {
@@ -354,7 +354,7 @@ import java.util.Map;
     };
   }
 
-  private EvalConfig getDecayConfigEvaluator(ReadableMap configNode) {
+  private EvalConfig getDecayConfigEvaluator(final ReadableMap configNode) {
     final EvalFunction evalVelocity = createEvalFunc(configNode.getMap("velocity"));
     return new EvalConfig() {
       @Override
@@ -376,7 +376,7 @@ import java.util.Map;
     };
   }
 
-  private EvalConfig getSpringConfigEvaluator(ReadableMap configNode) {
+  private EvalConfig getSpringConfigEvaluator(final ReadableMap configNode) {
     final EvalFunction evalVelocity = createEvalFunc(configNode.getMap("initialVelocity"));
     return new EvalConfig() {
       @Override
@@ -400,7 +400,7 @@ import java.util.Map;
     };
   }
 
-  private EvalFunction createAnimation(ReadableMap node, EvalConfig configEvaluator) {
+  private EvalFunction createAnimation(ReadableMap node, final EvalConfig configEvaluator) {
     final int targetTag = node.getInt("target");
     ReadableMap callback = node.getMap("callback");
     final EvalFunction callbackEval = callback != null ? createEvalFunc(callback) : null;
