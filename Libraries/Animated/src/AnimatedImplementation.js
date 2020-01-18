@@ -29,13 +29,12 @@ const DecayAnimation = require('./animations/DecayAnimation');
 const SpringAnimation = require('./animations/SpringAnimation');
 const TimingAnimation = require('./animations/TimingAnimation');
 const ClockAnimation = require('./animations/ClockAnimation');
-const useExpression = require('./useExpression');
-
-import {AnimatedClock, useCode} from './nodes/expressions/compatibility';
 
 const createAnimatedComponent = require('./createAnimatedComponent');
 
+import {AnimatedClock, useCode} from './nodes/expressions/compatibility';
 import {createAnimatedProc} from './nodes/AnimatedProc';
+import useExpression from './useExpression';
 import {factories} from './nodes/expressions';
 import * as derived from './nodes/expressions/derived';
 
@@ -608,8 +607,6 @@ module.exports = {
    * See http://facebook.github.io/react-native/docs/animated.html#value
    */
   Value: AnimatedValue,
-
-  Clock: AnimatedClock,
   /**
    * 2D value class for driving 2D animations, such as pan gestures.
    *
@@ -665,7 +662,16 @@ module.exports = {
    * See http://facebook.github.io/react-native/docs/animated.html#expression
    */
   expression,
-  E: {...factories, ...derived},
+  E: {
+    ...factories,
+    ...derived,
+    event,
+    useCode,
+    useExpression,
+    proc: createAnimatedProc,
+    Value: AnimatedValue,
+    Clock: AnimatedClock,
+  },
 
   /**
    * Creates a new Animated value composed from two Animated values added
@@ -789,11 +795,6 @@ module.exports = {
    * Expose Event class, so it can be used as a type for type checkers.
    */
   Event: AnimatedEvent,
-
-  useExpression,
-  useCode,
-
-  proc: createAnimatedProc,
 
   __PropsOnlyForTests: AnimatedProps,
 };

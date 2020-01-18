@@ -18,15 +18,13 @@ const AnimatedProps = require('./nodes/AnimatedProps');
 const AnimatedValue = require('./nodes/AnimatedValue');
 const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 
-import {useCode, AnimatedClock} from './nodes/expressions/compatibility';
+const createAnimatedComponent = require('./createAnimatedComponent');
 
+import {AnimatedClock, useCode} from './nodes/expressions/compatibility';
 import {createAnimatedProc} from './nodes/AnimatedProc';
-
+import useExpression from './useExpression';
 import {factories} from './nodes/expressions';
 import * as derived from './nodes/expressions/derived';
-const useExpression = require('./useExpression');
-
-const createAnimatedComponent = require('./createAnimatedComponent');
 
 import type {EndCallback} from './animations/Animation';
 import type {TimingAnimationConfig} from './animations/TimingAnimation';
@@ -145,7 +143,6 @@ const event = function(argMapping: Array<?Mapping>, config: EventConfig): any {
 
 module.exports = {
   Value: AnimatedValue,
-  Clock: AnimatedClock,
   ValueXY: AnimatedValueXY,
   Interpolation: AnimatedInterpolation,
   Node: AnimatedNode,
@@ -155,7 +152,16 @@ module.exports = {
   spring,
   clock,
   expression: AnimatedImplementation.expression,
-  E: {...factories, ...derived},
+  E: {
+    ...factories,
+    ...derived,
+    event,
+    useCode,
+    useExpression,
+    proc: createAnimatedProc,
+    Value: AnimatedValue,
+    Clock: AnimatedClock,
+  },
   add: AnimatedImplementation.add,
   subtract: AnimatedImplementation.subtract,
   divide: AnimatedImplementation.divide,
@@ -173,8 +179,5 @@ module.exports = {
   forkEvent: AnimatedImplementation.forkEvent,
   unforkEvent: AnimatedImplementation.unforkEvent,
   Event: AnimatedEvent,
-  useExpression,
-  useCode,
-  proc: createAnimatedProc,
   __PropsOnlyForTests: AnimatedProps,
 };

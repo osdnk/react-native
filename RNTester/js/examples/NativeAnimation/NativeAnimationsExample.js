@@ -18,7 +18,6 @@ API.addEnqueuedUpdateProp('text');
 const {
   View,
   Text,
-  Button,
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -34,25 +33,20 @@ const {
   greaterThan,
   debug,
   eq,
-  neq,
-  startTiming,
   startSpring,
-  startDecay,
   startClock,
   stopClock,
   diff,
   interpolate,
-  or,
   clockRunning,
   boolean,
+  proc,
 } = Animated.E;
 
 // TODO: Fix issue with proc failing after remount due to animated nodes
 // being deallocated.
-const nativeCalculator = Animated.proc(anim =>
-  cond(greaterThan(anim, 0.5), 0, 1),
-);
-const jsCalculator = Animated.proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
+const nativeCalculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
+const jsCalculator = proc(anim => cond(greaterThan(anim, 0.5), 0, 1));
 
 const AnimatedSlider = Animated.createAnimatedComponent(Slider);
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
