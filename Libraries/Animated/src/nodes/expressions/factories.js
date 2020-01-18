@@ -11,6 +11,7 @@
 'use strict';
 
 const AnimatedValue = require('../AnimatedValue');
+const invariant = require('invariant');
 
 let _nodeId = 0;
 
@@ -204,11 +205,16 @@ export function resolve(v: ExpressionParam): ExpressionNode {
   }
 }
 
+const invariantParam = (condition: any, param: string, funcName: string) =>
+  invariant(condition, `${param} is a require parameter for ${funcName}.`);
+
 function timingFactory(
   v: AnimatedValue,
   config: StartTimingAnimationNodeConfig,
   callback: ?ExpressionNode,
 ): StartTimingStatementNode {
+  invariantParam(v, 'Value', 'startTiming');
+  invariantParam(config, 'Config', 'startTiming');
   return {
     type: 'startTiming',
     nodeId: _nodeId++,
@@ -223,6 +229,8 @@ function springFactory(
   config: StartSpringFactoryConfig,
   callback: ?ExpressionNode,
 ): StartSpringStatementNode {
+  invariantParam(v, 'Value', 'startSpring');
+  invariantParam(config, 'Config', 'startSpring');
   return {
     type: 'startSpring',
     nodeId: _nodeId++,
@@ -241,6 +249,8 @@ function decayFactory(
   config: StartDecayFactoryConfig,
   callback: ?ExpressionNode,
 ): StartDecayStatementNode {
+  invariantParam(v, 'Value', 'startDecay');
+  invariantParam(config, 'Config', 'startDecay');
   return {
     type: 'startDecay',
     nodeId: _nodeId++,
@@ -257,6 +267,7 @@ function decayFactory(
 function stopAnimationFactory(
   animationId: ExpressionParam,
 ): StopAnimationStatementNode {
+  invariantParam(animationId, 'AnimationId ', 'stopAnimation');
   return {
     type: 'stopAnimation',
     nodeId: _nodeId++,
@@ -268,6 +279,7 @@ function startClockFactory(
   v: AnimatedValue,
   callback: ?ExpressionNode,
 ): StartClockStatementNode {
+  invariantParam(v, 'Value', 'startClock');
   return {
     type: 'startClock',
     nodeId: _nodeId++,
@@ -280,6 +292,7 @@ function startClockFactory(
 }
 
 function stopClockFactory(v: AnimatedValue): StopClockStatementNode {
+  invariantParam(v, 'Value', 'stopClock');
   return {
     type: 'stopClock',
     nodeId: _nodeId++,
@@ -288,6 +301,7 @@ function stopClockFactory(v: AnimatedValue): StopClockStatementNode {
 }
 
 function clockRunningFactory(v: AnimatedValue): ClockRunningExpressionNode {
+  invariantParam(v, 'Value', 'clockRunning');
   return {
     type: 'clockRunning',
     nodeId: _nodeId++,
@@ -299,6 +313,7 @@ function formatFactory(
   formatStr: string,
   ...args: ExpressionParam[]
 ): FormatExpressionNode {
+  invariantParam(formatStr, 'Format string', 'format');
   return {
     type: 'format',
     nodeId: _nodeId++,
@@ -308,6 +323,7 @@ function formatFactory(
 }
 
 function castBooleanFactory(v: ExpressionParam): CastBooleanExpressionNode {
+  invariantParam(v, 'Expression', 'boolean');
   return {
     type: 'castBoolean',
     nodeId: _nodeId++,
@@ -319,6 +335,8 @@ function setFactory(
   target: AnimatedValue,
   source: ExpressionParam,
 ): SetStatementNode {
+  invariantParam(target, 'Target', 'set');
+  invariantParam(source, 'Source', 'set');
   return {
     type: 'set',
     nodeId: _nodeId++,
@@ -342,6 +360,8 @@ function condFactory(
   ifNode: ExpressionParam | ExpressionParam[],
   elseNode: ?(ExpressionParam | ExpressionParam[]),
 ): CondStatementNode {
+  invariantParam(expr, 'Expression', 'cond');
+  invariantParam(ifNode, 'If expression', 'cond');
   return {
     type: 'cond',
     nodeId: _nodeId++,
@@ -362,6 +382,8 @@ function callFactory(
   args: ExpressionParam | ExpressionParam[],
   callback: (args: number[]) => void,
 ): CallStatementNode {
+  invariantParam(args, 'Arguments', 'call');
+  invariantParam(callback, 'Callback', 'call');
   return {
     type: 'call',
     nodeId: _nodeId++,
@@ -378,30 +400,41 @@ function multi(type: string): MultiFactory {
     a1: ExpressionParam,
     b1: ExpressionParam,
     ...args: Array<ExpressionParam>
-  ) => ({
-    type,
-    nodeId: _nodeId++,
-    a: resolve(a1),
-    b: resolve(b1),
-    args: args.map(resolve),
-  });
+  ) => {
+    invariantParam(a1, 'a', type);
+    invariantParam(b1, 'b', type);
+    return {
+      type,
+      nodeId: _nodeId++,
+      a: resolve(a1),
+      b: resolve(b1),
+      args: args.map(resolve),
+    };
+  };
 }
 
 function boolean(type: string): BooleanFactory {
-  return (left: ExpressionParam, right: ExpressionParam) => ({
-    type,
-    nodeId: _nodeId++,
-    left: resolve(left),
-    right: resolve(right),
-  });
+  return (left: ExpressionParam, right: ExpressionParam) => {
+    invariantParam(left, 'left', type);
+    invariantParam(right, 'right', type);
+    return {
+      type,
+      nodeId: _nodeId++,
+      left: resolve(left),
+      right: resolve(right),
+    };
+  };
 }
 
 function unary(type: string): UnaryFactory {
-  return (v: ExpressionParam) => ({
-    type,
-    nodeId: _nodeId++,
-    v: resolve(v),
-  });
+  return (v: ExpressionParam) => {
+    invariantParam(v, 'Value', type);
+    return {
+      type,
+      nodeId: _nodeId++,
+      v: resolve(v),
+    };
+  };
 }
 
 export const factories = {
