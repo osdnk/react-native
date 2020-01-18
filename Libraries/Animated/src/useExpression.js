@@ -35,7 +35,7 @@ function useExpression(
       expr.__detach();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expression].concat(deps));
+  }, deps);
 }
 
 module.exports = useExpression;
