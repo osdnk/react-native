@@ -20,6 +20,7 @@ jest.mock('../../../BatchedBridge/NativeModules', () => ({
 }));
 
 let Animated = require('../Animated');
+let Easing = require('../Easing');
 let {E} = Animated;
 
 function evalExpression(expr) {
@@ -201,5 +202,73 @@ describe('Animated Expressions', () => {
     expression.__getValue();
     value.setValue(10);
     expect(expression.__getValue()).toBe(10);
+  });
+
+  it('should play timing animation', () => {
+    const clock = new Animated.E.Clock();
+    const state = {
+      time: new Animated.Value(0),
+      frameTime: new Animated.Value(0),
+      position: new Animated.Value(0),
+      finished: new Animated.Value(0),
+    };
+    const config = {
+      toValue: 1,
+      duration: 1000,
+      easing: Easing.linear,
+    };
+    const expr = Animated.expression(E.timing(clock, state, config));
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(0);
+    clock.setValue(1000);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(1);
+  });
+
+  it('should play spring animation', () => {
+    const clock = new Animated.E.Clock();
+    const state = {
+      time: new Animated.Value(0),
+      velocity: new Animated.Value(0),
+      position: new Animated.Value(0),
+      prevPosition: new Animated.Value(0),
+      finished: new Animated.Value(0),
+    };
+    const config = {
+      toValue: 1,
+      damping: 12,
+      mass: 1,
+      stiffness: 150,
+      overshootClamping: false,
+      restSpeedThreshold: 0.001,
+      restDisplacementThreshold: 0.001,
+      overshootClamping: false,
+      restSpeedThreshold: 0.001,
+      restDisplacementThreshold: 0.001,
+    };
+    const a = Animated.expression(E.spring(clock, state, config));
+    expect(a.__getValue()).toBe(0);
+    clock.setValue(1);
+    expect(a.__getValue()).toBe(1);
+  });
+
+  it('should play decay animation', () => {
+    const clock = new Animated.Value(1000);
+    const state = {
+      time: new Animated.Value(10),
+      velocity: new Animated.Value(-100),
+      position: new Animated.Value(50),
+      finished: new Animated.Value(0),
+    };
+    const config = {
+      deceleration: 0.997,
+    };
+    const expr = Animated.expression(E.decay(clock, state, config));
+    expr.__getValue();
+    expect(state.position.__getValue()).toBeLessThan(19);
+    clock.setValue(30000);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(0);
+    expect(state.finished.__getValue()).toBe(1);
   });
 });
