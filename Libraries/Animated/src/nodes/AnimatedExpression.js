@@ -12,6 +12,7 @@
 
 const AnimatedInterpolation = require('./AnimatedInterpolation');
 const AnimatedWithChildren = require('./AnimatedWithChildren');
+const AnimatedValue = require('./AnimatedValue');
 const NativeAnimatedHelper = require('../NativeAnimatedHelper');
 
 import type {InterpolationConfigType} from './AnimatedInterpolation';
@@ -159,8 +160,13 @@ function collectArguments(
     collectArguments(id, node.target ? node.target : null, args);
     collectArguments(id, node.source ? node.source : null, args);
     collectArguments(id, node.v ? node.v : null, args);
+    collectArguments(id, node.index ? node.index : null, args);
     collectArguments(id, node.callback ? node.callback : null, args);
     node.args && node.args.forEach(a => collectArguments(id, a, args));
+    node.array &&
+      node.array.forEach(
+        a => a instanceof AnimatedValue && collectArguments(id, a, args),
+      );
   }
 }
 

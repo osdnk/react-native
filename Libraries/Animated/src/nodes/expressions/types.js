@@ -166,6 +166,12 @@ export type ClockRunningExpressionNode = {
   target: AnimatedValueExpressionNode,
 };
 
+export type ArrayExpressionNode = {
+  ...BaseExpressionNode,
+  array: Array<ExpressionNode | number>,
+  index: ExpressionNode,
+};
+
 export type ExpressionNode =
   | MultiExpressionNode
   | BooleanExpressionNode
@@ -182,7 +188,8 @@ export type ExpressionNode =
   | StartClockStatementNode
   | StopClockStatementNode
   | ClockRunningExpressionNode
-  | StopAnimationStatementNode;
+  | StopAnimationStatementNode
+  | ArrayExpressionNode;
 
 export type NativeMultiExpressionNode = {
   ...BaseExpressionNode,
@@ -313,6 +320,12 @@ export type NativeClockRunningExpressionNode = {
   target: number,
 };
 
+export type NativeArrayExpressionNode = {
+  ...BaseExpressionNode,
+  array: Array<NativeExpressionNode | number>,
+  index: NativeExpressionNode,
+};
+
 export type NativeExpressionNode =
   | NativeMultiExpressionNode
   | NativeBooleanExpressionNode
@@ -331,4 +344,5 @@ export type NativeExpressionNode =
   | NativeStartClockStatementNode
   | NativeStopClockStatementNode
   | NativeClockRunningExpressionNode
-  | NativeStopAnimationStatementNode;
+  | NativeStopAnimationStatementNode
+  | NativeArrayExpressionNode;

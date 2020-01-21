@@ -41,6 +41,7 @@ import type {
   StopClockStatementNode,
   StopAnimationStatementNode,
   ClockRunningExpressionNode,
+  ArrayExpressionNode,
 } from './types';
 
 type ReducerFunction = () => number;
@@ -106,6 +107,7 @@ const startClock = startClockReducer;
 const stopClock = stopClockReducer;
 const clockRunning = clockRunningReducer;
 const animationRunning = clockRunningReducer;
+const array = arrayReducer;
 
 const evaluators = {
   add,
@@ -153,6 +155,7 @@ const evaluators = {
   clockRunning,
   animationRunning,
   diff,
+  array,
 };
 
 let EXPRESSION_LOG: string = '';
@@ -210,6 +213,20 @@ function createEvaluatorInternal(element: ExpressionParam): ReducerFunction {
     throw new Error('Error: Node type ' + node.type + ' not found.');
   }
   return evaluators[node.type](element);
+}
+
+function arrayReducer(node: ArrayExpressionNode): ReducerFunction {
+  const arrayEvals = node.array.map(a => createEvaluatorInternal(a));
+  const indexEval = createEvaluatorInternal(node.index);
+  return () => {
+    const index = indexEval();
+    if (index >= arrayEvals.length)
+      throw Error(`Index ${index} out of bounds.`);
+    if (PRINT_EXPRESSIONS) {
+      printExp('array', 'array returning index', index, 'from array');
+    }
+    return arrayEvals[index]();
+  };
 }
 
 function startClockReducer(node: StartClockStatementNode): ReducerFunction {

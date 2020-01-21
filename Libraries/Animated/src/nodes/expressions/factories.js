@@ -37,6 +37,7 @@ import type {
   StopClockStatementNode,
   StopAnimationStatementNode,
   ClockRunningExpressionNode,
+  ArrayExpressionNode,
 } from './types';
 
 type MultiFactory = (
@@ -133,6 +134,11 @@ type ClockRunningFactory = (v: AnimatedValue) => ClockRunningExpressionNode;
 
 type StopClockAnimationFactory = (v: AnimatedValue) => StopClockStatementNode;
 
+type ArrayFactory = (
+  array: Array<ExpressionParam | number>,
+  index: ExpressionParam,
+) => ArrayExpressionNode;
+
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
 const multiply: MultiFactory = multi('multiply');
@@ -178,6 +184,7 @@ const stopClock: StopClockAnimationFactory = stopClockFactory;
 const clockRunning: ClockRunningFactory = clockRunningFactory;
 const animationRunning: ClockRunningFactory = clockRunningFactory;
 const stopAnimation: StopAnimationFactory = stopAnimationFactory;
+const array: ArrayFactory = arrayFactory;
 
 export function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
@@ -210,6 +217,20 @@ const invariantParam = (condition: any, param: string, funcName: string) =>
     condition !== undefined,
     `${param} is a required parameter for ${funcName}.`,
   );
+
+function arrayFactory(
+  array: Array<ExpressionParam | number>,
+  index: ExpressionParam,
+): ArrayExpressionNode {
+  invariantParam(array, 'Array', 'array');
+  invariantParam(index, 'Index', 'array');
+  return {
+    type: 'array',
+    nodeId: _nodeId++,
+    array: array.map(n => resolve(n)),
+    index: resolve(index),
+  };
+}
 
 function timingFactory(
   v: AnimatedValue,
@@ -486,4 +507,5 @@ export const factories = {
   animationRunning,
   stopAnimation,
   diff,
+  array,
 };

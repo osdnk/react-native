@@ -14,7 +14,17 @@ import type {AnimatedClock} from '../compatibility';
 import type {BlockStatementNode} from '../types';
 
 import {factories} from '../factories';
-const {block, cond, add, set, greaterOrEq, multiply, sub, divide} = factories;
+const {
+  block,
+  cond,
+  add,
+  set,
+  greaterOrEq,
+  round,
+  multiply,
+  sub,
+  divide,
+} = factories;
 
 type TimingState = {
   time: AnimatedValue,
@@ -26,7 +36,8 @@ type TimingState = {
 type TimingConfig = {
   duration: AnimatedNode | number,
   toValue: AnimatedNode | number,
-  easing: any,
+  easing: (t: number) => number,
+  frames?: number[],
 };
 
 const internalTiming = function(
@@ -74,6 +85,17 @@ function timing(
   state: TimingState,
   config: TimingConfig,
 ): BlockStatementNode {
+  if (!config.frames) {
+    const frameDuration = 1000.0 / 60.0;
+    const frames = [];
+    const numFrames = round(divide(config.duration, frameDuration));
+    for (let frame = 0; frame < numFrames; frame++) {
+      frames.push(config.easing(frame / numFrames));
+    }
+    frames.push(this._easing(1));
+    config.frames = frames;
+  }
+
   const lastTime = cond(state.time, state.time, clock);
   const newFrameTime = add(state.frameTime, sub(clock, lastTime));
   const nextProgress = config.easing(divide(newFrameTime, config.duration));
