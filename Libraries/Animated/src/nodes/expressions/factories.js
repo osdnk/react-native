@@ -189,6 +189,9 @@ const stopAnimation: StopAnimationFactory = stopAnimationFactory;
 const bezier: BezierExpressionFactory = bezierFactory;
 
 export function resolve(v: ExpressionParam): ExpressionNode {
+  if (v instanceof Array) {
+    return block(v);
+  }
   if (v instanceof Object) {
     // Expression ExpressionNode
     if (v.hasOwnProperty('type')) {
