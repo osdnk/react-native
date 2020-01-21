@@ -19,7 +19,8 @@ export type ExpressionParam =
   | AnimatedValue
   | AnimatedNode
   | ExpressionNode
-  | number;
+  | number
+  | ExpressionParam[];
 
 type BaseExpressionNode = {
   type: string,

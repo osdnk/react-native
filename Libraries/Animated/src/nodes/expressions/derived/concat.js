@@ -12,6 +12,9 @@ import type {FormatExpressionNode, ExpressionParam} from '../types';
 import {factories} from '../factories';
 
 export function concat(...args: ExpressionParam[]): FormatExpressionNode {
-  const formatStr = args.map(_ => '%f').join('');
-  return factories.format(formatStr, ...args);
+  const formatStr = args.map(a => (typeof a === 'string' ? a : '%f')).join('');
+  return factories.format(
+    formatStr,
+    ...args.filter(a => typeof a !== 'string'),
+  );
 }

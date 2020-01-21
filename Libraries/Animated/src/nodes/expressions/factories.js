@@ -190,7 +190,7 @@ const bezier: BezierExpressionFactory = bezierFactory;
 
 export function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Array) {
-    return block(v);
+    return block((v: any));
   }
   if (v instanceof Object) {
     // Expression ExpressionNode

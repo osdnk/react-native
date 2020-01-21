@@ -231,7 +231,7 @@ int _animationId = -1;
     return [self evalBlockWithCastBoolean:node];
   }
   /* Functions */
-  else if([type isEqualToString:@"value"]) {
+  else if([type isEqualToString:@"bezier"]) {
     return [self evalBlockWithBezier:node];
   } else {
     RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Could not find expression type %@.", type]));
