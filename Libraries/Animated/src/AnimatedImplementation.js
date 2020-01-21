@@ -32,11 +32,11 @@ const ClockAnimation = require('./animations/ClockAnimation');
 
 const createAnimatedComponent = require('./createAnimatedComponent');
 
-import {AnimatedClock, useCode} from './nodes/expressions/compatibility';
 import {createAnimatedProc} from './nodes/AnimatedProc';
 import useExpression from './useExpression';
 import {factories} from './nodes/expressions';
 import * as derived from './nodes/expressions/derived';
+import * as compatibility from './nodes/expressions/compatibility';
 
 import type {
   AnimationConfig,
@@ -665,12 +665,12 @@ module.exports = {
   E: {
     ...factories,
     ...derived,
+    ...compatibility,
     event,
-    useCode,
+    useCode: useExpression,
     useExpression,
     proc: createAnimatedProc,
     Value: AnimatedValue,
-    Clock: AnimatedClock,
   },
 
   /**

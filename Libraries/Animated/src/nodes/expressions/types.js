@@ -166,10 +166,13 @@ export type ClockRunningExpressionNode = {
   target: AnimatedValueExpressionNode,
 };
 
-export type ArrayExpressionNode = {
+export type BezierExpressionNode = {
   ...BaseExpressionNode,
-  array: Array<ExpressionNode | number>,
-  index: ExpressionNode,
+  v: ExpressionNode,
+  mX1: number,
+  mY1: number,
+  mX2: number,
+  mY2: number,
 };
 
 export type ExpressionNode =
@@ -189,7 +192,7 @@ export type ExpressionNode =
   | StopClockStatementNode
   | ClockRunningExpressionNode
   | StopAnimationStatementNode
-  | ArrayExpressionNode;
+  | BezierExpressionNode;
 
 export type NativeMultiExpressionNode = {
   ...BaseExpressionNode,
@@ -320,10 +323,13 @@ export type NativeClockRunningExpressionNode = {
   target: number,
 };
 
-export type NativeArrayExpressionNode = {
+export type NativeBezierExpressionNode = {
   ...BaseExpressionNode,
-  array: Array<NativeExpressionNode | number>,
-  index: NativeExpressionNode,
+  v: NativeExpressionNode,
+  mX1: number,
+  mY1: number,
+  mX2: number,
+  mY2: number,
 };
 
 export type NativeExpressionNode =
@@ -345,4 +351,4 @@ export type NativeExpressionNode =
   | NativeStopClockStatementNode
   | NativeClockRunningExpressionNode
   | NativeStopAnimationStatementNode
-  | NativeArrayExpressionNode;
+  | NativeBezierExpressionNode;

@@ -23,9 +23,8 @@ jest.mock('../../../BatchedBridge/NativeModules', () => ({
   },
 }));
 
-let Animated = require('../Animated');
-let Easing = require('../Easing');
-let {E} = Animated;
+const Animated = require('../Animated');
+const {E} = Animated;
 
 function evalExpression(expr) {
   return Animated.expression(expr).__getValue();
@@ -228,7 +227,7 @@ describe('Animated Expressions', () => {
     const config = {
       toValue: 1,
       duration: 1000,
-      easing: Easing.linear,
+      easing: E.Easing.linear,
     };
     const expr = Animated.expression(E.timing(clock, state, config));
     expr.__getValue();
@@ -248,7 +247,7 @@ describe('Animated Expressions', () => {
     expect(state.finished.__getValue()).toBe(1);
   });
 
-  it('should return correct values from a timing animation with easing', () => {
+  it('should return correct values from a timing animation with circle easing', () => {
     const clock = new Animated.E.Clock();
     clock.setValue(1000); // Clock should have a positive value
     const state = {
@@ -260,7 +259,7 @@ describe('Animated Expressions', () => {
     const config = {
       toValue: 1,
       duration: 1000,
-      easing: Easing.ease,
+      easing: E.Easing.circle,
     };
     const expr = Animated.expression(E.timing(clock, state, config));
     expr.__getValue();
@@ -268,15 +267,60 @@ describe('Animated Expressions', () => {
     expect(state.finished.__getValue()).toBe(0);
     clock.setValue(1250);
     expr.__getValue();
-    expect(state.position.__getValue()).toBe(0.25);
-    expect(state.finished.__getValue()).toBe(0);
     clock.setValue(1500);
     expr.__getValue();
-    expect(state.position.__getValue()).toBe(0.5);
-    expect(state.finished.__getValue()).toBe(0);
     clock.setValue(2000);
     expr.__getValue();
     expect(state.position.__getValue()).toBe(1);
+    expect(state.finished.__getValue()).toBe(1);
+  });
+
+  it('should return correct values from a timing animation with bezier easing', () => {
+    const clock = new Animated.E.Clock();
+    clock.setValue(1000); // Clock should have a positive value
+    const state = {
+      time: new Animated.Value(0),
+      frameTime: new Animated.Value(0),
+      position: new Animated.Value(0),
+      finished: new Animated.Value(0),
+    };
+    const config = {
+      toValue: 1,
+      duration: 1000,
+      easing: E.Easing.ease,
+    };
+    const expr = Animated.expression(E.timing(clock, state, config));
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(0);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(1250);
+    expr.__getValue();
+    clock.setValue(1500);
+    expr.__getValue();
+    clock.setValue(2000);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(1);
+    expect(state.finished.__getValue()).toBe(1);
+  });
+
+  it('should return correct values from a decay animation', () => {
+    const clock = new Animated.Value(1000);
+    const state = {
+      time: new Animated.Value(10),
+      velocity: new Animated.Value(-100),
+      position: new Animated.Value(50),
+      finished: new Animated.Value(0),
+    };
+    const config = {
+      deceleration: 0.998,
+    };
+    const expr = Animated.expression(E.decay(clock, state, config));
+    expr.__getValue();
+    expect(state.position.__getValue()).toBeLessThan(19);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(3000);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBeLessThan(1);
     expect(state.finished.__getValue()).toBe(1);
   });
 
@@ -307,27 +351,6 @@ describe('Animated Expressions', () => {
     a.__getValue();
     const ex = getExpressionLog();
     expect(state.position.__getValue()).toBe(1);
-    expect(state.finished.__getValue()).toBe(1);
-  });
-
-  it('should return correct values from a decay animation', () => {
-    const clock = new Animated.Value(1000);
-    const state = {
-      time: new Animated.Value(10),
-      velocity: new Animated.Value(-100),
-      position: new Animated.Value(50),
-      finished: new Animated.Value(0),
-    };
-    const config = {
-      deceleration: 0.998,
-    };
-    const expr = Animated.expression(E.decay(clock, state, config));
-    expr.__getValue();
-    expect(state.position.__getValue()).toBeLessThan(19);
-    expect(state.finished.__getValue()).toBe(0);
-    clock.setValue(3000);
-    expr.__getValue();
-    expect(state.position.__getValue()).toBeLessThan(1);
     expect(state.finished.__getValue()).toBe(1);
   });
 });

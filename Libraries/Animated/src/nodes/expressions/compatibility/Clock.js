@@ -8,13 +8,10 @@
  * @flow
  */
 
-const AnimatedValue = require('../AnimatedValue');
-import useCode from '../../useExpression';
+const AnimatedValue = require('../../AnimatedValue');
 
 export class AnimatedClock extends AnimatedValue {
   constructor() {
     super(0);
   }
 }
-
-export {useCode};

@@ -302,12 +302,29 @@ import java.util.Map;
       case "stopAnimation": return createStopAnimation(node);
       case "stopClock": return createStopClock(node);
       case "clockRunning": return createClockRunning(node);
+      case "bezier": return createBezier(node);
       default:
         return new EvalFunction() {
           @Override
           public double eval() { return 0; }
         };
     }
+  }
+
+  private EvalFunction createBezier(ReadableMap node) {
+    final EvalFunction xEval = createEvalFunc(node.getMap("v"));
+    float startX = (float) node.getDouble("mX1");
+    float startY = (float) node.getDouble("mY1");
+    float endX = (float) node.getDouble("mX2");
+    float endY = (float) node.getDouble("mY2");
+    final CubicBezierInterpolator interpolator = new CubicBezierInterpolator(startX, startY, endX, endY);
+    return new EvalFunction() {
+      @Override
+      public double eval() {
+        Double in = xEval.eval();
+        return Double.valueOf(interpolator.getInterpolation(in.floatValue()));
+      }
+    };
   }
 
   private EvalFunction createClockRunning(ReadableMap node) {

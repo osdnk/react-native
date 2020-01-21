@@ -13,9 +13,13 @@
 #import <React/RCTAnimationDriver.h>
 
 typedef CGFloat ( ^evalBlock )(void);
+typedef CGFloat ( ^evalFloatBlock )(CGFloat v);
+typedef CGFloat ( ^evalFloatEpsBlock )(CGFloat v, CGFloat eps);
 typedef CGFloat ( ^evalOpReducer )(CGFloat left, CGFloat right);
 typedef CGFloat ( ^evalMultipOpReducer )(CGFloat prev, CGFloat cur);
 typedef CGFloat ( ^evalSingleOpReducer )(CGFloat v);
+
+#define EPS 1e-5
 
 NSMutableDictionary<NSNumber*, NSNumber*>* _animations;
 int _animationId = -1;
@@ -226,7 +230,12 @@ int _animationId = -1;
   } else if([type isEqualToString:@"castBoolean"]) {
     return [self evalBlockWithCastBoolean:node];
   }
-  RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Could not find expression type %@.", type]));
+  /* Functions */
+  else if([type isEqualToString:@"value"]) {
+    return [self evalBlockWithBezier:node];
+  } else {
+    RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Could not find expression type %@.", type]));
+  }
   return ^{ return (CGFloat)0.0f; };
 }
 
@@ -339,6 +348,79 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
       return (CGFloat)1.0;
     }
     return (CGFloat)0.0;
+  };
+}
+
+- (evalBlock) evalBlockWithBezier:(NSDictionary*)node {
+  evalBlock xEval = [self evalBlockWithNode:node[@"v"]];
+  CGFloat mX1 = [node[@"mX1"] doubleValue];
+  CGFloat mY1 = [node[@"mY1"] doubleValue];
+  CGFloat mX2 = [node[@"mX2"] doubleValue];
+  CGFloat mY2 = [node[@"mY2"] doubleValue];
+  // Calculate the polynomial coefficients, implicit first and last control points are (0,0) and (1,1).
+  CGFloat cx = 3.0 * mX1;
+  CGFloat bx = 3.0 * (mX2 - mX1) - cx;
+  CGFloat ax = 1.0 - cx -bx;
+
+  CGFloat cy = 3.0 * mY1;
+  CGFloat by = 3.0 * (mY2 - mY1) - cy;
+  CGFloat ay = 1.0 - cy - by;
+  
+  evalFloatBlock sampleCurveX = ^CGFloat(CGFloat t) {
+    // `ax t^3 + bx t^2 + cx t' expanded using Horner's rule.
+    return ((ax * t + bx) * t + cx) * t;
+  };
+  
+  evalFloatBlock sampleCurveY = ^CGFloat(CGFloat t) {
+    return ((ay * t + by) * t + cy) * t;
+  };
+
+  evalFloatBlock sampleCurveDerivativeX = ^CGFloat(CGFloat t) {
+    return (3.0 * ax * t + 2.0 * bx) * t + cx;
+  };
+
+  evalFloatEpsBlock solveCurveX = ^CGFloat(CGFloat x, CGFloat epsilon) {
+    CGFloat t0, t1, t2, x2, d2;
+    NSUInteger i;
+
+    // First try a few iterations of Newton's method -- normally very fast.
+    for (t2 = x, i = 0; i < 8; i++) {
+      x2 = sampleCurveX(2) - x;
+      if (fabs (x2) < epsilon)
+        return t2;
+      d2 = sampleCurveDerivativeX(t2);
+      if (fabs(d2) < 1e-6)
+        break;
+      t2 = t2 - x2 / d2;
+    }
+
+    // Fall back to the bisection method for reliability.
+    t0 = 0.0;
+    t1 = 1.0;
+    t2 = x;
+
+    if (t2 < t0)
+      return t0;
+    if (t2 > t1)
+      return t1;
+
+    while (t0 < t1) {
+      x2 = sampleCurveX(t2);
+      if (fabs(x2 - x) < epsilon)
+        return t2;
+      if (x > x2)
+        t0 = t2;
+      else
+        t1 = t2;
+      t2 = (t1 - t0) * .5 + t0;
+    }
+
+    // Failure.
+    return t2;
+  };
+  
+  return ^{
+    return sampleCurveY(solveCurveX(xEval(), EPS));
   };
 }
 

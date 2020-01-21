@@ -12,7 +12,6 @@
 
 const AnimatedValue = require('../AnimatedValue');
 const invariant = require('invariant');
-
 let _nodeId = 0;
 
 import type {
@@ -37,7 +36,7 @@ import type {
   StopClockStatementNode,
   StopAnimationStatementNode,
   ClockRunningExpressionNode,
-  ArrayExpressionNode,
+  BezierExpressionNode,
 } from './types';
 
 type MultiFactory = (
@@ -134,10 +133,13 @@ type ClockRunningFactory = (v: AnimatedValue) => ClockRunningExpressionNode;
 
 type StopClockAnimationFactory = (v: AnimatedValue) => StopClockStatementNode;
 
-type ArrayFactory = (
-  array: Array<ExpressionParam | number>,
-  index: ExpressionParam,
-) => ArrayExpressionNode;
+type BezierExpressionFactory = (
+  t: ExpressionNode,
+  mX1: number,
+  mY1: number,
+  mX2: number,
+  mY2: number,
+) => BezierExpressionNode;
 
 const add: MultiFactory = multi('add');
 const sub: MultiFactory = multi('sub');
@@ -184,7 +186,7 @@ const stopClock: StopClockAnimationFactory = stopClockFactory;
 const clockRunning: ClockRunningFactory = clockRunningFactory;
 const animationRunning: ClockRunningFactory = clockRunningFactory;
 const stopAnimation: StopAnimationFactory = stopAnimationFactory;
-const array: ArrayFactory = arrayFactory;
+const bezier: BezierExpressionFactory = bezierFactory;
 
 export function resolve(v: ExpressionParam): ExpressionNode {
   if (v instanceof Object) {
@@ -218,17 +220,22 @@ const invariantParam = (condition: any, param: string, funcName: string) =>
     `${param} is a required parameter for ${funcName}.`,
   );
 
-function arrayFactory(
-  array: Array<ExpressionParam | number>,
-  index: ExpressionParam,
-): ArrayExpressionNode {
-  invariantParam(array, 'Array', 'array');
-  invariantParam(index, 'Index', 'array');
+function bezierFactory(
+  t: ExpressionNode,
+  mX1: number,
+  mY1: number,
+  mX2: number,
+  mY2: number,
+): BezierExpressionNode {
+  invariantParam(t, 'Value', 'bezier');
   return {
-    type: 'array',
+    type: 'bezier',
+    v: t,
     nodeId: _nodeId++,
-    array: array.map(n => resolve(n)),
-    index: resolve(index),
+    mX1,
+    mY1,
+    mX2,
+    mY2,
   };
 }
 
@@ -507,5 +514,5 @@ export const factories = {
   animationRunning,
   stopAnimation,
   diff,
-  array,
+  bezier,
 };

@@ -20,11 +20,11 @@ const AnimatedValueXY = require('./nodes/AnimatedValueXY');
 
 const createAnimatedComponent = require('./createAnimatedComponent');
 
-import {AnimatedClock, useCode} from './nodes/expressions/compatibility';
 import {createAnimatedProc} from './nodes/AnimatedProc';
 import useExpression from './useExpression';
 import {factories} from './nodes/expressions';
 import * as derived from './nodes/expressions/derived';
+import * as compatibility from './nodes/expressions/compatibility';
 
 import type {EndCallback} from './animations/Animation';
 import type {TimingAnimationConfig} from './animations/TimingAnimation';
@@ -155,12 +155,12 @@ module.exports = {
   E: {
     ...factories,
     ...derived,
+    ...compatibility,
     event,
-    useCode,
     useExpression,
+    useCode: useExpression,
     proc: createAnimatedProc,
     Value: AnimatedValue,
-    Clock: AnimatedClock,
   },
   add: AnimatedImplementation.add,
   subtract: AnimatedImplementation.subtract,

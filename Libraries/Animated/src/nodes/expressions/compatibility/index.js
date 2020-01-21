@@ -7,9 +7,9 @@
  * @format
  * @flow
  */
-
-export * from './acc';
-export * from './concat';
-export * from './debug';
-export * from './interpolate';
-export * from './onChange';
+import Easing from './Easing';
+export * from './spring';
+export * from './timing';
+export * from './decay';
+export {Easing};
+export {AnimatedClock as Clock} from './Clock';

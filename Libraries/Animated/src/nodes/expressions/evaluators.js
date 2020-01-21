@@ -8,6 +8,7 @@
  * @format
  */
 
+const bezierFunction = require('../../bezier');
 const sprintf = require('sprintf-js').sprintf;
 const AnimatedNode = require('../AnimatedNode');
 const AnimatedValue = require('../AnimatedValue');
@@ -41,7 +42,7 @@ import type {
   StopClockStatementNode,
   StopAnimationStatementNode,
   ClockRunningExpressionNode,
-  ArrayExpressionNode,
+  BezierExpressionNode,
 } from './types';
 
 type ReducerFunction = () => number;
@@ -107,7 +108,7 @@ const startClock = startClockReducer;
 const stopClock = stopClockReducer;
 const clockRunning = clockRunningReducer;
 const animationRunning = clockRunningReducer;
-const array = arrayReducer;
+const bezier = bezierReducer;
 
 const evaluators = {
   add,
@@ -155,7 +156,7 @@ const evaluators = {
   clockRunning,
   animationRunning,
   diff,
-  array,
+  bezier,
 };
 
 let EXPRESSION_LOG: string = '';
@@ -215,18 +216,13 @@ function createEvaluatorInternal(element: ExpressionParam): ReducerFunction {
   return evaluators[node.type](element);
 }
 
-function arrayReducer(node: ArrayExpressionNode): ReducerFunction {
-  const arrayEvals = node.array.map(a => createEvaluatorInternal(a));
-  const indexEval = createEvaluatorInternal(node.index);
-  return () => {
-    const index = indexEval();
-    if (index >= arrayEvals.length)
-      throw Error(`Index ${index} out of bounds.`);
-    if (PRINT_EXPRESSIONS) {
-      printExp('array', 'array returning index', index, 'from array');
-    }
-    return arrayEvals[index]();
-  };
+function bezierReducer(node: BezierExpressionNode): ReducerFunction {
+  if (!node.v) {
+    throw Error('Value is missing in bezier');
+  }
+  const evaluator = createEvaluatorInternal(node.v);
+  const bezierEval = bezierFunction(node.mX1, node.mY1, node.mX2, node.mY2);
+  return () => bezierEval(evaluator());
 }
 
 function startClockReducer(node: StartClockStatementNode): ReducerFunction {

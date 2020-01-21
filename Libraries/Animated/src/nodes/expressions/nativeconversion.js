@@ -30,6 +30,7 @@ import type {
   StartClockStatementNode,
   StopClockStatementNode,
   ClockRunningExpressionNode,
+  BezierExpressionNode,
   NativeExpressionNode,
   NativeMultiExpressionNode,
   NativeUnaryExpressionNode,
@@ -49,6 +50,7 @@ import type {
   NativeStartClockStatementNode,
   NativeStopClockStatementNode,
   NativeClockRunningExpressionNode,
+  NativeBezierExpressionNode,
 } from './types';
 
 import TimingAnimation from '../../animations/TimingAnimation';
@@ -103,6 +105,7 @@ const converters = {
   stopClock: convertStopClock,
   clockRunning: convertClockRunning,
   diff: unary,
+  bezier: convertBezier,
 };
 
 function convert(v: ?ExpressionNode): NativeExpressionNode {
@@ -113,6 +116,18 @@ function convert(v: ?ExpressionNode): NativeExpressionNode {
     throw Error('Native converter for ' + v.type + ' was not found.');
   }
   return converters[v.type](v);
+}
+
+function convertBezier(node: BezierExpressionNode): NativeBezierExpressionNode {
+  return {
+    type: node.type,
+    nodeId: node.nodeId,
+    v: convert(node.v),
+    mX1: node.mX1,
+    mY1: node.mY1,
+    mX2: node.mX2,
+    mY2: node.mY2,
+  };
 }
 
 function convertStartClock(

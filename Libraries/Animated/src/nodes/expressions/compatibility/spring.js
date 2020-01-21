@@ -11,7 +11,7 @@
 import type AnimatedValue from '../../AnimatedValue';
 import Value from '../../AnimatedValue';
 import type AnimatedNode from '../../AnimatedNode';
-import type {AnimatedClock} from '../compatibility';
+import type {AnimatedClock} from '../compatibility/Clock';
 import type {ExpressionNode} from '../types';
 
 import {factories} from '../factories';

@@ -10,7 +10,7 @@
 
 import type AnimatedValue from '../../AnimatedValue';
 import type AnimatedNode from '../../AnimatedNode';
-import type {AnimatedClock} from '../compatibility';
+import type {AnimatedClock} from '../compatibility/Clock';
 import type {BlockStatementNode} from '../types';
 
 import {factories} from '../factories';
