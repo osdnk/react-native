@@ -248,6 +248,38 @@ describe('Animated Expressions', () => {
     expect(state.finished.__getValue()).toBe(1);
   });
 
+  it('should return correct values from a timing animation with easing', () => {
+    const clock = new Animated.E.Clock();
+    clock.setValue(1000); // Clock should have a positive value
+    const state = {
+      time: new Animated.Value(0),
+      frameTime: new Animated.Value(0),
+      position: new Animated.Value(0),
+      finished: new Animated.Value(0),
+    };
+    const config = {
+      toValue: 1,
+      duration: 1000,
+      easing: Easing.ease,
+    };
+    const expr = Animated.expression(E.timing(clock, state, config));
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(0);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(1250);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(0.25);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(1500);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(0.5);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(2000);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(1);
+    expect(state.finished.__getValue()).toBe(1);
+  });
+
   it('should  return correct values from a spring animation', () => {
     const clock = new Animated.E.Clock();
     clock.setValue(1000); // Clock should have a positive value
