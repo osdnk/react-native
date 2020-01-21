@@ -155,6 +155,28 @@ const evaluators = {
   diff,
 };
 
+let EXPRESSION_LOG: string = '';
+const getExpressionLog = (): string => EXPRESSION_LOG;
+const clearExpressionLog = (): string => (EXPRESSION_LOG = '');
+export {getExpressionLog, clearExpressionLog};
+
+const PRINT_EXPRESSIONS = true;
+let PRINT_INDENTATION = 0;
+const printExp = (type: string, ...args: any) => {
+  EXPRESSION_LOG += new Array(PRINT_INDENTATION).join('    ');
+  EXPRESSION_LOG += type + ': ';
+  EXPRESSION_LOG += args.map(a => a).join(' ');
+  EXPRESSION_LOG += '\n';
+};
+const indent = () => {
+  EXPRESSION_LOG += new Array(PRINT_INDENTATION).join('    ') + '{\n';
+  PRINT_INDENTATION++;
+};
+const outdent = () => {
+  PRINT_INDENTATION--;
+  EXPRESSION_LOG += new Array(PRINT_INDENTATION).join('    ') + '}\n';
+};
+
 function createEvaluator(
   element: ExpressionParam | FormatExpressionNode | CastBooleanExpressionNode,
 ): () => any {
@@ -197,6 +219,13 @@ function startClockReducer(node: StartClockStatementNode): ReducerFunction {
     ? createEvaluatorInternal(node.callback)
     : null;
   return () => {
+    if (PRINT_EXPRESSIONS) {
+      printExp(
+        'startClock',
+        'starting clock animation for node with value',
+        animationValue.__getValue(),
+      );
+    }
     const animation = new ClockAnimation({
       ...singleConfig,
       useNativeDriver: false,
@@ -218,8 +247,22 @@ function stopClockReducer(node: StopClockStatementNode): ReducerFunction {
   return () => {
     // $FlowFixMe - we need to check the animation for the node
     if (animationValue._animation) {
+      if (PRINT_EXPRESSIONS) {
+        printExp(
+          'stopClock',
+          'stopping clock animation for node with value',
+          animationValue.__getValue(),
+        );
+      }
       animationValue._animation.stop();
       return 1;
+    }
+    if (PRINT_EXPRESSIONS) {
+      printExp(
+        'stopClock',
+        'stopping clock that was not running for node with value',
+        animationValue.__getValue(),
+      );
     }
     return 0;
   };
@@ -229,8 +272,15 @@ function clockRunningReducer(
   node: ClockRunningExpressionNode,
 ): ReducerFunction {
   const animationValue = ((node.target.node: any): AnimatedValue);
-  // $FlowFixMe - we need to check the animation for the node
-  return () => (animationValue._animation ? 1 : 0);
+  return () => {
+    // $FlowFixMe - we need to check the animation for the node
+    const retVal = animationValue._animation ? 1 : 0;
+    if (PRINT_EXPRESSIONS) {
+      printExp('clockRunning', 'checking clock running returned', retVal);
+    }
+    // $FlowFixMe - we need to check the animation for the node
+    return retVal;
+  };
 }
 
 function diffReducer(node: UnaryExpressionNode): ReducerFunction {
@@ -242,6 +292,9 @@ function diffReducer(node: UnaryExpressionNode): ReducerFunction {
     }
     const stash = prevValue;
     prevValue = v;
+    if (PRINT_EXPRESSIONS) {
+      printExp('diff', 'diff between', prevValue, v, 'returned', v - stash);
+    }
     return v - stash;
   });
 }
@@ -259,11 +312,29 @@ function timingReducer(node: StartTimingStatementNode): ReducerFunction {
       ...singleConfig,
       useNativeDriver: false,
     });
+    if (PRINT_EXPRESSIONS) {
+      printExp(
+        'startTiming',
+        'starting timing for node with value',
+        animationValue.__getValue(),
+        'with id',
+        animationId,
+      );
+    }
     animationValue.animate(_animations[animationId], ({finished}) => {
       delete _animations[animationId];
       if (localCallback) {
         const tmp = localCallback;
         localCallback = null;
+        if (PRINT_EXPRESSIONS) {
+          printExp(
+            'startTiming',
+            'timing animation with id',
+            animationId,
+            'stopped.',
+            animationId,
+          );
+        }
         tmp();
       }
     });
@@ -286,11 +357,29 @@ function springReducer(node: StartSpringStatementNode): ReducerFunction {
       velocity: velocityEvaluator(),
       useNativeDriver: false,
     });
+    if (PRINT_EXPRESSIONS) {
+      printExp(
+        'startSpring',
+        'starting spring for node with value',
+        animationValue.__getValue(),
+        'with id',
+        animationId,
+      );
+    }
     animationValue.animate(_animations[animationId], ({finished}) => {
       delete _animations[animationId];
       if (localCallback) {
         const tmp = localCallback;
         localCallback = null;
+        if (PRINT_EXPRESSIONS) {
+          printExp(
+            'startSpring',
+            'spring animation with id',
+            animationId,
+            'stopped.',
+            animationId,
+          );
+        }
         tmp();
       }
     });
@@ -315,6 +404,16 @@ function decayReducer(node: StartDecayStatementNode): ReducerFunction {
     };
 
     const animationId = _animationId++;
+    if (PRINT_EXPRESSIONS) {
+      printExp(
+        'startDecay',
+        'starting decay for node with value',
+        animationValue.__getValue(),
+        'with id',
+        animationId,
+      );
+    }
+
     _animations[animationId] = new DecayAnimation(config);
     let localCallback = callback;
     animationValue.animate(_animations[animationId], ({finished}) => {
@@ -322,6 +421,15 @@ function decayReducer(node: StartDecayStatementNode): ReducerFunction {
       if (localCallback) {
         const tmp = localCallback;
         localCallback = null;
+        if (PRINT_EXPRESSIONS) {
+          printExp(
+            'startDecay',
+            'decay animation with id',
+            animationId,
+            'stopped.',
+            animationId,
+          );
+        }
         tmp();
       }
     });
@@ -336,9 +444,20 @@ function stopAnimationReducer(
   return () => {
     const animationId = evalAnimationId();
     if (_animations[animationId]) {
+      if (PRINT_EXPRESSIONS) {
+        printExp('stopAnimation', 'stopping animation with id', animationId);
+      }
       _animations[animationId].stop();
       delete _animations[animationId];
       return 1;
+    }
+    if (PRINT_EXPRESSIONS) {
+      printExp(
+        'stopAnimation',
+        'animation with id',
+        animationId,
+        'was not running.',
+      );
     }
     return 0;
   };
@@ -357,6 +476,11 @@ function formatReducer(node: FormatExpressionNode): ReducerFunction {
     for (let i = 0; i < args.length; i++) {
       results.push(args[i]());
     }
+    if (PRINT_EXPRESSIONS) {
+      const retVal = sprintf(node.format, ...results);
+      printExp('format', 'format string', retVal);
+      return retVal;
+    }
     return sprintf(node.format, ...results);
   };
 }
@@ -366,6 +490,13 @@ function castBooleanReducer(node: CastBooleanExpressionNode): ReducerFunction {
     throw Error('Value is missing in boolean');
   }
   const evaluator = createEvaluatorInternal(node.v);
+  if (PRINT_EXPRESSIONS) {
+    return () => {
+      const retVal = evaluator();
+      printExp('boolean', 'casting to boolean', retVal);
+      return retVal;
+    };
+  }
   return () => evaluator();
 }
 
@@ -377,6 +508,9 @@ function callReducer(node: CallStatementNode): ReducerFunction {
     for (let i = 0; i < evalFuncs.length; i++) {
       values.push(evalFuncs[i]());
     }
+    if (PRINT_EXPRESSIONS) {
+      printExp('call', 'calling js function with values', ...values);
+    }
     callback(values);
     return 0;
   };
@@ -385,9 +519,17 @@ function callReducer(node: CallStatementNode): ReducerFunction {
 function blockReducer(node: BlockStatementNode): ReducerFunction {
   const evalFuncs = node.args.map(createEvaluatorInternal);
   return () => {
+    if (PRINT_EXPRESSIONS) {
+      printExp('block', 'executing block with', evalFuncs.length, 'elements');
+      indent();
+    }
     let retVal = 0;
     for (let i = 0; i < evalFuncs.length; i++) {
       retVal = evalFuncs[i]();
+    }
+    if (PRINT_EXPRESSIONS) {
+      outdent();
+      printExp('block', 'block returned', retVal);
     }
     return retVal;
   };
@@ -404,6 +546,15 @@ function setReducer(node: SetStatementNode): ReducerFunction {
   return () => {
     const retVal = source();
     node.target && node.target.setValue && node.target.setValue(retVal);
+    if (PRINT_EXPRESSIONS) {
+      printExp(
+        'set',
+        'setting node with previous value',
+        node.target.getValue(),
+        'to',
+        retVal,
+      );
+    }
     return retVal;
   };
 }
@@ -418,17 +569,24 @@ function condReducer(node: CondStatementNode): ReducerFunction {
     throw Error('If clause missing in node');
   }
   const ifEval = createEvaluatorInternal(node.ifNode);
-
-  const falseEval = node.elseNode
+  const elseEval = node.elseNode
     ? createEvaluatorInternal(node.elseNode)
     : () => 0;
 
   return () => {
-    const c = expr();
-    if (c) {
-      return ifEval();
+    if (PRINT_EXPRESSIONS) {
+      printExp('evaluating condition');
+      indent();
+      let c = expr();
+      printExp('condition evaluated to', c);
+      indent();
+      let retVal = c ? ifEval() : elseEval();
+      outdent();
+      outdent();
+      printExp('condition returned', retVal);
+      return retVal;
     } else {
-      return falseEval();
+      return expr() ? ifEval() : elseEval();
     }
   };
 }
@@ -441,9 +599,15 @@ function multi(
   const b = createEvaluatorInternal(node.b);
   const args = node.args.map(createEvaluatorInternal);
   return () => {
-    let acc = reducer(a(), b());
+    const aEval = a();
+    const bEval = b();
+    const argsEvaluated = args.map(n => n());
+    let acc = reducer(aEval, bEval);
     for (let i = 0; i < args.length; i++) {
-      acc = reducer(acc, args[i]());
+      acc = reducer(acc, argsEvaluated[i]);
+    }
+    if (PRINT_EXPRESSIONS) {
+      printExp(node.type, 'reducing', aEval, bEval, ...argsEvaluated, '=', acc);
     }
     return acc;
   };
@@ -458,6 +622,12 @@ function unary(
   }
   const v = createEvaluatorInternal(node.v);
   return () => {
+    if (PRINT_EXPRESSIONS) {
+      const arg = v();
+      const retVal = reducer(arg);
+      printExp(node.type, 'reducing', arg, 'to', retVal);
+      return retVal;
+    }
     return reducer(v());
   };
 }
@@ -476,6 +646,13 @@ function boolean(
   }
   const right = createEvaluatorInternal(node.right);
   return () => {
+    if (PRINT_EXPRESSIONS) {
+      const argLeft = left();
+      const argRight = right();
+      const retVal = reducer(argLeft, argRight);
+      printExp(node.type, 'reducing', argLeft, argRight, 'to', retVal);
+      return retVal;
+    }
     return reducer(left(), right());
   };
 }

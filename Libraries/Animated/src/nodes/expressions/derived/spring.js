@@ -12,7 +12,7 @@ import type AnimatedValue from '../../AnimatedValue';
 import Value from '../../AnimatedValue';
 import type AnimatedNode from '../../AnimatedNode';
 import type {AnimatedClock} from '../compatibility';
-import type {BlockStatementNode} from '../types';
+import type {ExpressionNode} from '../types';
 
 import {factories} from '../factories';
 const {
@@ -61,9 +61,8 @@ function spring(
   clock: AnimatedClock,
   state: SpringState,
   config: SpringConfig,
-): BlockStatementNode {
+): ExpressionNode {
   const lastTime = cond(state.time, state.time, clock);
-
   const deltaTime = min(sub(clock, lastTime), MAX_STEPS_MS);
 
   const c = config.damping;

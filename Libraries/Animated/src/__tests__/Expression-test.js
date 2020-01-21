@@ -9,6 +9,10 @@
  */
 
 'use strict';
+import {
+  clearExpressionLog,
+  getExpressionLog,
+} from '../nodes/expressions/evaluators';
 
 jest.mock('../../../BatchedBridge/NativeModules', () => ({
   NativeAnimatedModule: {},
@@ -204,8 +208,17 @@ describe('Animated Expressions', () => {
     expect(expression.__getValue()).toBe(10);
   });
 
-  it('should play timing animation', () => {
+  it('should accept reusing const nodes', () => {
+    const adder = E.add(10, 10);
+    const a1 = E.add(adder, 10);
+    const a2 = E.add(adder, 20);
+    expect(evalExpression(a1)).toBe(30);
+    expect(evalExpression(a2)).toBe(40);
+  });
+
+  it('should return correct values from a timing animation', () => {
     const clock = new Animated.E.Clock();
+    clock.setValue(1000); // Clock should have a positive value
     const state = {
       time: new Animated.Value(0),
       frameTime: new Animated.Value(0),
@@ -220,18 +233,28 @@ describe('Animated Expressions', () => {
     const expr = Animated.expression(E.timing(clock, state, config));
     expr.__getValue();
     expect(state.position.__getValue()).toBe(0);
-    clock.setValue(1000);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(1250);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(0.25);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(1500);
+    expr.__getValue();
+    expect(state.position.__getValue()).toBe(0.5);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(2000);
     expr.__getValue();
     expect(state.position.__getValue()).toBe(1);
+    expect(state.finished.__getValue()).toBe(1);
   });
 
-  it('should play spring animation', () => {
+  it('should  return correct values from a spring animation', () => {
     const clock = new Animated.E.Clock();
+    clock.setValue(1000); // Clock should have a positive value
     const state = {
       time: new Animated.Value(0),
       velocity: new Animated.Value(0),
       position: new Animated.Value(0),
-      prevPosition: new Animated.Value(0),
       finished: new Animated.Value(0),
     };
     const config = {
@@ -242,17 +265,22 @@ describe('Animated Expressions', () => {
       overshootClamping: false,
       restSpeedThreshold: 0.001,
       restDisplacementThreshold: 0.001,
-      overshootClamping: false,
-      restSpeedThreshold: 0.001,
-      restDisplacementThreshold: 0.001,
     };
     const a = Animated.expression(E.spring(clock, state, config));
-    expect(a.__getValue()).toBe(0);
-    clock.setValue(1);
-    expect(a.__getValue()).toBe(1);
+    a.__getValue();
+    expect(state.position.__getValue()).toBe(0);
+    expect(state.finished.__getValue()).toBe(0);
+    // clock.setValue(2000);
+    // a.__getValue();
+    // clock.setValue(3000);
+    // a.__getValue();
+    clock.setValue(4000);
+    a.__getValue();
+    expect(state.position.__getValue()).toBe(1);
+    expect(state.finished.__getValue()).toBe(1);
   });
 
-  it('should play decay animation', () => {
+  it('should return correct values from a decay animation', () => {
     const clock = new Animated.Value(1000);
     const state = {
       time: new Animated.Value(10),
@@ -261,14 +289,15 @@ describe('Animated Expressions', () => {
       finished: new Animated.Value(0),
     };
     const config = {
-      deceleration: 0.997,
+      deceleration: 0.998,
     };
     const expr = Animated.expression(E.decay(clock, state, config));
     expr.__getValue();
     expect(state.position.__getValue()).toBeLessThan(19);
-    clock.setValue(30000);
+    expect(state.finished.__getValue()).toBe(0);
+    clock.setValue(3000);
     expr.__getValue();
-    expect(state.position.__getValue()).toBe(0);
+    expect(state.position.__getValue()).toBeLessThan(1);
     expect(state.finished.__getValue()).toBe(1);
   });
 });
