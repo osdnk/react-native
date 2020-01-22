@@ -12,4 +12,3 @@ export * from './spring';
 export * from './timing';
 export * from './decay';
 export {Easing};
-export {AnimatedClock as Clock} from './Clock';
