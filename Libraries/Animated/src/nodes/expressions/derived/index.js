@@ -8,9 +8,10 @@
  * @flow
  */
 
+import {AnimatedClock} from './Clock';
 export * from './acc';
 export * from './concat';
 export * from './debug';
 export * from './interpolate';
 export * from './onChange';
-export {AnimatedClock as Clock} from './Clock';
+export {AnimatedClock};

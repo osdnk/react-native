@@ -10,8 +10,10 @@
 
 const AnimatedValue = require('../../AnimatedValue');
 
-export class AnimatedClock extends AnimatedValue {
+class AnimatedClock extends AnimatedValue {
   constructor() {
     super(0);
   }
 }
+
+export {AnimatedClock};

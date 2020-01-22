@@ -161,6 +161,7 @@ module.exports = {
     useCode: useExpression,
     proc: createAnimatedProc,
     Value: AnimatedValue,
+    Clock: derived.AnimatedClock,
   },
   add: AnimatedImplementation.add,
   subtract: AnimatedImplementation.subtract,

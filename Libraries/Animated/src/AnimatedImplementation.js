@@ -671,6 +671,7 @@ module.exports = {
     useExpression,
     proc: createAnimatedProc,
     Value: AnimatedValue,
+    Clock: derived.AnimatedClock,
   },
 
   /**
