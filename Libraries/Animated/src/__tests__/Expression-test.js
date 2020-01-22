@@ -346,10 +346,10 @@ describe('Animated Expressions', () => {
     a.__getValue();
     expect(state.position.__getValue()).toBe(0);
     expect(state.finished.__getValue()).toBe(0);
-    clearExpressionLog();
-    clock.setValue(4000);
-    a.__getValue();
-    const ex = getExpressionLog();
+    for (let i = 0; i < 4000; i += 100) {
+      clock.setValue(1000 + i);
+      a.__getValue();
+    }
     expect(state.position.__getValue()).toBe(1);
     expect(state.finished.__getValue()).toBe(1);
   });

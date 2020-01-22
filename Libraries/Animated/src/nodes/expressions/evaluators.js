@@ -164,7 +164,7 @@ const getExpressionLog = (): string => EXPRESSION_LOG;
 const clearExpressionLog = (): string => (EXPRESSION_LOG = '');
 export {getExpressionLog, clearExpressionLog};
 
-const PRINT_EXPRESSIONS = true;
+const PRINT_EXPRESSIONS = false;
 let PRINT_INDENTATION = 0;
 const printExp = (type: string, ...args: any) => {
   EXPRESSION_LOG += new Array(PRINT_INDENTATION).join('    ');
@@ -213,7 +213,9 @@ function createEvaluatorInternal(element: ExpressionParam): ReducerFunction {
   if (!evaluators[node.type]) {
     throw new Error('Error: Node type ' + node.type + ' not found.');
   }
-  return evaluators[node.type](element);
+  const reducer = evaluators[node.type](element);
+  Object.defineProperty(reducer, 'name', {value: node.type});
+  return reducer;
 }
 
 function bezierReducer(node: BezierExpressionNode): ReducerFunction {
