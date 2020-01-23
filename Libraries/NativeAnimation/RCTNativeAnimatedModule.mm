@@ -251,7 +251,7 @@ RCT_EXPORT_METHOD(addEnqueuedUpdateProp:(NSString*)propName)
     for (AnimatedOperation operation in operations) {
       operation(self->_nodesManager);
     }
-    [self->_nodesManager updateAnimations];
+    [self->_nodesManager updateAnimationsWithTime:0];
   });
 }
 
@@ -311,7 +311,7 @@ RCT_EXPORT_METHOD(addEnqueuedUpdateProp:(NSString*)propName)
       operation(self->_nodesManager);
     }
 
-    [self->_nodesManager updateAnimations];
+    [self->_nodesManager updateAnimationsWithTime:0];
   }];
 }
 

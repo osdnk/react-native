@@ -27,7 +27,7 @@
                                viewName:(NSString *) viewName
                                   props:(NSMutableDictionary *)props;
 
-- (void)updateAnimations;
+- (void)updateAnimationsWithTime:(NSTimeInterval)time;
 
 - (void)stepAnimations:(nonnull CADisplayLink *)displaylink;
 

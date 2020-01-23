@@ -13,6 +13,7 @@
 {
   NSMapTable<NSNumber *, RCTAnimatedNode *> *_childNodes;
   NSMapTable<NSNumber *, RCTAnimatedNode *> *_parentNodes;
+  NSTimeInterval _lastUpdateTime;
 }
 
 - (instancetype)initWithTag:(NSNumber *)tag
@@ -21,6 +22,7 @@
   if ((self = [super init])) {
     _nodeTag = tag;
     _config = [config copy];
+    _lastUpdateTime = -1;
   }
   return self;
 }
@@ -97,11 +99,15 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
   }
 }
 
-- (void)updateNodeIfNecessary
+- (NSTimeInterval) lastUpdateTime {
+  return _lastUpdateTime;
+}
+
+- (void)updateNodeIfNecessaryWithTime:(NSTimeInterval)time
 {
   if (_needsUpdate) {
     for (RCTAnimatedNode *parent in _parentNodes.objectEnumerator) {
-      [parent updateNodeIfNecessary];
+      [parent updateNodeIfNecessaryWithTime:time];
     }
     [self performUpdate];
   }

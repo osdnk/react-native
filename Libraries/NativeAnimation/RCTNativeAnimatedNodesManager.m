@@ -493,7 +493,7 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
       [driver updateWithEvent:event];
     }
 
-    [self updateAnimations];
+    [self updateAnimationsWithTime:0];
   }
 }
 
@@ -556,7 +556,7 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
     [animationDriver stepAnimationWithTime:time];
   }
 
-  [self updateAnimations];
+  [self updateAnimationsWithTime:time];
 
   for (id<RCTAnimationDriver> animationDriver in [_activeAnimations copy]) {
     if (animationDriver.animationHasFinished) {
@@ -571,11 +571,11 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
 
 #pragma mark -- Updates
 
-- (void)updateAnimations
+- (void)updateAnimationsWithTime:(NSTimeInterval)time
 {
   [_animationNodes enumerateKeysAndObjectsUsingBlock:^(NSNumber *key, RCTAnimatedNode *node, BOOL *stop) {
-    if (node.needsUpdate) {
-      [node updateNodeIfNecessary];
+    if (node.needsUpdate && node.lastUpdateTime != time) {
+      [node updateNodeIfNecessaryWithTime:time];
     }
   }];
 

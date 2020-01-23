@@ -25,6 +25,8 @@
 
 -(BOOL)isManagedByFabric;
 
+-(NSTimeInterval) lastUpdateTime;
+
 /**
  * Marks a node and its children as needing update.
  */
@@ -33,7 +35,7 @@
 /**
  * The node will update its value if necessary and only after its parents have updated.
  */
-- (void)updateNodeIfNecessary NS_REQUIRES_SUPER;
+- (void)updateNodeIfNecessaryWithTime:(NSTimeInterval)time NS_REQUIRES_SUPER;
 
 /**
  * Where the actual update code lives. Called internally from updateNodeIfNecessary
