@@ -251,7 +251,9 @@ RCT_EXPORT_METHOD(addEnqueuedUpdateProp:(NSString*)propName)
     for (AnimatedOperation operation in operations) {
       operation(self->_nodesManager);
     }
-    [self->_nodesManager updateAnimationsWithTime:0];
+    
+    NSTimeInterval timeStamp = [[NSDate date] timeIntervalSince1970];
+    [self->_nodesManager updateAnimationsWithTime:timeStamp];
   });
 }
 
@@ -311,7 +313,8 @@ RCT_EXPORT_METHOD(addEnqueuedUpdateProp:(NSString*)propName)
       operation(self->_nodesManager);
     }
 
-    [self->_nodesManager updateAnimationsWithTime:0];
+    NSTimeInterval timeStamp = [[NSDate date] timeIntervalSince1970];
+    [self->_nodesManager updateAnimationsWithTime:timeStamp];
   }];
 }
 

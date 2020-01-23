@@ -493,7 +493,8 @@ static NSString *RCTNormalizeAnimatedEventName(NSString *eventName)
       [driver updateWithEvent:event];
     }
 
-    [self updateAnimationsWithTime:0];
+    NSTimeInterval timeStamp = [[NSDate date] timeIntervalSince1970];
+    [self updateAnimationsWithTime:timeStamp];
   }
 }
 
