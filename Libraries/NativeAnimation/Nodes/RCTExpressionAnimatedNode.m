@@ -320,13 +320,14 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
       [_animations removeObjectForKey:nodeTag];
     }
     NSNumber* animationId = [NSNumber numberWithInt:_animationId--];
-    __block evalBlock localCallback = callback;
     _animations[nodeTag] = animationId;
     [self.manager startAnimatingNode:animationId nodeTag:nodeTag config:configEval() endCallback:^(NSArray *response) {
-      if(localCallback) {
+      if([_animations objectForKey:nodeTag] != NULL) {
         [_animations removeObjectForKey:nodeTag];
-        localCallback();
-        localCallback = NULL;
+        callback();
+        // run one iteration so that changes in the callback is reflected.
+        NSTimeInterval timeStamp = [[NSDate date] timeIntervalSince1970];
+        [self.manager updateAnimationsWithTime:timeStamp];
       }
     }];
     return (CGFloat)[animationId floatValue];
