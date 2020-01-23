@@ -157,14 +157,15 @@ int _animationId = -1;
       return !v;
     }];
   } else if([type isEqualToString:@"diff"]) {
-    __block CGFloat prevValue = FLT_MIN;
+    __block NSMutableArray* prevValues = [NSMutableArray array];
+    [prevValues addObject:[NSNumber numberWithFloat:FLT_MIN]];
     return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
-      if(prevValue == FLT_MIN) {
-       prevValue = v;
+      if([[prevValues objectAtIndex:0] floatValue] == FLT_MIN) {
+        [prevValues setObject:[NSNumber numberWithFloat:v] atIndexedSubscript:0];
        return 0;
       }
-      CGFloat stash = prevValue;
-      prevValue = v;
+      CGFloat stash = [[prevValues objectAtIndex:0] floatValue];
+      [prevValues setObject:[NSNumber numberWithFloat:v] atIndexedSubscript:0];
       return v - stash;
     }];
    }
