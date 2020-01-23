@@ -12,7 +12,6 @@
 
 const AnimatedInterpolation = require('./AnimatedInterpolation');
 const AnimatedWithChildren = require('./AnimatedWithChildren');
-const AnimatedValue = require('./AnimatedValue');
 const NativeAnimatedHelper = require('../NativeAnimatedHelper');
 
 import type {InterpolationConfigType} from './AnimatedInterpolation';
@@ -32,6 +31,7 @@ class AnimatedExpression extends AnimatedWithChildren {
     | CastBooleanExpressionNode;
 
   _args: Array<any>;
+  _parents: Object;
   _evaluator: (() => number) | null;
   _callListeners: {[key: string]: CallCallbackListener, ...};
   _nativeCallCallbackListener: ?any;
@@ -46,6 +46,7 @@ class AnimatedExpression extends AnimatedWithChildren {
     this._expression = expression;
     this._args = [];
     this._callListeners = {};
+    this._parents = {};
   }
 
   __attach() {
@@ -55,7 +56,10 @@ class AnimatedExpression extends AnimatedWithChildren {
       if (a.func) {
         this.__addListener(a.id, a.func);
       } else {
-        a.node.node.__addChild(this);
+        if (!this._parents[a.node]) {
+          this._parents[a.node] = 1;
+          a.node.node.__addChild(this);
+        }
       }
     });
   }
