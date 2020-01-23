@@ -31,7 +31,7 @@ class AnimatedExpression extends AnimatedWithChildren {
     | CastBooleanExpressionNode;
 
   _args: Array<any>;
-  _parents: Object;
+  _parents: [];
   _evaluator: (() => number) | null;
   _callListeners: {[key: string]: CallCallbackListener, ...};
   _nativeCallCallbackListener: ?any;
@@ -46,18 +46,19 @@ class AnimatedExpression extends AnimatedWithChildren {
     this._expression = expression;
     this._args = [];
     this._callListeners = {};
-    this._parents = {};
+    this._parents = [];
   }
 
   __attach() {
     collectArguments(-1, this._expression, this._args);
     // Collect arguments and add this node as a child to each argument
+    const _parents = this._parents;
     this._args.forEach(a => {
       if (a.func) {
         this.__addListener(a.id, a.func);
       } else {
-        if (!this._parents[a.node]) {
-          this._parents[a.node] = 1;
+        if (!_parents.find(p => p === a.node.node)) {
+          _parents.push(a.node.node);
           a.node.node.__addChild(this);
         }
       }
@@ -67,8 +68,8 @@ class AnimatedExpression extends AnimatedWithChildren {
   __detach() {
     this._args.forEach(a => {
       if (a.node) {
-        if (this._parents[a.node]) {
-          delete this._parents[a.node];
+        if (this._parents.find(p => p === a.node.node)) {
+          this._parents = this._parents.filter(p => p !== a.node.node);
           a.node.node.__removeChild(this);
         }
       }
