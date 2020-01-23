@@ -67,7 +67,10 @@ class AnimatedExpression extends AnimatedWithChildren {
   __detach() {
     this._args.forEach(a => {
       if (a.node) {
-        a.node.node.__removeChild(this);
+        if (this._parents[a.node]) {
+          delete this._parents[a.node];
+          a.node.node.__removeChild(this);
+        }
       }
     });
     this._evaluator = null;
