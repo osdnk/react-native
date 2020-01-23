@@ -11,4 +11,6 @@
 
 + (CATransform3D)CATransform3D:(id)json;
 
++ (CGFloat)convertToRadians:(id)json;
+
 @end
