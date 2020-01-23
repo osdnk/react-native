@@ -382,6 +382,13 @@ function setFactory(
 function blockFactory(
   ...args: Array<ExpressionNode | Array<ExpressionNode>>
 ): BlockStatementNode {
+  if (args.length === 1 && Array.isArray(args[0])) {
+    return {
+      type: 'block',
+      nodeId: _nodeId++,
+      args: args[0].map(n => resolve(n)),
+    };
+  }
   return {
     type: 'block',
     nodeId: _nodeId++,
