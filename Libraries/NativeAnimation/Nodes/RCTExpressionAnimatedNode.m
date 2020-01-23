@@ -260,6 +260,7 @@ int _animationId = -1;
        for (id<RCTAnimationDriver> driver in self.manager.activeAnimations) {
          if ([driver.valueNode isEqual:node]) {
            [self.manager stopAnimation:driver.animationId];
+           [self setNeedsUpdate];
            return (CGFloat)1.0;
          }
        }
@@ -437,7 +438,7 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
       [result appendFormat:formats[i], evals[i]()];
     }
     self.animatedObject = result;
-    return (CGFloat)0.0f;
+    return self.value +1;
   };
 }
 
@@ -499,7 +500,7 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
   evalBlock evalFalse = [self evalBlockWithNode:op[@"elseNode"]];
   return ^{
     CGFloat cond = evalExpr();
-    if(cond == TRUE) {
+    if(cond != 0) {
       return evalTrue();
     } else {
       return evalFalse();
