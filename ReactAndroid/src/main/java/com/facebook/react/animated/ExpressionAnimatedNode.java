@@ -497,7 +497,7 @@ import java.util.Map;
           params[i] = evalfunctions.get(i).eval();
         }
         mAnimatedObject = String.format(format, (Object[])params);
-        return 0.0;
+        return mValue + 1;
       }
     };
   }
@@ -573,7 +573,7 @@ import java.util.Map;
       @Override
       public double eval() {
         double cond = expr.eval();
-        return isTrue(cond) ? ifNode.eval() : elseNode.eval();
+        return cond != 0 ? ifNode.eval() : elseNode.eval();
       }
     };
   }
