@@ -6,6 +6,8 @@
  */
 
 #import <React/RCTUtils.h>
+#import <React/RCTConvert.h>
+#import <React/RCTConvert+Transform.h>
 #import <React/RCTTransformAnimatedNode.h>
 #import <React/RCTValueAnimatedNode.h>
 
@@ -49,14 +51,7 @@
         // We need to convert from string to radians. This is so that we can
         // get comnpatibility with the reanimated library which formats nodes like
         // concat(value, 'deg') or concat(value, 'rad');
-        if([parentNode.animatedObject hasSuffix:@"deg"]) {
-          CGFloat convertedDegrees = [((NSString*)parentNode.animatedObject) floatValue];
-          value = [NSNumber numberWithFloat:convertedDegrees * M_PI / 180];
-        } else if([parentNode.animatedObject hasSuffix:@"rad"]) {
-          value = [NSNumber numberWithFloat:[((NSString*)parentNode.animatedObject) floatValue]];
-        } else {
-          RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Error in transform.rotate: %@.", parentNode.animatedObject]));
-        }
+        value = [NSNumber numberWithFloat:[RCTConvert convertToRadians: parentNode.animatedObject]];
       } else {
         value = @(parentNode.value);
       }
