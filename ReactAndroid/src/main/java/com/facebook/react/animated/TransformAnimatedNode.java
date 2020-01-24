@@ -11,6 +11,8 @@ import com.facebook.react.bridge.JavaOnlyArray;
 import com.facebook.react.bridge.JavaOnlyMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.uimanager.TransformHelper;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,7 +70,15 @@ import java.util.List;
         if (node == null) {
           throw new IllegalArgumentException("Mapped style node does not exists");
         } else if (node instanceof ValueAnimatedNode) {
-          value = ((ValueAnimatedNode) node).getValue();
+          ValueAnimatedNode animatedNode = (ValueAnimatedNode)node;
+          if(transformConfig.mProperty == "rotate" && animatedNode.getAnimatedObject() != null) {
+            // We need to convert from string to radians. This is so that we can
+            // get comnpatibility with the reanimated library which formats nodes like
+            // concat(value, 'deg') or concat(value, 'rad');
+            value = TransformHelper.convertToRadians((String)animatedNode.getAnimatedObject());
+          } else {
+            value = ((ValueAnimatedNode) node).getValue();
+          }
         } else {
           throw new IllegalArgumentException(
               "Unsupported type of node used as a transform child " + "node " + node.getClass());
