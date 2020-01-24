@@ -19,29 +19,32 @@ import com.facebook.react.bridge.ReadableType;
 public class TransformHelper {
 
   private static ThreadLocal<double[]> sHelperMatrix =
-      new ThreadLocal<double[]>() {
-        @Override
-        protected double[] initialValue() {
-          return new double[16];
-        }
-      };
+    new ThreadLocal<double[]>() {
+      @Override
+      protected double[] initialValue() {
+        return new double[16];
+      }
+    };
+
+  public static double convertToRadians(String stringValue) {
+    boolean inRadians = false;
+    if (stringValue.endsWith("rad")) {
+      stringValue = stringValue.substring(0, stringValue.length() - 3);
+    } else if (stringValue.endsWith("deg")) {
+      inRadians = false;
+      stringValue = stringValue.substring(0, stringValue.length() - 3);
+    }
+    double value = Float.parseFloat(stringValue);
+    return inRadians ? value : MatrixMathHelper.degreesToRadians(value);
+  }
 
   private static double convertToRadians(ReadableMap transformMap, String key) {
-    double value;
-    boolean inRadians = true;
+
     if (transformMap.getType(key) == ReadableType.String) {
       String stringValue = transformMap.getString(key);
-      if (stringValue.endsWith("rad")) {
-        stringValue = stringValue.substring(0, stringValue.length() - 3);
-      } else if (stringValue.endsWith("deg")) {
-        inRadians = false;
-        stringValue = stringValue.substring(0, stringValue.length() - 3);
-      }
-      value = Float.parseFloat(stringValue);
-    } else {
-      value = transformMap.getDouble(key);
+      return convertToRadians(stringValue);
     }
-    return inRadians ? value : MatrixMathHelper.degreesToRadians(value);
+    return 0;
   }
 
   public static void processTransform(ReadableArray transforms, double[] result) {
@@ -90,7 +93,7 @@ public class TransformHelper {
         MatrixMathHelper.applySkewY(helperMatrix, convertToRadians(transform, transformType));
       } else {
         throw new JSApplicationIllegalArgumentException(
-            "Unsupported transform type: " + transformType);
+          "Unsupported transform type: " + transformType);
       }
 
       MatrixMathHelper.multiplyInto(result, result, helperMatrix);
