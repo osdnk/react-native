@@ -157,17 +157,7 @@ int _animationId = -1;
       return !v;
     }];
   } else if([type isEqualToString:@"diff"]) {
-    __block NSMutableArray* prevValues = [NSMutableArray array];
-    [prevValues addObject:[NSNumber numberWithFloat:FLT_MIN]];
-    return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
-      if([[prevValues objectAtIndex:0] floatValue] == FLT_MIN) {
-        [prevValues setObject:[NSNumber numberWithFloat:v] atIndexedSubscript:0];
-       return 0;
-      }
-      CGFloat stash = [[prevValues objectAtIndex:0] floatValue];
-      [prevValues setObject:[NSNumber numberWithFloat:v] atIndexedSubscript:0];
-      return v - stash;
-    }];
+    return [self evalBlockWithDiff:node];
    }
   /* Comparsion */
   else if([type isEqualToString:@"eq"]) {
@@ -238,6 +228,20 @@ int _animationId = -1;
     RCTFatal(RCTErrorWithMessage([NSString stringWithFormat:@"Could not find expression type %@.", type]));
   }
   return ^{ return (CGFloat)0.0f; };
+}
+
+- (evalBlock) evalBlockWithDiff:(NSDictionary*)node {
+  __block NSMutableArray* prevValues = [NSMutableArray array];
+  [prevValues addObject:[NSNumber numberWithFloat:FLT_MIN]];
+  return [self evalBlockWithSingleOperator:node reducer:^CGFloat(CGFloat v) {
+    if([[prevValues objectAtIndex:0] floatValue] == FLT_MIN) {
+      [prevValues setObject:[NSNumber numberWithFloat:v] atIndexedSubscript:0];
+     return 0;
+    }
+    CGFloat stash = [[prevValues objectAtIndex:0] floatValue];
+    [prevValues setObject:[NSNumber numberWithFloat:v] atIndexedSubscript:0];
+    return v - stash;
+  }];
 }
 
 - (evalBlock) evalBlockWithClockRunning:(NSDictionary*)node {
@@ -471,7 +475,7 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
     CGFloat retVal = 0.0f;
     for(int i=0; i<evals.count; i++) {
       retVal = evals[i]();
-    }    
+    }
     return retVal;
   };
 }
