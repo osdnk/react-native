@@ -71,7 +71,7 @@ import java.util.List;
           throw new IllegalArgumentException("Mapped style node does not exists");
         } else if (node instanceof ValueAnimatedNode) {
           ValueAnimatedNode animatedNode = (ValueAnimatedNode)node;
-          if(transformConfig.mProperty == "rotate" && animatedNode.getAnimatedObject() != null) {
+          if(transformConfig.mProperty.equals("rotate") && animatedNode.getAnimatedObject() != null) {
             // We need to convert from string to radians. This is so that we can
             // get comnpatibility with the reanimated library which formats nodes like
             // concat(value, 'deg') or concat(value, 'rad');
