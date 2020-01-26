@@ -43,6 +43,9 @@ public class TransformHelper {
     if (transformMap.getType(key) == ReadableType.String) {
       String stringValue = transformMap.getString(key);
       return convertToRadians(stringValue);
+    } else if (transformMap.getType(key) == ReadableType.Number) {
+      // We need to accept numbers as well as strings for the rotation key.
+      return transformMap.getDouble(key);
     }
     return 0;
   }
