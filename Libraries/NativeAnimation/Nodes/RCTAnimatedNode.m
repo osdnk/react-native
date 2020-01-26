@@ -111,6 +111,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
     }
     [self performUpdate];
   }
+  _lastUpdateTime = time;
 }
 
 - (void)performUpdate
