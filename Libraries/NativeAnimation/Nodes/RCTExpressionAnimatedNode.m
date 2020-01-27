@@ -329,9 +329,6 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
       if([_animations objectForKey:nodeTag] != NULL) {
         [_animations removeObjectForKey:nodeTag];
         callback();
-        // run one iteration so that changes in the callback is reflected.
-        NSTimeInterval timeStamp = [[NSDate date] timeIntervalSince1970];
-        [self.manager updateAnimationsWithTime:timeStamp];
       }
     }];
     return (CGFloat)[animationId floatValue];
