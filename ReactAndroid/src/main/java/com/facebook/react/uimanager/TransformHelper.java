@@ -27,7 +27,7 @@ public class TransformHelper {
     };
 
   public static double convertToRadians(String stringValue) {
-    boolean inRadians = false;
+    boolean inRadians = true;
     if (stringValue.endsWith("rad")) {
       stringValue = stringValue.substring(0, stringValue.length() - 3);
     } else if (stringValue.endsWith("deg")) {
