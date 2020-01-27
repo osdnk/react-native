@@ -14,6 +14,8 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import com.facebook.react.bridge.ReadableType;
+import com.facebook.react.bridge.UnexpectedNativeTypeException;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
@@ -283,7 +285,14 @@ import java.util.Map;
       }
       case "number": return new EvalFunction() {
         @Override
-        public double eval() { return node.getDouble("value"); }
+        public double eval() {
+          if(node.getType("value") == ReadableType.Boolean) {
+            return node.getBoolean("value") ? 1: 0;
+          } else if(node.getType("value") == ReadableType.String) {
+            throw new UnexpectedNativeTypeException("String value found - expected numbers. Use the format or concat expression to convert to strings.");
+          }
+          return node.getDouble("value");
+        }
       };
       /* Statements */
       case "cond": return createCond(node);
