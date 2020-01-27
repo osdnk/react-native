@@ -437,7 +437,12 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
   return ^{
     NSMutableString* result = [[NSMutableString alloc] init];
     for (int i = 0; i < formats.count; i++) {
-      [result appendFormat:formats[i], evals[i]()];
+      CGFloat val = evals[i]();
+      int size = snprintf(NULL, 0, [formats[i] UTF8String], val);
+      char * a = malloc(size + 1);
+      sprintf(a, [formats[i] UTF8String], val);
+      [result appendString:[NSString stringWithUTF8String:a]];
+      free(a);
     }
     self.animatedObject = result;
     return self.value +1;
@@ -490,7 +495,8 @@ typedef NSDictionary<NSString*, id>* ( ^evalConfig )(void);
   NSNumber* targetTag = node[@"target"];
   return ^ {
     CGFloat value = source();
-    [self.manager setAnimatedNodeValue:targetTag value:[NSNumber numberWithFloat:value]];
+    RCTValueAnimatedNode* valueNode = (RCTValueAnimatedNode*)[self.manager findNodeById:targetTag];
+    valueNode.value = value;    
     return value;
   };
 }
