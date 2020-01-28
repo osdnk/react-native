@@ -662,13 +662,14 @@ module.exports = {
    * See http://facebook.github.io/react-native/docs/animated.html#expression
    */
   expression,
+  useExpression,
+  proc: createAnimatedProc,
   E: {
     ...factories,
     ...derived,
     ...compatibility,
     event,
     useCode: useExpression,
-    useExpression,
     proc: createAnimatedProc,
     Value: AnimatedValue,
     Clock: derived.AnimatedClock,
