@@ -8,7 +8,8 @@
  * @flow
  */
 import Easing from './Easing';
+import AnimatedCode from './AnimatedCode';
 export * from './spring';
 export * from './timing';
 export * from './decay';
-export {Easing};
+export {Easing, AnimatedCode};

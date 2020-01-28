@@ -154,6 +154,7 @@ module.exports = {
   expression: AnimatedImplementation.expression,
   useExpression,
   proc: createAnimatedProc,
+  Code: compatibility.AnimatedCode,
   E: {
     ...factories,
     ...derived,
