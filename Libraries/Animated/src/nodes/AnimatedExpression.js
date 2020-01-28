@@ -31,7 +31,7 @@ class AnimatedExpression extends AnimatedWithChildren {
     | CastBooleanExpressionNode;
 
   _args: Array<any>;
-  _parents: [];
+  _parents: Array<any>;
   _evaluator: (() => number) | null;
   _callListeners: {[key: string]: CallCallbackListener, ...};
   _nativeCallCallbackListener: ?any;

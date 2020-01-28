@@ -54,8 +54,8 @@ type BooleanFactory = (
 
 type ConditionFactory = (
   expr: ExpressionParam,
-  ifNode: ExpressionParam | ExpressionParam[],
-  elseNode: ?(ExpressionParam | ExpressionParam[]),
+  ifNode: ExpressionParam,
+  elseNode: ?ExpressionParam,
 ) => CondStatementNode;
 
 type SetFactory = (
@@ -68,7 +68,7 @@ type BlockFactory = (
 ) => BlockStatementNode;
 
 type CallFactory = (
-  args: ExpressionParam | ExpressionParam[],
+  args: ExpressionParam,
   (args: number[]) => void,
 ) => CallStatementNode;
 
@@ -398,8 +398,8 @@ function blockFactory(
 
 function condFactory(
   expr: ExpressionParam,
-  ifNode: ExpressionParam | ExpressionParam[],
-  elseNode: ?(ExpressionParam | ExpressionParam[]),
+  ifNode: ExpressionParam,
+  elseNode: ?ExpressionParam,
 ): CondStatementNode {
   invariantParam(expr, 'Expression', 'cond');
   invariantParam(ifNode, 'If expression', 'cond');
@@ -420,7 +420,7 @@ function condFactory(
 }
 
 function callFactory(
-  args: ExpressionParam | ExpressionParam[],
+  args: ExpressionParam,
   callback: (args: number[]) => void,
 ): CallStatementNode {
   invariantParam(args, 'Arguments', 'call');
