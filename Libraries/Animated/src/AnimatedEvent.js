@@ -10,6 +10,8 @@
 
 'use strict';
 
+import { Animated } from 'react-native';
+
 const AnimatedValue = require('./nodes/AnimatedValue');
 const NativeAnimatedHelper = require('./NativeAnimatedHelper');
 const ReactNative = require('../../Renderer/shims/ReactNative');
@@ -33,15 +35,23 @@ function attachNativeEvent(
   // Find animated values in `argMapping` and create an array representing their
   // key path inside the `nativeEvent` object. Ex.: ['contentOffset', 'x'].
   const eventMappings = [];
+  const expressions = [];
 
   const traverse = (value, path) => {
     if (value instanceof AnimatedValue) {
       value.__makeNative();
-
       eventMappings.push({
         nativeEventPath: path,
         animatedValueTag: value.__getNativeTag(),
+      });      
+    } else if (typeof value === 'object' && value.__val) {
+      value.__val.__makeNative();
+      eventMappings.push({
+        nativeEventPath: path,
+        animatedValueTag: value.__val.__getNativeTag(),
       });
+    } else if (typeof value === 'function') {
+      // TODO: What should this one do?
     } else if (typeof value === 'object') {
       for (const key in value) {
         traverse(value[key], path.concat(key));
@@ -55,7 +65,35 @@ function attachNativeEvent(
   );
 
   // Assume that the event containing `nativeEvent` is always the first argument.
-  traverse(argMapping[0].nativeEvent, []);
+  const ev = argMapping[0].nativeEvent;
+  if (typeof ev === 'object') {
+    traverse(ev, []);
+  } else if (typeof ev === 'function') {
+    const proxyHandler = {
+      get: function(target, name) {
+        if (name === '__isProxy') {
+          return true;
+        }
+        if (!target[name] && name !== '__val') {
+          target[name] = new Proxy({}, proxyHandler);
+        }
+        return target[name];
+      },
+      set: function(target, prop, value) {
+        if (prop === '__val') {
+          target[prop] = value;
+          return true;
+        }
+        return false;
+      },
+    };
+
+    const proxy = new Proxy({}, proxyHandler);
+    const expressionNode = ev(proxy);
+    expressions.push(expressionNode);
+    expressionNode.__attach();
+    traverse(proxy, []);
+  }
 
   const viewTag = ReactNative.findNodeHandle(viewRef);
 
@@ -72,6 +110,7 @@ function attachNativeEvent(
   return {
     detach() {
       if (viewTag != null) {
+        expressions.forEach(n => n.__detach());
         eventMappings.forEach(mapping => {
           NativeAnimatedHelper.API.removeAnimatedEventFromView(
             viewTag,
@@ -146,10 +185,23 @@ class AnimatedEvent {
       return this._callListeners;
     }
 
+    const eventValues = {};
+
     return (...args: any) => {
       const traverse = (recMapping, recEvt, key) => {
         if (typeof recEvt === 'number' && recMapping instanceof AnimatedValue) {
           recMapping.setValue(recEvt);
+        } else if (typeof recMapping === "function") {
+          // Check if we have evaluated the animated event function
+          if(!recMapping.__node) {
+            Object.keys(recEvt)
+              .forEach(key => eventValues[key] = new Animated.Value(recEvt[key]));
+            recMapping.__node = recMapping(eventValues);
+            recMapping.__node.__attach();
+            Object.keys(eventValues).forEach(key => eventValues[key].__attach());
+          } else {
+            Object.keys(eventValues).forEach(key => eventValues[key].setValue(recEvt[key]));            
+          }          
         } else if (typeof recMapping === 'object') {
           for (const mappingKey in recMapping) {
             /* $FlowFixMe(>=0.53.0 site=react_native_fb,react_native_oss) This

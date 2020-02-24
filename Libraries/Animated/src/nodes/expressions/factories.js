@@ -197,13 +197,21 @@ export function resolve(v: ExpressionParam): ExpressionNode {
     if (v.hasOwnProperty('type')) {
       return ((v: any): ExpressionNode);
     }
+
+    // For Animated.event:
+    if(v.__isProxy && !v.__val) {
+      // This is a proxy value      
+      v.__val = new AnimatedValue(0);      
+    }
+
     // Animated value / node
+    const resolvedNode = v.__val || v;
     return ({
       type: 'value',
       nodeId: _nodeId++,
-      node: v,
-      getTag: v.__getNativeTag.bind(v),
-      getValue: v.__getValue.bind(v),
+      node: resolvedNode,
+      getTag: resolvedNode.__getNativeTag.bind(resolvedNode),
+      getValue: resolvedNode.__getValue.bind(resolvedNode),
       // $FlowFixMe
       setValue: (value: number) => (((v: any): AnimatedValue)._value = value),
     }: AnimatedValueExpressionNode);

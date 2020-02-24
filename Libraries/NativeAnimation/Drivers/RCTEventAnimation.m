@@ -31,7 +31,11 @@
     currentValue = [currentValue valueForKey:key];
   }
 
-  _valueNode.value = ((NSNumber *)currentValue).doubleValue;
+  CGFloat value = ((NSNumber *)currentValue).doubleValue;
+  if(value == _valueNode.value) {
+    return;
+  }
+  _valueNode.value = value;
   [_valueNode setNeedsUpdate];
 }
 

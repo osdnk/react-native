@@ -22,6 +22,7 @@
 @property (nonatomic, copy, readonly) NSMapTable<NSNumber *, RCTAnimatedNode *> *parentNodes;
 
 @property (nonatomic, readonly) BOOL needsUpdate;
+@property (nonatomic) NSTimeInterval lastUpdateTime;
 
 -(BOOL)isManagedByFabric;
 

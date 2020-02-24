@@ -485,7 +485,6 @@ public class NativeAnimatedModule extends NativeAnimatedModuleSpec
     // iOS only
   }
 
-  @Override
   public void addEnqueuedUpdateProp(String propName) {
     mNodesManager.addEnqueuedUpdateProp(propName);
   }

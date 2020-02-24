@@ -99,8 +99,12 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
   }
 }
 
-- (NSTimeInterval) lastUpdateTime {
+- (NSTimeInterval)lastUpdateTime {
   return _lastUpdateTime;
+}
+
+- (void)lastUpdateTime:(NSTimeInterval)time {
+  _lastUpdateTime = time;
 }
 
 - (void)updateNodeIfNecessaryWithTime:(NSTimeInterval)time
@@ -109,7 +113,10 @@ RCT_NOT_IMPLEMENTED(- (instancetype)init)
     for (RCTAnimatedNode *parent in _parentNodes.objectEnumerator) {
       [parent updateNodeIfNecessaryWithTime:time];
     }
-    [self performUpdate];
+    if(self.lastUpdateTime < time) {
+      NSLog(@"Updating %@ (%@)", NSStringFromClass(self.class), _nodeTag);
+      [self performUpdate];
+    }
   }
   _lastUpdateTime = time;
 }

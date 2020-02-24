@@ -20,7 +20,7 @@ import type {
   FormatExpressionNode,
   CastBooleanExpressionNode,
 } from './expressions';
-import {createEvaluator, converters} from './expressions';
+import {createEvaluator, converters, factories} from './expressions';
 
 type CallCallbackListener = (args: number[]) => void;
 
@@ -43,7 +43,8 @@ class AnimatedExpression extends AnimatedWithChildren {
       | CastBooleanExpressionNode,
   ) {
     super();
-    this._expression = expression;
+    this._expression = expression instanceof Array ? 
+      factories.block(expression) : expression;
     this._args = [];
     this._callListeners = {};
     this._parents = [];
@@ -154,7 +155,15 @@ function collectArguments(
       args.push({id: parentId, func: node});
       return;
     } else if (node.type === 'value') {
-      args.push({id: parentId, node});
+      if(node.node.__isProxy) {
+        // Push proxy node
+        args.push({id: parentId, node: {
+          ...node,
+          node: node.node.__val,
+        }});  
+      } else {
+        args.push({id: parentId, node});
+      }
     }
 
     const id = node.nodeId;
